@@ -98,8 +98,7 @@ const SUBJECTS = {
   internal:{name:'内科学',icon:'🫀',desc:'呼吸、循环、消化、泌尿、血液、内分泌'},
   surgery:{name:'外科学',icon:'🦴',desc:'普外、骨科、泌尿、胸外'},
   physiology:{name:'生理学',icon:'🧬',desc:'细胞、血液、循环、呼吸、消化'},
-  biochem:{name:'生物化学',icon:'⚗️',desc:'蛋白质、酶、糖代谢、脂代谢'},
-  humanities:{name:'医学人文',icon:'🩺',desc:'医学伦理、医患关系、卫生法规'}
+  biochem:{name:'生物化学',icon:'⚗️',desc:'蛋白质、酶、糖代谢、脂代谢'}
 };
 
 const SYSTEMS = {
@@ -125,16 +124,15 @@ const SYSTEMS = {
 
 /* ====== 3.15 艾宾浩斯复习模式 ====== */
 const MODES = {
-  standard: { name:'标准模式', nodes:[1,2,4,7,15,30], labels:['观看录播','做题巩固','思维导图','错题重练','强化复习','月度回顾'] },
-  compact: { name:'精简模式', nodes:[1,2,7,15], labels:['观看录播','做题巩固','错题重练','强化复习'] },
-  minimal: { name:'极简模式', nodes:[1,2,7], labels:['观看录播','做题巩固','错题重练'] }
+  minimal: { name:'极简模式', nodes:[1,2,7], labels:['观看录播','做题巩固','错题重练'] },
+  errorOnly: { name:'仅错题复习', nodes:[], labels:[], isErrorMode:true }
 };
 
 /* ====== 3.4 状态管理 ====== */
 let db;
 let currentUserId = 1;
 let currentUserName = 'Rosy1003';
-let currentMode = 'compact';
+let currentMode = 'minimal';
 let currentSubject = null;
 let currentSystem = null;
 let currentQuestions = [];
@@ -147,6 +145,8 @@ let favoritedIds = new Set();
 let wrongFilterSubject = 'all';
 let noteFilterSubject = 'all';
 let autoSyncEnabled = false;
+let shuffleOptionsEnabled = false;
+let darkModeEnabled = false;
 
 const PANEL_TITLES = { home:'首页总览', quiz:'刷题练习', wrong:'错题本', stats:'学习统计', fav:'收藏夹', notes:'我的解析', settings:'设置' };
 const USER_COLORS = ['#9a8e82','#7d9e7d','#7a95b0','#a08eb0','#c9a96a','#b87a7a'];
@@ -261,10 +261,10 @@ async function renderQuiz(){
   // 模式选择器
   let modeHtml = '<div class="mode-selector">';
   Object.entries(MODES).forEach(([key,m])=>{
+    const nodesText = m.isErrorMode ? '无时间限制' : m.nodes.join(' → ') + ' 天';
     modeHtml += `<div class="mode-card ${key===currentMode?'active':''}" onclick="selectMode('${key}')">
       <div class="mc-title">${m.name}</div>
-      <div class="mc-nodes">${m.nodes.join(' / ')} 天</div>
-      <div class="mc-desc">${m.labels.join(' → ')}</div>
+      <div class="mc-nodes">${nodesText}</div>
       ${key===currentMode?'<div class="mc-badge">当前</div>':''}
     </div>`;
   });
@@ -354,7 +354,7 @@ async function startQuiz(subject, system, chapterId, chapterName){
   renderQuestion();
 }
 
-function renderQuestion(){
+async function renderQuestion(){
   const q = currentQuestions[currentQuestionIndex];
   const el = document.getElementById('quizContent');
   if(!q){
@@ -363,6 +363,24 @@ function renderQuestion(){
   }
   quizState = { selectedOption:null, placements:{}, answered:false };
   const progress = currentQuestions.length>0 ? ((currentQuestionIndex+1)/currentQuestions.length*100).toFixed(0) : 0;
+  
+  // 打乱选项顺序（仅影响显示，不影响答案判定，因答案按 ID 映射）
+  if(shuffleOptionsEnabled && q.options && q.options.length>1){
+    q._displayOptions = [...q.options];
+    for(let i=q._displayOptions.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [q._displayOptions[i],q._displayOptions[j]] = [q._displayOptions[j],q._displayOptions[i]];
+    }
+  } else {
+    q._displayOptions = q.options;
+  }
+  
+  // 获取该题的对错次数
+  const allRecords = await dbGetAll('records');
+  const qRecords = allRecords.filter(r=>r.userId===currentUserId && r.questionId===q.id);
+  const correctCount = qRecords.filter(r=>r.correct).length;
+  const wrongCount = qRecords.filter(r=>!r.correct).length;
+  const totalCount = qRecords.length;
 
   el.innerHTML = `
     <div class="quiz-player show">
@@ -372,6 +390,11 @@ function renderQuestion(){
           <div class="quiz-progress">第 <strong>${currentQuestionIndex+1}</strong> / ${currentQuestions.length} 题</div>
         </div>
         <div class="progress-bar-wrap"><div class="progress-fill" style="width:${progress}%"></div></div>
+        <div style="display:flex;gap:.5rem;margin-bottom:.6rem;flex-wrap:wrap">
+          <span style="background:var(--green-bg);color:var(--green);padding:.15rem .6rem;border-radius:6px;font-size:.72rem;font-weight:600">✅ 正确 ${correctCount}次</span>
+          <span style="background:var(--red-bg);color:var(--red);padding:.15rem .6rem;border-radius:6px;font-size:.72rem;font-weight:600">❌ 错误 ${wrongCount}次</span>
+          <span style="background:var(--yellow-bg);color:var(--yellow);padding:.15rem .6rem;border-radius:6px;font-size:.72rem;font-weight:600">📋 共做 ${totalCount}次</span>
+        </div>
         <div style="font-size:.85rem;color:var(--muted);margin-bottom:1rem">${escapeHtml(q.description)}</div>
         <div class="matching-layout">
           <div class="option-pool">
@@ -409,10 +432,11 @@ function updateMatchingUI(){
   const q = currentQuestions[currentQuestionIndex];
   if(!q) return;
 
-  // 选项池
+  // 选项池（使用打乱后的显示顺序）
   const pool = document.getElementById('optionPool');
   if(pool){
-    pool.innerHTML = q.options.map(opt=>{
+    const displayOpts = q._displayOptions || q.options;
+    pool.innerHTML = displayOpts.map(opt=>{
       let cls = 'option-item';
       let style = '';
       if(quizState.placements[opt.id]) cls += ' placed';
@@ -645,6 +669,18 @@ async function recordAnswer(q, isCorrect, score){
     learnDateStr:new Date().toDateString()
   };
   await dbAdd('records', record);
+  // 更新错题的正确次数
+  const wqId = `wq_${currentUserId}_${q.id}`;
+  const existingWq = await dbGetByKey('wrongQuestions', wqId);
+  if(existingWq){
+    if(isCorrect){
+      existingWq.correctCount = (existingWq.correctCount||0)+1;
+      await dbAdd('wrongQuestions', existingWq);
+    } else {
+      existingWq.correctCount = existingWq.correctCount||0;
+      await dbAdd('wrongQuestions', existingWq);
+    }
+  }
 }
 
 async function addToWrongQuestions(q){
@@ -658,7 +694,7 @@ async function addToWrongQuestions(q){
     await dbAdd('wrongQuestions', {
       id, userId:currentUserId, questionId:q.id,
       subject:q.subject, system:q.system, chapter:q.chapter, title:q.title,
-      wrongCount:1, lastWrongDate:new Date().toISOString(),
+      wrongCount:1, correctCount:0, lastWrongDate:new Date().toISOString(),
       question:q
     });
   }
@@ -692,7 +728,7 @@ async function renderHome(){
   if(examEl) examEl.textContent = `距考研 ${daysToExam} 天`;
 
   // 复习任务
-  const reviewTasks = computeReviewTasks(records);
+  const reviewTasks = await computeReviewTasks(records);
   // 薄弱知识点
   const weakPoints = computeWeakPoints(records);
   // 科目进度
@@ -719,27 +755,30 @@ async function renderHome(){
 
   html += '<div class="dash-grid">';
 
-  // 今日复习任务
-  html += `<div class="dash-w-8"><div class="home-card">
-    <div class="card-title">📅 今日复习任务（艾宾浩斯 · ${MODES[currentMode].name}）<span class="card-more" onclick="switchPanel('quiz')">去刷题 →</span></div>`;
+  // 今日复习任务（左半）
+  html += `<div class="dash-w-6"><div class="home-card">
+    <div class="card-title">📅 今日复习任务（${MODES[currentMode].name}）<span class="card-more" onclick="switchPanel('quiz')">去刷题 →</span></div>`;
   if(reviewTasks.length===0){
     html += '<div class="empty-state" style="padding:1.5rem"><div class="es-icon">✅</div><p>暂无到期复习任务，开始学习新内容吧！</p></div>';
   } else {
     html += '<ul class="review-list">';
     reviewTasks.slice(0,6).forEach(t=>{
       const overdue = t.overdue;
+      const dotColor = t.isErrorReview ? 'var(--red)' : (overdue?'var(--red)':'var(--yellow)');
+      const tagClass = t.isErrorReview ? 'urgent' : (overdue?'urgent':'normal');
+      const tagText = t.isErrorReview ? t.label : (overdue?'已逾期':'今日');
       html += `<li class="review-item">
-        <span class="ri-dot" style="background:${overdue?'var(--red)':'var(--yellow)'}"></span>
+        <span class="ri-dot" style="background:${dotColor}"></span>
         <span class="ri-title">${escapeHtml(t.title)} <span style="color:var(--muted);font-size:.72rem">· ${escapeHtml(t.label)}</span></span>
-        <span class="ri-tag ${overdue?'urgent':'normal'}">${overdue?'已逾期':'今日'}</span>
+        <span class="ri-tag ${tagClass}">${tagText}</span>
       </li>`;
     });
     html += '</ul>';
   }
   html += '</div></div>';
 
-  // 薄弱知识点
-  html += `<div class="dash-w-4"><div class="home-card">
+  // 薄弱知识点（右半，与复习任务对称）
+  html += `<div class="dash-w-6"><div class="home-card">
     <div class="card-title">🎯 薄弱知识点 TOP3</div>`;
   if(weakPoints.length===0){
     html += '<div class="empty-state" style="padding:1.5rem"><div class="es-icon">📊</div><p>暂无数据</p></div>';
@@ -757,8 +796,8 @@ async function renderHome(){
   }
   html += '</div></div>';
 
-  // 科目进度
-  html += `<div class="dash-w-6"><div class="home-card">
+  // 科目进度（全宽）
+  html += `<div class="dash-w-12"><div class="home-card">
     <div class="card-title">📚 科目进度</div>
     <div class="subject-grid">`;
   subjectProgress.forEach(s=>{
@@ -771,10 +810,10 @@ async function renderHome(){
   });
   html += '</div></div></div>';
 
-  // 学习热力图 + 艾宾浩斯节点
-  html += `<div class="dash-w-6"><div class="home-card">
+  // 学习热力图（全宽）
+  html += `<div class="dash-w-12"><div class="home-card">
     <div class="card-title">🔥 近14天学习热力图</div>
-    <div class="heatmap-row" style="margin-bottom:1rem">`;
+    <div class="heatmap-row" style="margin-bottom:.5rem">`;
   heatmap.forEach(d=>{
     let bg='var(--bg2)';
     if(d.count>=6) bg='var(--accent)';
@@ -784,8 +823,12 @@ async function renderHome(){
     html += `<div class="heatmap-cell" title="${title}" style="background:${bg}"></div>`;
   });
   html += '</div>';
-  // 艾宾浩斯节点
-  html += `<div id="ebbinghausDisplay">${renderEbbinghausNodes(currentMode)}</div>`;
+  html += '<div style="display:flex;align-items:center;gap:.6rem;font-size:.72rem;color:var(--muted)"><span>少</span>';
+  html += '<div class="heatmap-cell" style="background:var(--bg2)"></div>';
+  html += '<div class="heatmap-cell" style="background:var(--accent-light)"></div>';
+  html += '<div class="heatmap-cell" style="background:var(--accent2)"></div>';
+  html += '<div class="heatmap-cell" style="background:var(--accent)"></div>';
+  html += '<span>多</span></div>';
   html += '</div></div>';
 
   html += '</div>'; // dash-grid end
@@ -794,17 +837,7 @@ async function renderHome(){
 }
 
 function renderEbbinghausNodes(mode){
-  const m = MODES[mode];
-  let html = '<div style="margin-top:1rem"><div style="font-size:.82rem;font-weight:700;margin-bottom:.5rem">🔄 复习节点安排</div><div style="display:flex;gap:.4rem;flex-wrap:wrap">';
-  m.nodes.forEach((n,i)=>{
-    html += `<div style="flex:1;min-width:80px;text-align:center;padding:.5rem;border-radius:8px;background:var(--bg2);border:1px solid var(--rule)">
-      <div style="font-size:.7rem;color:var(--muted)">第${i+1}次</div>
-      <div style="font-size:1rem;font-weight:700;color:var(--accent)">${n}天</div>
-      <div style="font-size:.65rem;color:var(--muted)">${m.labels[i]}</div>
-    </div>`;
-  });
-  html += '</div></div>';
-  return html;
+  return '';
 }
 
 function computeStreak(records){
@@ -821,9 +854,20 @@ function computeStreak(records){
   return streak;
 }
 
-function computeReviewTasks(records){
+async function computeReviewTasks(records){
   const mode = MODES[currentMode];
   const tasks = [];
+  
+  if(mode.isErrorMode){
+    // 仅错题复习模式：返回所有错题作为复习任务
+    const wrongQs = (await dbGetAll('wrongQuestions')).filter(w=>w.userId===currentUserId);
+    wrongQs.forEach(w=>{
+      tasks.push({ qid:w.questionId, title:w.title, subject:w.subject, chapter:w.chapter, label:`错${w.wrongCount}次`, node:0, overdue:false, isErrorReview:true });
+    });
+    return tasks;
+  }
+  
+  // 极简模式：按时间节点计算
   const byQuestion = {};
   records.forEach(r=>{
     if(!byQuestion[r.questionId]) byQuestion[r.questionId] = { title:r.title, subject:r.subject, chapter:r.chapter, dates:[] };
@@ -838,12 +882,11 @@ function computeReviewTasks(records){
       reviewDate.setDate(reviewDate.getDate()+mode.nodes[i]);
       const reviewed = data.dates.some(d=>{ const dd=new Date(d); dd.setHours(0,0,0,0); return dd.getTime()>=reviewDate.getTime(); });
       if(!reviewed && reviewDate<=today){
-        tasks.push({ qid, title:data.title, subject:data.subject, chapter:data.chapter, label:mode.labels[i], node:mode.nodes[i], overdue: reviewDate<today });
+        tasks.push({ qid, title:data.title, subject:data.subject, chapter:data.chapter, label:`第${mode.nodes[i]}天`, node:mode.nodes[i], overdue: reviewDate<today });
         break;
       }
     }
   });
-  // 逾期的排前面
   tasks.sort((a,b)=>(b.overdue?1:0)-(a.overdue?1:0));
   return tasks;
 }
@@ -889,7 +932,6 @@ function computeHeatmap(records){
 function selectMode(mode){
   currentMode = mode;
   saveUserSetting('mode', mode);
-  updateEbbinghausDisplay(mode);
   // 更新模式选择器UI
   document.querySelectorAll('.mode-card').forEach((card,i)=>{
     const keys = Object.keys(MODES);
@@ -904,8 +946,7 @@ function selectMode(mode){
 }
 
 function updateEbbinghausDisplay(mode){
-  const el = document.getElementById('ebbinghausDisplay');
-  if(el) el.innerHTML = renderEbbinghausNodes(mode);
+  // 复习节点板块已删除，此函数保留为空避免报错
 }
 
 /* ==========================================================
@@ -941,7 +982,11 @@ async function renderWrong(){
         <div class="ec-icon">${sub.icon}</div>
         <div class="ec-body">
           <div class="ec-title">${escapeHtml(w.title)}</div>
-          <div class="ec-meta">${sub.name} · 错${w.wrongCount}次 · 最近：${formatDate(w.lastWrongDate)}</div>
+          <div class="ec-meta">${sub.name} · 最近：${formatDate(w.lastWrongDate)}</div>
+          <div style="display:flex;gap:.3rem;margin-top:.3rem">
+            <span style="background:var(--red-bg);color:var(--red);padding:.1rem .4rem;border-radius:4px;font-size:.65rem;font-weight:600">❌ ${w.wrongCount}次</span>
+            <span style="background:var(--green-bg);color:var(--green);padding:.1rem .4rem;border-radius:4px;font-size:.65rem;font-weight:600">✅ ${w.correctCount||0}次</span>
+          </div>
         </div>
         <div class="ec-actions">
           <button onclick="redoWrong('${w.questionId}')">重做</button>
@@ -1046,6 +1091,33 @@ async function renderStats(){
   });
   tableHtml += '</tbody></table></div>';
 
+  // 题目对错次数统计
+  const byQuestion = {};
+  records.forEach(r=>{
+    if(!byQuestion[r.questionId]) byQuestion[r.questionId] = { title:r.title, subject:r.subject, correct:0, wrong:0, total:0 };
+    byQuestion[r.questionId].total++;
+    if(r.correct) byQuestion[r.questionId].correct++;
+    else byQuestion[r.questionId].wrong++;
+  });
+  const questionStats = Object.values(byQuestion).sort((a,b)=>b.wrong-a.wrong);
+  let qStatsHtml = `<div class="table-wrap" style="margin-top:1rem"><table class="deploy-table" style="width:100%;border-collapse:collapse;font-size:.8rem">
+    <thead><tr>
+      <th style="text-align:left;padding:.5rem;background:var(--bg2);border-bottom:2px solid var(--rule)">题目</th>
+      <th style="padding:.5rem;background:var(--bg2)">✅ 正确</th>
+      <th style="padding:.5rem;background:var(--bg2)">❌ 错误</th>
+      <th style="padding:.5rem;background:var(--bg2)">正确率</th>
+    </tr></thead><tbody>`;
+  questionStats.forEach(qs=>{
+    const acc = qs.total>0 ? Math.round(qs.correct/qs.total*100) : 0;
+    qStatsHtml += `<tr>
+      <td style="padding:.4rem .5rem;border-bottom:1px solid var(--rule)">${escapeHtml(qs.title)}</td>
+      <td style="text-align:center;padding:.4rem;border-bottom:1px solid var(--rule);color:var(--green)">${qs.correct}</td>
+      <td style="text-align:center;padding:.4rem;border-bottom:1px solid var(--rule);color:var(--red)">${qs.wrong}</td>
+      <td style="text-align:center;padding:.4rem;border-bottom:1px solid var(--rule);color:${acc>=60?'var(--green)':'var(--red)'}">${acc}%</td>
+    </tr>`;
+  });
+  qStatsHtml += '</tbody></table></div>';
+
   el.innerHTML = `
     <div class="chart-card">
       <div class="chart-title">📊 近7天刷题量（颜色代表正确率）</div>
@@ -1058,6 +1130,10 @@ async function renderStats(){
     <div class="chart-card">
       <div class="chart-title">📋 科目明细</div>
       ${tableHtml}
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">📝 题目对错次数</div>
+      ${qStatsHtml}
     </div>`;
 }
 
@@ -1265,14 +1341,31 @@ async function renderSettings(){
     <div class="card-title">🔄 复习模式选择</div>
     <div class="mode-selector">`;
   Object.entries(MODES).forEach(([key,m])=>{
+    const nodesText = m.isErrorMode ? '无时间限制' : m.nodes.join(' → ') + ' 天';
     html += `<div class="mode-card ${key===currentMode?'active':''}" onclick="selectMode('${key}');renderSettings()">
       <div class="mc-title">${m.name}</div>
-      <div class="mc-nodes">${m.nodes.join(' / ')} 天</div>
-      <div class="mc-desc">${m.labels.join(' → ')}</div>
+      <div class="mc-nodes">${nodesText}</div>
       ${key===currentMode?'<div class="mc-badge">当前</div>':''}
     </div>`;
   });
   html += '</div></div>';
+
+  // 偏好设置
+  html += `<div class="home-card" style="margin-bottom:1.2rem">
+    <div class="card-title">⚙️ 偏好设置</div>
+    <div class="setting-row">
+      <div class="setting-label">🔀 打乱选项顺序<div class="sl-desc">每次刷题时随机打乱选项排列，强化记忆</div></div>
+      <div class="setting-control">
+        <div class="toggle ${shuffleOptionsEnabled?'on':''}" data-toggle="shuffle" onclick="toggleShuffleOptions()"></div>
+      </div>
+    </div>
+    <div class="setting-row">
+      <div class="setting-label">🌙 深色模式<div class="sl-desc">切换到深色主题，护眼夜间使用</div></div>
+      <div class="setting-control">
+        <div class="toggle ${darkModeEnabled?'on':''}" data-toggle="darkMode" onclick="toggleDarkMode()"></div>
+      </div>
+    </div>
+  </div>`;
 
   // 云同步
   html += `<div class="home-card" style="margin-bottom:1.2rem">
@@ -1450,6 +1543,29 @@ function toggleAutoSync(){
   if(t) t.classList.toggle('on', autoSyncEnabled);
 }
 
+function toggleShuffleOptions(){
+  shuffleOptionsEnabled = !shuffleOptionsEnabled;
+  saveUserSetting('shuffleOptions', shuffleOptionsEnabled);
+  const toggles = document.querySelectorAll('[data-toggle="shuffle"]');
+  toggles.forEach(t=>t.classList.toggle('on', shuffleOptionsEnabled));
+}
+
+function toggleDarkMode(){
+  darkModeEnabled = !darkModeEnabled;
+  saveUserSetting('darkMode', darkModeEnabled);
+  applyDarkMode();
+  const toggles = document.querySelectorAll('[data-toggle="darkMode"]');
+  toggles.forEach(t=>t.classList.toggle('on', darkModeEnabled));
+}
+
+function applyDarkMode(){
+  if(darkModeEnabled){
+    document.documentElement.classList.add('dark-mode');
+  } else {
+    document.documentElement.classList.remove('dark-mode');
+  }
+}
+
 /* ==========================================================
  * 3.14 用户管理
  * ========================================================== */
@@ -1533,7 +1649,10 @@ async function loadUserSettings(){
   if(settings){
     if(settings.mode) currentMode = settings.mode;
     if(typeof settings.autoSync === 'boolean') autoSyncEnabled = settings.autoSync;
+    if(typeof settings.shuffleOptions === 'boolean') shuffleOptionsEnabled = settings.shuffleOptions;
+    if(typeof settings.darkMode === 'boolean') darkModeEnabled = settings.darkMode;
   }
+  applyDarkMode();
 }
 
 /* ==========================================================
