@@ -635,10 +635,23 @@ body{font-family:var(--font);color:var(--ink);background:var(--bg);line-height:1
 .option-item:active {
   transform: scale(0.96);
 }
+.option-item.selected {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+  box-shadow: 0 0 0 3px rgba(154,142,130,0.15);
+}
 .option-item.placed {
-  opacity: 0.35;
+  opacity: 0.85;
   border-style: dashed;
-  pointer-events: none;
+}
+.option-item .placement-badge {
+  margin-left: auto;
+  font-size: 0.65rem;
+  background: var(--yellow-bg);
+  color: var(--yellow);
+  padding: 0.1rem 0.35rem;
+  border-radius: 6px;
+  font-weight: 600;
 }
 .option-item .opt-letter {
   font-weight: 700; color: var(--accent); font-size: 0.78rem;

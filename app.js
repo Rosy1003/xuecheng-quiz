@@ -6,89 +6,93 @@
 /* ====== 3.1 样例题目 ====== */
 const SAMPLE_QUESTIONS = [
   {
-    id:'q001', subject:'pathology', system:'digestive', chapter:'慢性胃炎',
+    id:'path_001', subject:'pathology', system:'digestive', chapter:'慢性胃炎',
     type:'matching', title:'慢性胃炎 · A型 vs B型胃炎',
     description:'将下列特征归类到对应的慢性胃炎类型',
     options:[
-      {id:'A',text:'自身免疫性'},{id:'B',text:'Hp感染'},
-      {id:'C',text:'胃体为主'},{id:'D',text:'胃窦为主'},
-      {id:'E',text:'胃酸降低'},{id:'F',text:'胃酸正常/稍低'},
-      {id:'G',text:'壁细胞抗体阳性'},{id:'H',text:'G细胞增生'}
+      {id:'A',text:'由自身免疫引起'},{id:'B',text:'胃酸分泌正常或减少'},
+      {id:'C',text:'由Hp引起'},{id:'D',text:'好发于胃底、胃体'},
+      {id:'E',text:'血维生素B12↓'},{id:'F',text:'血胃泌素↓'},
+      {id:'G',text:'血维生素B12正常'},{id:'H',text:'抗壁细胞和内因子抗体阳性'},
+      {id:'I',text:'常伴消化性溃疡'},{id:'J',text:'好发于胃窦'},
+      {id:'K',text:'胃酸分泌明显减少或缺乏'},{id:'L',text:'血胃泌素↑'},
+      {id:'M',text:'抗壁细胞和内因子抗体阴性'},{id:'N',text:'常伴恶性贫血'}
     ],
     categories:[{id:'C1',label:'A型胃炎（自身免疫性）'},{id:'C2',label:'B型胃炎（Hp感染）'}],
-    answer:{A:'C1',B:'C2',C:'C1',D:'C2',E:'C1',F:'C2',G:'C1',H:'C2'},
-    explanation:'A型=自身免疫性+胃体+胃酸↓+壁细胞抗体阳性+G细胞增生→胃泌素↑；B型=Hp感染+胃窦+胃酸正常/稍低。关键鉴别：病变部位(胃体vs胃窦)+病因(自身免疫vsHp)+胃酸(↓vs正常)。'
+    answer:{A:'C1',B:'C2',C:'C2',D:'C1',E:'C1',F:'C2',G:'C2',H:'C1',I:'C2',J:'C2',K:'C1',L:'C1',M:'C2',N:'C1'},
+    explanation:'A型胃炎=自身免疫性+胃体为主+胃酸↓+壁细胞抗体阳性+胃泌素↑(负反馈)+维生素B12↓→恶性贫血。B型胃炎=Hp感染+胃窦为主+胃酸正常/稍低+抗体阴性。关键鉴别：病因(自身免疫vs Hp)+部位(胃体vs胃窦)+胃酸(↓vs正常)+抗体(阳性vs阴性)。'
   },
   {
-    id:'q002', subject:'pathology', system:'digestive', chapter:'肝硬化',
-    type:'matching', title:'肝硬化 · 肝功能减退 vs 门脉高压',
-    description:'将下列表现归类到对应的肝硬化临床综合征',
-    options:[
-      {id:'A',text:'白蛋白↓'},{id:'B',text:'凝血因子↓'},
-      {id:'C',text:'蜘蛛痣'},{id:'D',text:'肝掌'},
-      {id:'E',text:'脾大'},{id:'F',text:'腹水'},
-      {id:'G',text:'食管胃底静脉曲张'},{id:'H',text:'黄疸'}
-    ],
-    categories:[{id:'C1',label:'肝功能减退综合征'},{id:'C2',label:'门脉高压综合征'}],
-    answer:{A:'C1',B:'C1',C:'C1',D:'C1',E:'C2',F:'C2',G:'C2',H:'C1'},
-    explanation:'肝功能减退：合成↓(白蛋白、凝血因子)、灭活↓(雌激素↑→蜘蛛痣/肝掌)、胆红素代谢障碍(黄疸)。门脉高压：脾大(脾淤血)、腹水(门脉压↑+低蛋白)、侧支循环建立(食管胃底静脉曲张)。注意：腹水两者均可导致，但主要归入门脉高压。'
-  },
-  {
-    id:'q003', subject:'pathology', system:'digestive', chapter:'消化性溃疡',
+    id:'path_002', subject:'pathology', system:'digestive', chapter:'消化性溃疡',
     type:'matching', title:'消化性溃疡 · 胃溃疡 vs 十二指肠溃疡',
     description:'将下列特征归类到对应的消化性溃疡类型',
     options:[
-      {id:'A',text:'餐后痛'},{id:'B',text:'空腹痛'},
-      {id:'C',text:'夜间痛'},{id:'D',text:'制酸剂缓解快'},
-      {id:'E',text:'胃酸正常/↓'},{id:'F',text:'胃酸↑'},
-      {id:'G',text:'好发于胃窦/小弯'}
+      {id:'A',text:'中老年好发'},{id:'B',text:'好发部位在球部前壁'},
+      {id:'C',text:'好发部位在胃窦小弯侧'},{id:'D',text:'青壮年好发'}
     ],
     categories:[{id:'C1',label:'胃溃疡(GU)'},{id:'C2',label:'十二指肠溃疡(DU)'}],
-    answer:{A:'C1',B:'C2',C:'C2',D:'C2',E:'C1',F:'C2',G:'C1'},
-    explanation:'GU：餐后痛(进食→胃酸分泌→刺激溃疡面)、胃酸正常/↓、好发胃窦小弯。DU：空腹痛/夜间痛(胃酸无食物中和)、制酸剂缓解快、胃酸↑。关键鉴别：疼痛节律(餐后vs空腹)+胃酸水平。'
+    answer:{A:'C1',B:'C2',C:'C1',D:'C2'},
+    explanation:'胃溃疡(GU)：中老年好发，好发于胃窦小弯侧，餐后痛。十二指肠溃疡(DU)：青壮年好发，好发于球部前壁，空腹痛/夜间痛。关键鉴别：发病年龄+好发部位+疼痛节律。'
   },
   {
-    id:'q004', subject:'pathology', system:'cardiovascular', chapter:'感染性心内膜炎',
-    type:'matching', title:'感染性心内膜炎 · 急性 vs 亚急性',
-    description:'将下列特征归类到对应的感染性心内膜炎类型',
+    id:'path_003', subject:'pathology', system:'digestive', chapter:'肝硬化',
+    type:'matching', title:'肝硬化 · 临床表现分类',
+    description:'将下列表现归类到对应的肝硬化临床综合征（注：部分机制参与多个分类，此处归入最特征性的分类）',
     options:[
-      {id:'A',text:'金黄色葡萄球菌'},{id:'B',text:'草绿色链球菌'},
-      {id:'C',text:'正常瓣膜'},{id:'D',text:'病变瓣膜'},
-      {id:'E',text:'急起高热'},{id:'F',text:'缓慢起病'},
-      {id:'G',text:'瓣膜破坏严重'},{id:'H',text:'栓塞常见'}
+      {id:'A',text:'腹水'},{id:'B',text:'白蛋白合成障碍'},
+      {id:'C',text:'侧支循环形成'},{id:'D',text:'凝血因子合成减少'},
+      {id:'E',text:'静水压和通透性↑'},{id:'F',text:'肝肾综合征(区别内科学)'},
+      {id:'G',text:'胃肠瘀血和水肿'},{id:'H',text:'肝性脑病/肝昏迷'},
+      {id:'I',text:'雌激素灭活障碍'},{id:'J',text:'肝处理胆红素障碍'},
+      {id:'K',text:'直肠静脉曲张'},{id:'L',text:'(最早)瘀血性脾大'},
+      {id:'M',text:'蜘蛛痣，肝掌'},{id:'N',text:'氨中毒'},
+      {id:'O',text:'脾亢致血小板减少'},{id:'P',text:'腹壁静脉曲张'},
+      {id:'Q',text:'脾亢'},{id:'R',text:'低蛋白血症'},
+      {id:'S',text:'小叶结构改变致淤胆'},{id:'T',text:'食管胃底静脉曲张'},
+      {id:'U',text:'睾丸萎缩'},{id:'V',text:'淋巴液外溢'},
+      {id:'W',text:'血浆胶渗压降低'},{id:'X',text:'黄疸'},
+      {id:'Z',text:'出血倾向'},
+      {id:'①',text:'门-腔侧支循环分流'},{id:'②',text:'乳房发育'},
+      {id:'③',text:'醛固酮和ADH灭活障碍'},{id:'④',text:'白/球蛋白↓或倒置'},
+      {id:'⑤',text:'月经不调'},{id:'⑥',text:'有效循环血量↓'}
     ],
-    categories:[{id:'C1',label:'急性感染性心内膜炎'},{id:'C2',label:'亚急性感染性心内膜炎'}],
-    answer:{A:'C1',B:'C2',C:'C1',D:'C2',E:'C1',F:'C2',G:'C1',H:'C2'},
-    explanation:'急性IE：金葡菌+正常瓣膜+急起高热+瓣膜破坏严重(赘生物大易脱落)。亚急性IE：草绿色链球菌+病变瓣膜+缓慢起病+栓塞常见。关键鉴别：病原体毒力+基础瓣膜情况+起病速度。'
+    categories:[{id:'C1',label:'肝功能障碍临床表现'},{id:'C2',label:'门脉高压的临床表现'},{id:'C3',label:'腹水形成的机制'}],
+    answer:{A:'C2',B:'C1',C:'C2',D:'C1',E:'C3',F:'C1',G:'C2',H:'C1',I:'C1',J:'C1',K:'C2',L:'C2',M:'C1',N:'C1',O:'C2',P:'C2',Q:'C2',R:'C1',S:'C1',T:'C2',U:'C1',V:'C3',W:'C3',X:'C1',Z:'C1','①':'C2','②':'C1','③':'C3','④':'C1','⑤':'C1','⑥':'C3'},
+    explanation:'肝功能障碍：合成↓(白蛋白→低蛋白血症、凝血因子→出血倾向)、灭活↓(雌激素→蜘蛛痣/肝掌/乳房发育/月经不调/睾丸萎缩)、代谢障碍(胆红素→黄疸、氨→肝性脑病)、结构改变(小叶结构改变致淤胆)、白/球倒置。门脉高压：脾大(最早)→脾亢、侧支循环(食管胃底静脉曲张、腹壁静脉曲张、直肠静脉曲张、门-腔分流)、胃肠瘀血水肿。腹水机制：门脉压↑(静水压↑)、低蛋白(胶渗压↓)、淋巴液外溢、继发性醛固酮↑和ADH↑(灭活障碍)、有效循环血量↓。注意：醛固酮/ADH灭活障碍、静水压↑、淋巴液外溢同时参与肝功能障碍和腹水机制，此处归入腹水机制(更具特异性)。'
   },
   {
-    id:'q005', subject:'pathology', system:'respiratory', chapter:'肺炎',
-    type:'matching', title:'大叶性肺炎 vs 小叶性肺炎',
-    description:'将下列特征归类到对应的肺炎类型',
+    id:'path_004', subject:'pathology', system:'digestive', chapter:'大肠癌',
+    type:'matching', title:'大肠癌的癌前病变',
+    description:'判断下列病变是否为大肠癌的癌前病变',
     options:[
-      {id:'A',text:'肺炎链球菌'},{id:'B',text:'葡萄球菌等多种菌'},
-      {id:'C',text:'大叶实变'},{id:'D',text:'小叶散在病变'},
-      {id:'E',text:'青壮年'},{id:'F',text:'老弱病残'},
-      {id:'G',text:'铁锈色痰'},{id:'H',text:'脓性痰'}
+      {id:'A',text:'家族性/遗传性腺瘤性息肉病'},{id:'B',text:'胶质瘤息肉病综合征'},
+      {id:'C',text:'色素沉着黑斑息肉综合征'},{id:'D',text:'管状腺瘤'},
+      {id:'E',text:'克罗恩病'},{id:'F',text:'慢性血吸虫病'},
+      {id:'G',text:'幼年性息肉'},{id:'H',text:'增生性息肉病'},
+      {id:'I',text:'混合型腺瘤'},{id:'J',text:'息肉状腺瘤'},
+      {id:'K',text:'增生性息肉'},{id:'L',text:'幼年性息肉病'},
+      {id:'M',text:'溃疡性结肠炎'},{id:'N',text:'肠息肉病合并多发性骨瘤和软组织瘤'},
+      {id:'O',text:'绒毛状腺瘤'}
     ],
-    categories:[{id:'C1',label:'大叶性肺炎'},{id:'C2',label:'小叶性肺炎'}],
-    answer:{A:'C1',B:'C2',C:'C1',D:'C2',E:'C1',F:'C2',G:'C1',H:'C2'},
-    explanation:'大叶性肺炎：肺炎链球菌+大叶实变+青壮年+铁锈色痰(充血期红细胞渗出)。小叶性肺炎：多种菌(葡萄球菌等)+小叶散在+老弱病残+脓性痰(化脓性炎)。关键鉴别：病原体+病变范围+患者人群+痰液性质。'
+    categories:[{id:'C1',label:'是癌前病变'},{id:'C2',label:'不是癌前病变'}],
+    answer:{A:'C1',B:'C1',C:'C1',D:'C1',E:'C1',F:'C1',G:'C2',H:'C1',I:'C1',J:'C1',K:'C2',L:'C1',M:'C1',N:'C1',O:'C1'},
+    explanation:'大肠癌癌前病变包括：腺瘤性息肉病(家族性FAP、Gardner综合征、Turcot综合征)、Peutz-Jeghers综合征、管状/绒毛状/混合型/息肉状腺瘤、慢性炎症(溃疡性结肠炎、克罗恩病、慢性血吸虫病)、幼年性息肉病、增生性息肉病。注意区分：幼年性息肉(单发，非癌前病变) vs 幼年性息肉病(多发，癌前病变)；增生性息肉(单发，非癌前病变) vs 增生性息肉病(多发，癌前病变)。腺瘤中最常见=管状腺瘤(D)，最易癌变=绒毛状腺瘤(O)。'
   },
   {
-    id:'q006', subject:'internal', system:'cardiovascular', chapter:'慢性心力衰竭',
-    type:'matching', title:'慢性心力衰竭 · NYHA分级',
-    description:'将下列活动耐量归类到对应的NYHA心功能分级',
+    id:'path_005', subject:'pathology', system:'digestive', chapter:'大肠癌',
+    type:'matching', title:'与大肠癌密切相关的基因',
+    description:'将下列基因归类到对应的类型',
     options:[
-      {id:'A',text:'日常活动无症状'},{id:'B',text:'日常活动有症状'},
-      {id:'C',text:'低于日常活动有症状'},{id:'D',text:'休息时即有症状'}
+      {id:'A',text:'DPC'},{id:'B',text:'RAS'},
+      {id:'C',text:'MSH'},{id:'D',text:'p53'},
+      {id:'E',text:'MCC'},{id:'F',text:'APC'},
+      {id:'G',text:'C-MYC'},{id:'H',text:'DCC'},
+      {id:'I',text:'BRAF'},{id:'J',text:'MLH'},
+      {id:'K',text:'p16'}
     ],
-    categories:[
-      {id:'C1',label:'NYHA I级'},{id:'C2',label:'NYHA II级'},
-      {id:'C3',label:'NYHA III级'},{id:'C4',label:'NYHA IV级'}
-    ],
-    answer:{A:'C1',B:'C2',C:'C3',D:'C4'},
-    explanation:'NYHA I级：日常活动无症状。II级：日常活动有症状(轻度受限)。III级：低于日常活动有症状(明显受限)。IV级：休息时即有症状(不能从事任何体力活动)。是心力衰竭严重程度的重要评估标准。'
+    categories:[{id:'C1',label:'原癌基因'},{id:'C2',label:'抑癌基因'},{id:'C3',label:'错配修复基因'}],
+    answer:{A:'C2',B:'C1',C:'C3',D:'C2',E:'C2',F:'C2',G:'C1',H:'C2',I:'C1',J:'C3',K:'C2'},
+    explanation:'原癌基因：RAS、C-MYC、BRAF(促进细胞增殖)。抑癌基因：APC、DCC、DPC、MCC、p53、p16(抑制细胞增殖)。错配修复基因：MSH、MLH(DNA修复)。与大肠癌关系最密切的三个基因：APC(遗传性腺瘤性息肉病/FAP)、RAS、p53。与遗传性非息肉病性大肠癌(Lynch综合征)相关：MSH、MLH。记忆：APC是大肠癌的"看门基因"，p53是"管家基因"。'
   }
 ];
 
@@ -105,19 +109,9 @@ const SYSTEMS = {
   pathology:{
     digestive:{name:'消化系统疾病',chapters:[
       {id:'chronic_gastritis',name:'慢性胃炎 · A型 vs B型'},
+      {id:'peptic_ulcer',name:'消化性溃疡 · 胃溃疡 vs 十二指肠'},
       {id:'cirrhosis',name:'肝硬化 · 临床表现分类'},
-      {id:'peptic_ulcer',name:'消化性溃疡 · 胃溃疡 vs 十二指肠'}
-    ]},
-    cardiovascular:{name:'心血管系统疾病',chapters:[
-      {id:'endocarditis',name:'感染性心内膜炎 · 急性 vs 亚急性'}
-    ]},
-    respiratory:{name:'呼吸系统疾病',chapters:[
-      {id:'pneumonia',name:'肺炎 · 大叶性 vs 小叶性'}
-    ]}
-  },
-  internal:{
-    cardiovascular:{name:'循环系统疾病',chapters:[
-      {id:'heart_failure',name:'慢性心力衰竭 · NYHA分级'}
+      {id:'colorectal_cancer',name:'大肠癌 · 综合题目'}
     ]}
   }
 };
@@ -398,7 +392,7 @@ async function renderQuestion(){
         <div style="font-size:.85rem;color:var(--muted);margin-bottom:1rem">${escapeHtml(q.description)}</div>
         <div class="matching-layout">
           <div class="option-pool">
-            <div class="pool-title">📋 选项池（点击选项 → 再点击分类卡片放入）</div>
+            <div class="pool-title">📋 选项池（点击选项 → 依次点击多个分类卡片放入，同一选项可放入多个分类）</div>
             <div class="pool-items" id="optionPool"></div>
           </div>
           <div class="category-area" id="categoryArea">
@@ -438,13 +432,12 @@ function updateMatchingUI(){
     const displayOpts = q._displayOptions || q.options;
     pool.innerHTML = displayOpts.map(opt=>{
       let cls = 'option-item';
-      let style = '';
-      if(quizState.placements[opt.id]) cls += ' placed';
-      if(quizState.selectedOption===opt.id){
-        style = 'border-color:var(--accent);background:var(--accent-bg);';
-      }
-      return `<div class="${cls}" data-opt="${opt.id}" style="${style}" onclick="selectOption('${opt.id}')">
-        <span class="opt-letter">${opt.id}</span><span>${escapeHtml(opt.text)}</span>
+      const placedCats = quizState.placements[opt.id] || [];
+      if(placedCats.length>0) cls += ' placed';
+      if(quizState.selectedOption===opt.id) cls += ' selected';
+      const badge = placedCats.length>0 ? `<span class="placement-badge">已放${placedCats.length}个</span>` : '';
+      return `<div class="${cls}" data-opt="${opt.id}" onclick="selectOption('${opt.id}')">
+        <span class="opt-letter">${opt.id}</span><span>${escapeHtml(opt.text)}</span>${badge}
       </div>`;
     }).join('');
   }
@@ -463,14 +456,18 @@ function updateMatchingUI(){
     // 已放置列表
     const placed = document.getElementById('placed-'+cat.id);
     if(placed){
-      const placedOpts = q.options.filter(o=>quizState.placements[o.id]===cat.id);
+      const placedOpts = q.options.filter(o=>{
+        const cats = quizState.placements[o.id] || [];
+        return cats.includes(cat.id);
+      });
       if(quizState.answered){
         // 答案揭示后显示对错
         if(placedOpts.length===0){
           placed.innerHTML = '<span class="empty-hint">未放置</span>';
         } else {
           placed.innerHTML = placedOpts.map(o=>{
-            const ok = q.answer[o.id]===cat.id;
+            const correctCats = getCorrectCats(q.answer, o.id);
+            const ok = correctCats.includes(cat.id);
             return `<div class="placed-chip ${ok?'correct-chip':'wrong-chip'}">
               <span class="chip-letter">${o.id}</span>${escapeHtml(o.text)}
             </div>`;
@@ -481,7 +478,7 @@ function updateMatchingUI(){
           placed.innerHTML = '<span class="empty-hint">点击选项后放入此处</span>';
         } else {
           placed.innerHTML = placedOpts.map(o=>
-            `<div class="placed-chip" onclick="removePlacement('${cat.id}','${o.id}')">
+            `<div class="placed-chip" onclick="event.stopPropagation();removePlacement('${cat.id}','${o.id}')">
               <span class="chip-letter">${o.id}</span>${escapeHtml(o.text)}<span class="chip-remove">✕</span>
             </div>`
           ).join('');
@@ -493,7 +490,6 @@ function updateMatchingUI(){
 
 function selectOption(optId){
   if(quizState.answered) return;
-  if(quizState.placements[optId]) return;
   // 再次点击同一个取消选中
   if(quizState.selectedOption===optId){
     quizState.selectedOption = null;
@@ -503,18 +499,29 @@ function selectOption(optId){
   updateMatchingUI();
 }
 
+function getCorrectCats(answer, optId){
+  const val = answer[optId];
+  if(!val) return [];
+  return Array.isArray(val) ? val : [val];
+}
+
 function selectCategory(catId){
   if(quizState.answered) return;
   if(!quizState.selectedOption) return;
   const optId = quizState.selectedOption;
-  quizState.placements[optId] = catId;
+  if(!quizState.placements[optId]) quizState.placements[optId] = [];
+  if(!quizState.placements[optId].includes(catId)){
+    quizState.placements[optId].push(catId);
+  }
   quizState.selectedOption = null;
   updateMatchingUI();
 }
 
 function removePlacement(catId, optId){
   if(quizState.answered) return;
-  delete quizState.placements[optId];
+  const cats = quizState.placements[optId] || [];
+  quizState.placements[optId] = cats.filter(c => c !== catId);
+  if(quizState.placements[optId].length === 0) delete quizState.placements[optId];
   updateMatchingUI();
 }
 
@@ -528,25 +535,27 @@ async function submitAnswer(){
   // 标记选项
   q.options.forEach(opt=>{
     const el = document.querySelector(`.option-item[data-opt="${opt.id}"]`);
-    const userCat = quizState.placements[opt.id];
-    const correctCat = q.answer[opt.id];
+    const userCats = quizState.placements[opt.id] || [];
+    const correctCats = getCorrectCats(q.answer, opt.id);
+    const isCorrect = correctCats.length===userCats.length && correctCats.every(c=>userCats.includes(c));
     if(el){
-      el.classList.remove('placed');
-      el.style.borderColor='';
-      el.style.background='';
-      if(!userCat){
-        missedCount++;
-        el.classList.add('missed');
-      } else if(userCat===correctCat){
+      el.classList.remove('placed','selected');
+      if(correctCats.length===0){
+        // 无正确答案的选项不统计
+      } else if(isCorrect){
         correctCount++;
         el.classList.add('correct');
+      } else if(userCats.length===0){
+        missedCount++;
+        el.classList.add('missed');
       } else {
         wrongCount++;
         el.classList.add('wrong');
       }
     } else {
-      if(!userCat) missedCount++;
-      else if(userCat===correctCat) correctCount++;
+      if(correctCats.length===0) return;
+      if(isCorrect) correctCount++;
+      else if(userCats.length===0) missedCount++;
       else wrongCount++;
     }
   });
@@ -556,10 +565,16 @@ async function submitAnswer(){
     const card = document.getElementById('cat-'+cat.id);
     if(!card) return;
     card.classList.remove('active-target');
-    const placedOpts = q.options.filter(o=>quizState.placements[o.id]===cat.id);
-    const correctForCat = q.options.filter(o=>q.answer[o.id]===cat.id);
-    let allPlacedCorrect = placedOpts.length>0 && placedOpts.every(o=>q.answer[o.id]===cat.id);
-    let noneMissing = correctForCat.every(o=>quizState.placements[o.id]===cat.id);
+    const shouldBeInCat = q.options.filter(o=>getCorrectCats(q.answer, o.id).includes(cat.id));
+    const actuallyInCat = q.options.filter(o=>{
+      const userCats = quizState.placements[o.id] || [];
+      return userCats.includes(cat.id);
+    });
+    let allPlacedCorrect = actuallyInCat.every(o=>getCorrectCats(q.answer, o.id).includes(cat.id));
+    let noneMissing = shouldBeInCat.every(o=>{
+      const userCats = quizState.placements[o.id] || [];
+      return userCats.includes(cat.id);
+    });
     if(allPlacedCorrect && noneMissing){
       card.classList.add('correct-target');
       const status = document.getElementById('cat-status-'+cat.id);
@@ -580,7 +595,7 @@ async function submitAnswer(){
   // 答案揭示
   const reveal = document.getElementById('answerReveal');
   let ansRows = q.categories.map(cat=>{
-    const correctOpts = q.options.filter(o=>q.answer[o.id]===cat.id).map(o=>`${o.id}.${o.text}`).join('；');
+    const correctOpts = q.options.filter(o=>getCorrectCats(q.answer, o.id).includes(cat.id)).map(o=>`${o.id}.${o.text}`).join('；');
     return `<div class="ans-row"><span class="ans-cat">${escapeHtml(cat.label)}：</span><span class="ans-vals">${escapeHtml(correctOpts)}</span></div>`;
   }).join('');
   reveal.innerHTML = `
