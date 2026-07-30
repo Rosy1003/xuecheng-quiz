@@ -687,8 +687,9 @@ async function renderQuestion(){
           </div>
         </div>
         <div class="action-bar">
+          <button class="btn btn-outline" id="prevBtn" onclick="prevQuestion()" ${currentQuestionIndex===0?'disabled style="opacity:.4"':''}>← 上一题</button>
           <button class="btn btn-primary" id="submitBtn" onclick="submitAnswer()">提交答案</button>
-          <button class="btn btn-primary" id="nextBtn" style="display:none" onclick="nextQuestion()">下一题 →</button>
+          <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">${currentQuestionIndex>=currentQuestions.length-1?'完成 ✓':'下一题 →'}</button>
           <button class="btn btn-outline" onclick="openNoteModal('${q.id}')">📝 添加解析</button>
           <button class="btn btn-outline" id="favBtn" onclick="toggleFavorite()">${favoritedIds.has(q.id)?'⭐ 取消收藏':'☆ 收藏'}</button>
           <button class="btn btn-outline" onclick="backToSubjects()">退出</button>
@@ -885,9 +886,9 @@ async function submitAnswer(){
     <div class="ans-note">💡 ${escapeHtml(q.explanation)}</div>`;
   reveal.classList.add('show');
 
-  // 切换按钮
-  document.getElementById('submitBtn').style.display='none';
-  document.getElementById('nextBtn').style.display='';
+  // 切换按钮：提交后禁用提交键，下一题始终可用
+  document.getElementById('submitBtn').disabled = true;
+  document.getElementById('submitBtn').style.opacity = '.4';
 
   // 记录到 IndexedDB
   await recordAnswer(q, isCorrect, score);
@@ -903,6 +904,13 @@ async function submitAnswer(){
   // 自动同步
   if(autoSyncEnabled){
     try{ await syncToCloud(); }catch(e){ console.warn('自动同步失败',e); }
+  }
+}
+
+function prevQuestion(){
+  if(currentQuestionIndex > 0){
+    currentQuestionIndex--;
+    renderQuestion();
   }
 }
 
@@ -1623,9 +1631,9 @@ async function deleteNote(noteId){
 async function renderSettings(){
   const el = document.getElementById('settingsContent');
   const token = localStorage.getItem('xuecheng_gist_token')||'';
-  const gistId = localStorage.getItem('xuecheng_gist_id')||'';
-  const gistIdDisplay = gistId ? gistId.substring(0,8)+'...' : '未创建';
-  const syncStatus = gistId ? '已关联 Gist' : '未关联';
+  const userGistId = getUserGistId(currentUserId)||'';
+  const gistIdDisplay = userGistId ? userGistId.substring(0,8)+'...' : '未创建';
+  const syncStatus = userGistId ? '已关联 Gist' : '未关联';
 
   let html = '';
 
@@ -1671,8 +1679,15 @@ async function renderSettings(){
       </div>
     </div>
     <div class="setting-row">
-      <div class="setting-label">同步状态<div class="sl-desc">Gist ID: ${escapeHtml(gistIdDisplay)}</div></div>
-      <div class="setting-control" style="font-size:.78rem;color:${gistId?'var(--green)':'var(--muted)'}">${syncStatus}</div>
+      <div class="setting-label">同步状态（当前用户：${escapeHtml(currentUserName)}）<div class="sl-desc">Gist ID: ${escapeHtml(gistIdDisplay)}</div></div>
+      <div class="setting-control" style="font-size:.78rem;color:${userGistId?'var(--green)':'var(--muted)'}">${syncStatus}</div>
+    </div>
+    <div class="setting-row">
+      <div class="setting-label">关联云端 Gist ID<div class="sl-desc">新设备首次使用：粘贴已有 Gist ID 关联云端数据</div></div>
+      <div class="setting-control">
+        <input type="text" id="gistIdInput" placeholder="粘贴 Gist ID..." value="${escapeHtml(userGistId)}" style="padding:.4rem .6rem;border-radius:6px;border:1px solid var(--rule);font-size:.78rem;width:180px;font-family:var(--font)">
+        <button class="btn btn-outline" style="font-size:.78rem;padding:.4rem .8rem" onclick="saveManualGistId()">关联</button>
+      </div>
     </div>
     <div class="setting-row">
       <div class="setting-label">手动同步<div class="sl-desc">上传当前数据到云端 / 从云端拉取</div></div>
@@ -1737,7 +1752,7 @@ async function renderSettings(){
 }
 
 /* ==========================================================
- * 3.13 云同步（GitHub Gist）
+ * 3.13 云同步（GitHub Gist）— 每用户独立文件
  * ========================================================== */
 function saveToken(){
   const token = document.getElementById('gistTokenInput').value.trim();
@@ -1751,73 +1766,138 @@ function saveToken(){
   renderSettings();
 }
 
+function saveManualGistId(){
+  const id = document.getElementById('gistIdInput').value.trim();
+  if(id){
+    setUserGistId(currentUserId, id);
+    alert('✅ Gist ID 已关联到「'+currentUserName+'」\n现在可以点击「下载」拉取云端数据');
+  } else {
+    localStorage.removeItem(`xuecheng_gist_id_user_${currentUserId}`);
+    alert('Gist ID 已清除');
+  }
+  renderSettings();
+}
+
+/* 获取当前用户的 Gist 文件名 */
+function getUserGistFileName(userId){
+  return `user_${userId}_backup.json`;
+}
+
+/* 获取当前用户的 Gist ID（每个用户独立） */
+function getUserGistId(userId){
+  return localStorage.getItem(`xuecheng_gist_id_user_${userId}`);
+}
+
+/* 保存当前用户的 Gist ID */
+function setUserGistId(userId, gistId){
+  localStorage.setItem(`xuecheng_gist_id_user_${userId}`, gistId);
+}
+
+/* 上传：只上传当前用户的做题数据（不含题目库） */
 async function syncToCloud(){
   const token = localStorage.getItem('xuecheng_gist_token');
   if(!token) throw new Error('请先输入并保存 GitHub Token');
+  
+  // 只上传当前用户的数据，不含题目库（题目库通过题库管理单独同步）
   const data = {
-    records: await dbGetAll('records'),
-    wrongQuestions: await dbGetAll('wrongQuestions'),
-    favorites: await dbGetAll('favorites'),
-    notes: await dbGetAll('notes'),
-    users: await dbGetAll('users'),
-    questions: await dbGetAll('questions'),
+    userId: currentUserId,
+    userName: currentUserName,
+    records: (await dbGetAll('records')).filter(r=>r.userId===currentUserId),
+    wrongQuestions: (await dbGetAll('wrongQuestions')).filter(w=>w.userId===currentUserId),
+    favorites: (await dbGetAll('favorites')).filter(f=>f.userId===currentUserId),
+    notes: (await dbGetAll('notes')).filter(n=>n.userId===currentUserId),
     syncTime: new Date().toISOString()
   };
+  
+  const fileName = getUserGistFileName(currentUserId);
   const content = JSON.stringify(data, null, 2);
-  const gistId = localStorage.getItem('xuecheng_gist_id');
-  const url = gistId ? `https://api.github.com/gists/${gistId}` : 'https://api.github.com/gists';
-  const method = gistId ? 'PATCH' : 'POST';
-  const res = await fetch(url, {
-    method,
-    headers: {
-      'Authorization': `token ${token}`,
-      'Content-Type': 'application/json',
-      'Accept': 'application/vnd.github.v3+json'
-    },
-    body: JSON.stringify({
-      description: '学成选择题数据备份',
-      public: false,
-      files: { 'xuecheng_backup.json': { content } }
-    })
-  });
-  if(!res.ok){
-    const err = await res.json().catch(()=>({}));
-    throw new Error(err.message || `HTTP ${res.status}`);
-  }
-  const gist = await res.json();
-  if(!gistId){
-    localStorage.setItem('xuecheng_gist_id', gist.id);
+  const gistId = getUserGistId(currentUserId);
+  
+  // 如果已有该用户的 Gist，尝试更新对应文件；否则创建新 Gist
+  if(gistId){
+    // 更新现有 Gist 中的对应用户文件
+    const url = `https://api.github.com/gists/${gistId}`;
+    const res = await fetch(url, {
+      method:'PATCH',
+      headers:{
+        'Authorization':`token ${token}`,
+        'Content-Type':'application/json',
+        'Accept':'application/vnd.github.v3+json'
+      },
+      body: JSON.stringify({
+        description:'学成选择题 · 用户数据备份',
+        public:false,
+        files:{ [fileName]:{ content } }
+      })
+    });
+    if(!res.ok){
+      const err = await res.json().catch(()=>({}));
+      throw new Error(err.message||`HTTP ${res.status}`);
+    }
+  } else {
+    // 首次上传：创建新 Gist
+    const res = await fetch('https://api.github.com/gists', {
+      method:'POST',
+      headers:{
+        'Authorization':`token ${token}`,
+        'Content-Type':'application/json',
+        'Accept':'application/vnd.github.v3+json'
+      },
+      body: JSON.stringify({
+        description:'学成选择题 · 用户数据备份',
+        public:false,
+        files:{ [fileName]:{ content } }
+      })
+    });
+    if(!res.ok){
+      const err = await res.json().catch(()=>({}));
+      throw new Error(err.message||`HTTP ${res.status}`);
+    }
+    const gist = await res.json();
+    setUserGistId(currentUserId, gist.id);
   }
 }
 
+/* 下载：只下载当前用户的数据并合并（不覆盖其他用户） */
 async function syncFromCloud(){
   const token = localStorage.getItem('xuecheng_gist_token');
-  const gistId = localStorage.getItem('xuecheng_gist_id');
   if(!token) throw new Error('请先输入并保存 GitHub Token');
-  if(!gistId) throw new Error('请先上传一次以创建 Gist');
+  
+  const gistId = getUserGistId(currentUserId);
+  if(!gistId) throw new Error('请先上传一次以创建云端备份');
+  
   const res = await fetch(`https://api.github.com/gists/${gistId}`, {
-    headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+    headers:{ 'Authorization':`token ${token}`, 'Accept':'application/vnd.github.v3+json' }
   });
   if(!res.ok){
     const err = await res.json().catch(()=>({}));
-    throw new Error(err.message || `HTTP ${res.status}`);
+    throw new Error(err.message||`HTTP ${res.status}`);
   }
+  
   const gist = await res.json();
-  const file = gist.files && gist.files['xuecheng_backup.json'];
-  if(!file || !file.content) throw new Error('云端未找到备份数据');
+  const fileName = getUserGistFileName(currentUserId);
+  const file = gist.files && gist.files[fileName];
+  if(!file || !file.content) throw new Error('云端未找到当前用户的数据');
+  
   const data = JSON.parse(file.content);
-  for(const store of ['records','wrongQuestions','favorites','notes','users','questions']){
+  
+  // 只写入当前用户的数据（按 userId 过滤，防止误覆盖其他用户）
+  for(const store of ['records','wrongQuestions','favorites','notes']){
     if(data[store] && Array.isArray(data[store])){
       for(const item of data[store]){
-        if(item && item.id) await dbAdd(store, item);
+        if(item && item.id){
+          // 确保数据归属当前用户
+          item.userId = currentUserId;
+          await dbAdd(store, item);
+        }
       }
     }
   }
-  // 重新加载题目
-  await reloadQuestions();
+  
   await updateWrongBadge();
   await updateUserStreak();
   renderSettings();
+  alert(`✅ 已下载「${currentUserName}」的云端数据\n（其他用户的数据不受影响）`);
 }
 
 async function quickSync(){
