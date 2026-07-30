@@ -331,16 +331,65 @@ const SUBJECTS = {
   biochem:{name:'生物化学',icon:'⚗️',desc:'蛋白质、酶、糖代谢、脂代谢'}
 };
 
-const SYSTEMS = {
+/* 系统名称映射表 */
+const SYSTEM_NAMES = {
   pathology:{
-    digestive:{name:'消化系统疾病',chapters:[
-      {id:'chronic_gastritis',name:'慢性胃炎 · A型 vs B型'},
-      {id:'peptic_ulcer',name:'消化性溃疡 · 胃溃疡 vs 十二指肠'},
-      {id:'cirrhosis',name:'肝硬化 · 临床表现分类'},
-      {id:'colorectal_cancer',name:'大肠癌 · 综合题目'}
-    ]}
+    digestive:'消化系统',cardiovascular:'心血管系统',respiratory:'呼吸系统',
+    inflammation:'炎症',neoplasia:'肿瘤',cellinjury:'细胞损伤与修复',
+    circulatory:'循环障碍',immunity:'免疫性疾病',endocrine:'内分泌系统',
+    urinary:'泌尿系统',nervous:'神经系统',genital:'生殖系统',bone:'骨关节',
+    infection:'感染性疾病',other:'其他'
+  },
+  internal:{
+    respiratory:'呼吸系统',cardiovascular:'循环系统',digestive:'消化系统',
+    renal:'泌尿系统',hematology:'血液系统',endocrine:'内分泌系统',
+    rheumatic:'风湿免疫',neurology:'神经系统',infectious:'感染性疾病',
+    toxicology:'中毒',emergency:'急危重症',other:'其他'
+  },
+  surgery:{
+    general:'普外科',orthopedics:'骨科',urology:'泌尿外科',
+    thoracic:'胸外科',neurosurgery:'神经外科',other:'其他'
+  },
+  physiology:{
+    cell:'细胞生理',blood:'血液',circulation:'循环',respiration:'呼吸',
+    digestion:'消化',excretion:'排泄',nervous:'神经',endocrine:'内分泌',other:'其他'
+  },
+  biochem:{
+    protein:'蛋白质',enzyme:'酶',carbohydrate:'糖代谢',lipid:'脂代谢',
+    nucleicacid:'核酸代谢',energy:'生物氧化',other:'其他'
   }
 };
+
+/* 从题目数据自动构建系统/章节结构 */
+function buildSystems(questions){
+  const result = {};
+  for(const q of questions){
+    const subj = q.subject;
+    const sys = q.system || 'other';
+    const chap = q.chapter || '未分类';
+    if(!result[subj]) result[subj] = {};
+    if(!result[subj][sys]){
+      const names = SYSTEM_NAMES[subj] || {};
+      result[subj][sys] = { name: names[sys] || sys, chapters: {} };
+    }
+    if(!result[subj][sys].chapters[chap]){
+      result[subj][sys].chapters[chap] = { id: chap, name: chap, count: 0 };
+    }
+    result[subj][sys].chapters[chap].count++;
+  }
+  // 转换 chapters 对象为数组
+  for(const subj in result){
+    for(const sys in result[subj]){
+      result[subj][sys].chapters = Object.values(result[subj][sys].chapters);
+    }
+  }
+  return result;
+}
+
+/* 动态获取系统结构（合并内置题+导入题） */
+function getSystems(){
+  return buildSystems(allQuestions);
+}
 
 /* ====== 3.15 艾宾浩斯复习模式 ====== */
 const MODES = {
@@ -517,25 +566,28 @@ function enterSubject(subject){
   currentSubject = subject;
   const el = document.getElementById('quizContent');
   const sub = SUBJECTS[subject];
-  const sysData = SYSTEMS[subject] || {};
+  const sysData = getSystems()[subject] || {};
   const records = [];
 
   let html = `<button class="btn btn-outline" style="margin-bottom:1rem" onclick="backToSubjects()">← 返回科目</button>`;
   html += `<h3 style="font-size:1.1rem;margin-bottom:1rem">${sub.icon} ${sub.name}</h3>`;
 
-  if(Object.keys(sysData).length === 0){
+  const sysKeys = Object.keys(sysData);
+  if(sysKeys.length === 0){
     html += `<div class="empty-state"><div class="es-icon">📭</div><p>该科目暂无题库内容</p></div>`;
   } else {
     html += '<div class="system-list show">';
-    Object.entries(sysData).forEach(([sysKey,sys])=>{
+    sysKeys.forEach(sysKey=>{
+      const sys = sysData[sysKey];
+      const sysQuestions = allQuestions.filter(q=>q.subject===subject && q.system===sysKey);
       html += `<div class="system-group">
         <div class="system-header open" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('show')">
-          <span class="sh-name">${sys.name}</span>
+          <span class="sh-name">${sys.name}（${sysQuestions.length}题）</span>
           <span class="sh-toggle">▾</span>
         </div>
         <div class="system-chapters show">`;
       sys.chapters.forEach(ch=>{
-        const chQuestions = allQuestions.filter(q=>q.subject===subject && q.system===sysKey && ch.name.includes(q.chapter));
+        const chQuestions = allQuestions.filter(q=>q.subject===subject && q.system===sysKey && q.chapter===ch.name);
         const count = chQuestions.length;
         html += `<div class="chapter-row" onclick="startQuiz('${subject}','${sysKey}','${ch.id}','${escapeHtml(ch.name)}')">
           <div class="ch-row-left"><span>📄</span><span>${ch.name}</span></div>
@@ -562,7 +614,7 @@ async function startQuiz(subject, system, chapterId, chapterName){
   currentSubject = subject;
   currentSystem = system;
   // 按章节精确匹配，回退到科目+系统
-  let qs = allQuestions.filter(q=>q.subject===subject && q.system===system && chapterName.includes(q.chapter));
+  let qs = allQuestions.filter(q=>q.subject===subject && q.system===system && q.chapter===chapterName);
   if(qs.length===0){
     qs = allQuestions.filter(q=>q.subject===subject && q.system===system);
   }
@@ -1662,15 +1714,21 @@ async function renderSettings(){
     </div>
   </div>`;
 
-  // 题目导入
+  // 题库管理
   html += `<div class="home-card">
-    <div class="card-title">📥 题目导入</div>
+    <div class="card-title">📚 题库管理</div>
     <div class="setting-row">
-      <div class="setting-label">导入自定义题目<div class="sl-desc">从 JSON 文件导入匹配题，格式见说明</div></div>
+      <div class="setting-label">导出题库（仅题目+解析）<div class="sl-desc">导出所有题目数据，不含做题记录/错题本，可分享给其他用户</div></div>
+      <div class="setting-control"><button class="btn btn-outline" style="font-size:.78rem;padding:.4rem .8rem" onclick="exportQuestionBank()">📥 导出题库</button></div>
+    </div>
+    <div class="setting-row">
+      <div class="setting-label">导入/更新题库<div class="sl-desc">从 JSON 文件导入题目，按ID更新（不影响做题记录/错题本）</div></div>
       <div class="setting-control"><button class="btn btn-outline" style="font-size:.78rem;padding:.4rem .8rem" onclick="document.getElementById('questionImportInput').click()">选择文件</button>
       <input type="file" id="questionImportInput" accept=".json" style="display:none" onchange="importQuestions(event)"></div>
     </div>
     <div style="font-size:.72rem;color:var(--muted);margin-top:.6rem;line-height:1.6">
+      ✓ 导入题库只会更新题目内容，不会覆盖你的做题进度、错题本、收藏和笔记。<br>
+      ✓ 导出的文件可以分享给其他用户，他们导入后即可获得最新题目。<br>
       JSON 格式为题目数组，每题包含 id、subject、system、chapter、type、title、description、options、categories、answer、explanation 字段。
     </div>
   </div>`;
@@ -1951,22 +2009,49 @@ async function exportAllData(){
   URL.revokeObjectURL(a.href);
 }
 
+async function exportQuestionBank(){
+  // 导出所有题目数据（内置+导入的），不含做题记录/错题本/收藏/笔记
+  const imported = await dbGetAll('questions');
+  const map = new Map();
+  SAMPLE_QUESTIONS.forEach(q=>map.set(q.id, q));
+  imported.forEach(q=>map.set(q.id, q));
+  const allQs = Array.from(map.values());
+  
+  if(allQs.length===0){ alert('暂无题目可导出'); return; }
+  
+  const data = {
+    exportType: 'question-bank',
+    version: '2.0',
+    exportTime: new Date().toISOString(),
+    totalCount: allQs.length,
+    questions: allQs
+  };
+  const blob = new Blob([JSON.stringify(data.questions, null, 2)], { type:'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `xuecheng_question_bank_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
 async function importQuestions(event){
   const file = event.target.files[0];
   if(!file) return;
   try{
     const text = await file.text();
     const data = JSON.parse(text);
-    const arr = Array.isArray(data) ? data : [data];
+    // 兼容两种格式：直接数组 或 {questions:[...]} 对象
+    const arr = Array.isArray(data) ? data : (data.questions || [data]);
     let count = 0;
     for(const q of arr){
       if(!q.id) q.id = `imp_${Date.now()}_${count}`;
-      await dbAdd('questions', q);
+      await dbAdd('questions', q); // put操作：同ID会覆盖旧数据
       count++;
     }
     await reloadQuestions();
-    alert(`成功导入 ${count} 道题目`);
+    alert(`成功导入/更新 ${count} 道题目\n（做题记录、错题本、收藏、笔记均不受影响）`);
     renderSettings();
+    if(currentSubject) enterSubject(currentSubject); // 刷新当前科目视图
   }catch(e){
     alert('导入失败：'+e.message);
   }
