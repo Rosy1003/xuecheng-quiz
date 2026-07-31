@@ -447,6 +447,82 @@ body{font-family:var(--font);color:var(--ink);background:var(--bg);line-height:1
 
 @media (min-width:769px){
   .mobile-nav{display:none}
+  .mobile-user-btn{display:none}
+  .mu-overlay{display:none!important}
+  .mu-sheet{display:none!important}
+}
+
+/* ====== 移动端用户切换 ====== */
+.mobile-user-btn{
+  display:none;
+}
+@media (max-width:768px){
+  .mobile-user-btn{
+    display:flex;align-items:center;cursor:pointer;
+  }
+}
+.mub-avatar{
+  width:30px;height:30px;border-radius:50%;
+  background:var(--accent);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.8rem;font-weight:700;
+  border:2px solid transparent;transition:border-color .2s;
+}
+.mub-avatar.active{border-color:var(--green)}
+
+.mu-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.3);
+  z-index:200;display:none;
+}
+.mu-overlay.show{display:block}
+.mu-sheet{
+  position:fixed;bottom:0;left:0;right:0;
+  background:var(--surface-solid);
+  border-radius:20px 20px 0 0;
+  padding:1.2rem 1rem 1.5rem;z-index:201;
+  transform:translateY(100%);transition:transform .3s ease;
+  max-height:70vh;overflow-y:auto;
+}
+.mu-sheet.show{transform:translateY(0)}
+.mu-sheet-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:1rem;
+}
+.mu-sheet-header h4{font-size:1rem;font-weight:700}
+.mu-close{
+  width:28px;height:28px;border-radius:50%;border:none;
+  background:var(--accent-bg);color:var(--muted);
+  cursor:pointer;font-size:.85rem;font-family:var(--font);
+}
+.mu-user-list{display:flex;flex-direction:column;gap:.5rem}
+.mu-user-row{
+  display:flex;align-items:center;gap:.7rem;padding:.7rem;
+  border-radius:var(--radius-sm);cursor:pointer;
+  border:1px solid var(--rule);background:var(--surface-solid);
+  transition:all .15s;
+}
+.mu-user-row:hover{border-color:var(--accent)}
+.mu-user-row.active{border-color:var(--accent);background:var(--accent-bg)}
+.mu-user-avatar{
+  width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.8rem;font-weight:700;color:#fff;flex-shrink:0;
+}
+.mu-user-name{font-size:.85rem;font-weight:600;color:var(--ink)}
+.mu-user-meta{font-size:.7rem;color:var(--muted)}
+.mu-user-check{margin-left:auto;color:var(--accent);font-size:1rem}
+.mu-divider{height:1px;background:var(--rule);margin:.6rem 0}
+.mu-add-btn{
+  display:flex;align-items:center;justify-content:center;gap:.4rem;
+  padding:.7rem;border-radius:var(--radius-sm);
+  border:1px dashed var(--accent);background:transparent;
+  color:var(--accent);font-size:.82rem;cursor:pointer;
+  width:100%;font-family:var(--font);
+}
+.mu-tip{
+  background:var(--accent-bg);border-radius:8px;
+  padding:.6rem .8rem;font-size:.72rem;color:var(--ink);
+  margin-top:.8rem;line-height:1.6;
 }
 
 /* ====== 通用工具 ====== */
@@ -829,6 +905,9 @@ body{font-family:var(--font);color:var(--ink);background:var(--bg);line-height:1
       <div class="header-actions">
         <span class="tag tag-yellow" style="font-size:.7rem" id="examCountdown">考研冲刺</span>
         <button class="header-btn" onclick="quickSync()">☁️ 同步</button>
+        <div class="mobile-user-btn" onclick="toggleMobileUserSheet()">
+          <div class="mub-avatar" id="mobileUserAvatar">R</div>
+        </div>
       </div>
     </header>
     <div class="main-scroll">
@@ -841,6 +920,19 @@ body{font-family:var(--font);color:var(--ink);background:var(--bg);line-height:1
       <div class="panel" id="panel-settings"><div id="settingsContent"></div></div>
     </div>
   </main>
+</div>
+
+<!-- Mobile User Switch Sheet -->
+<div class="mu-overlay" id="mobileUserOverlay" onclick="closeMobileUserSheet()"></div>
+<div class="mu-sheet" id="mobileUserSheet">
+  <div class="mu-sheet-header">
+    <h4>👤 切换用户</h4>
+    <button class="mu-close" onclick="closeMobileUserSheet()">✕</button>
+  </div>
+  <div class="mu-user-list" id="mobileUserList"></div>
+  <div class="mu-divider"></div>
+  <button class="mu-add-btn" onclick="addNewUser()">+ 添加新用户</button>
+  <div class="mu-tip">💡 每个用户拥有独立的做题记录、错题本、收藏和云同步数据</div>
 </div>
 
 <!-- Mobile Nav -->

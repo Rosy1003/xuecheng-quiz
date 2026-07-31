@@ -1947,6 +1947,52 @@ function applyDarkMode(){
 /* ==========================================================
  * 3.14 用户管理
  * ========================================================== */
+
+/* --- 移动端用户切换 --- */
+async function toggleMobileUserSheet(){
+  const sheet = document.getElementById('mobileUserSheet');
+  const overlay = document.getElementById('mobileUserOverlay');
+  const avatar = document.getElementById('mobileUserAvatar');
+  if(sheet.classList.contains('show')){
+    closeMobileUserSheet();
+    return;
+  }
+  // 渲染用户列表
+  const users = await dbGetAll('users');
+  const list = document.getElementById('mobileUserList');
+  list.innerHTML = users.map(u=>{
+    const streak = computeStreak((typeof recordsCache!=='undefined'&&recordsCache)||[]);
+    const userRecords = []; // 简化显示，不打扰主数据
+    return `
+      <div class="mu-user-row ${u.id===currentUserId?'active':''}" onclick="mobileSwitchUser(${u.id})">
+        <div class="mu-user-avatar" style="background:${userColor(u.id)}">${escapeHtml(u.name.charAt(0).toUpperCase())}</div>
+        <div>
+          <div class="mu-user-name">${escapeHtml(u.name)}</div>
+          <div class="mu-user-meta">ID: ${u.id}</div>
+        </div>
+        ${u.id===currentUserId?'<span class="mu-user-check">✓</span>':''}
+      </div>
+    `;
+  }).join('');
+  sheet.classList.add('show');
+  overlay.classList.add('show');
+  if(avatar) avatar.classList.add('active');
+}
+
+function closeMobileUserSheet(){
+  const sheet = document.getElementById('mobileUserSheet');
+  const overlay = document.getElementById('mobileUserOverlay');
+  const avatar = document.getElementById('mobileUserAvatar');
+  sheet.classList.remove('show');
+  overlay.classList.remove('show');
+  if(avatar) avatar.classList.remove('active');
+}
+
+async function mobileSwitchUser(userId){
+  closeMobileUserSheet();
+  await switchUser(userId);
+}
+
 async function toggleUserDropdown(){
   const dd = document.getElementById('userDropdown');
   if(dd.classList.contains('show')){
@@ -1995,6 +2041,12 @@ async function updateUserDisplay(){
     avatar.style.background = userColor(currentUserId);
   }
   if(nameEl) nameEl.textContent = currentUserName;
+  // 同步移动端头像
+  const mAvatar = document.getElementById('mobileUserAvatar');
+  if(mAvatar){
+    mAvatar.textContent = currentUserName.charAt(0).toUpperCase();
+    mAvatar.style.background = userColor(currentUserId);
+  }
   await updateUserStreak();
 }
 
