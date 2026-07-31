@@ -389,7 +389,7 @@ const MODES = {
 
 /* ====== 3.4 状态管理 ====== */
 let db;
-let currentUserId = 1;
+let currentUserId = parseInt(localStorage.getItem('xuecheng_last_user_id')) || 1;
 let currentUserName = 'Rosy1003';
 let currentMode = 'minimal';
 let currentSubject = null;
@@ -1801,6 +1801,7 @@ async function syncToCloud(){
   const data = {
     userId: currentUserId,
     userName: currentUserName,
+    users: await dbGetAll('users'),
     records: (await dbGetAll('records')).filter(r=>r.userId===currentUserId),
     wrongQuestions: (await dbGetAll('wrongQuestions')).filter(w=>w.userId===currentUserId),
     favorites: (await dbGetAll('favorites')).filter(f=>f.userId===currentUserId),
@@ -1879,6 +1880,16 @@ async function syncFromCloud(){
   if(!file || !file.content) throw new Error('云端未找到当前用户的数据');
   
   const data = JSON.parse(file.content);
+  
+  // 恢复用户列表（防止本地数据丢失后用户消失）
+  if(data.users && Array.isArray(data.users)){
+    const localUsers = await dbGetAll('users');
+    for(const u of data.users){
+      if(u && u.id && !localUsers.some(lu=>lu.id===u.id)){
+        await dbAdd('users', u);
+      }
+    }
+  }
   
   // 只写入当前用户的数据（按 userId 过滤，防止误覆盖其他用户）
   for(const store of ['records','wrongQuestions','favorites','notes']){
@@ -2016,6 +2027,8 @@ async function switchUser(userId){
   currentUserId = userId;
   const user = await dbGetByKey('users', userId);
   if(user) currentUserName = user.name;
+  // 持久化当前用户ID，下次打开自动选中
+  localStorage.setItem('xuecheng_last_user_id', userId);
   document.getElementById('userDropdown').classList.remove('show');
   // 加载用户设置
   await loadUserSettings();
@@ -2232,14 +2245,48 @@ async function init(){
   // 加载或创建默认用户
   let users = await dbGetAll('users');
   if(users.length===0){
-    await dbAdd('users', { id:1, name:'Rosy1003', createdDate:new Date().toISOString() });
-    users = [{ id:1, name:'Rosy1003' }];
+    // 本地无用户数据，尝试从云端恢复
+    const token = localStorage.getItem('xuecheng_gist_token');
+    const lastUserId = parseInt(localStorage.getItem('xuecheng_last_user_id'));
+    if(token && lastUserId){
+      const gistId = getUserGistId(lastUserId);
+      if(gistId){
+        try{
+          const res = await fetch(`https://api.github.com/gists/${gistId}`, {
+            headers:{ 'Authorization':`token ${token}`, 'Accept':'application/vnd.github.v3+json' }
+          });
+          if(res.ok){
+            const gist = await res.json();
+            const fileName = getUserGistFileName(lastUserId);
+            const file = gist.files && gist.files[fileName];
+            if(file && file.content){
+              const cloudData = JSON.parse(file.content);
+              // 恢复用户列表
+              if(cloudData.users && Array.isArray(cloudData.users)){
+                for(const u of cloudData.users){
+                  if(u && u.id) await dbAdd('users', u);
+                }
+                users = await dbGetAll('users');
+              }
+            }
+          }
+        }catch(e){
+          console.log('云端恢复用户失败，创建默认用户', e);
+        }
+      }
+    }
+    // 如果仍然没有用户，创建默认用户
+    if(users.length===0){
+      await dbAdd('users', { id:1, name:'Rosy1003', createdDate:new Date().toISOString() });
+      users = [{ id:1, name:'Rosy1003' }];
+    }
   }
   // 确保当前用户存在
   const exists = users.some(u=>u.id===currentUserId);
   if(!exists){
     currentUserId = users[0].id;
     currentUserName = users[0].name;
+    localStorage.setItem('xuecheng_last_user_id', currentUserId);
   } else {
     const u = users.find(u=>u.id===currentUserId);
     if(u) currentUserName = u.name;
