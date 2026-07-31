@@ -398,6 +398,8 @@ let currentQuestions = [];
 let currentQuestionIndex = 0;
 let quizState = { selectedOption:null, placements:{}, answered:false };
 let allQuestions = [];
+let currentChapterName = null;
+let draftProgress = {}; // 按题目存储进度: { questionId: { placements:{...}, answered:false } }
 let currentNoteTarget = null;
 let currentNoteImages = [];
 let favoritedIds = new Set();
@@ -495,6 +497,8 @@ function formatDate(d){
  * 3.5 面板切换
  * ========================================================== */
 function switchPanel(name){
+  // 离开刷题页面前保存草稿
+  if(currentQuestions.length>0) saveQuizDraft();
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   const target = document.getElementById('panel-'+name);
   if(target) target.classList.add('active');
@@ -516,6 +520,38 @@ function switchPanel(name){
 async function renderQuiz(){
   const el = document.getElementById('quizContent');
   const records = (await dbGetAll('records')).filter(r=>r.userId===currentUserId);
+
+  // 检测是否有未完成的草稿
+  let resumeHtml = '';
+  const draft = loadQuizDraft();
+  if(draft && draft.questionIds && draft.questionIds.length>0){
+    const totalQ = draft.questionIds.length;
+    const curIdx = Math.min(draft.currentIndex, totalQ-1);
+    const pct = Math.round((curIdx+1)/totalQ*100);
+    // 计算上次时间
+    const diff = Date.now() - (draft.timestamp||0);
+    const timeAgo = diff < 60000 ? '刚刚' : diff < 3600000 ? Math.floor(diff/60000)+'分钟前' : diff < 86400000 ? Math.floor(diff/3600000)+'小时前' : Math.floor(diff/86400000)+'天前';
+    const subInfo = (SUBJECTS[draft.subject]) ? SUBJECTS[draft.subject].name : draft.subject;
+    const sysInfo = (getSystems()[draft.subject] && getSystems()[draft.subject][draft.system]) ? getSystems()[draft.subject][draft.system].name : draft.system;
+    resumeHtml = `<div class="resume-card">
+      <div class="resume-icon">📖</div>
+      <div class="resume-body">
+        <div class="resume-title">继续上次刷题</div>
+        <div class="resume-meta">
+          <span>${escapeHtml(subInfo)} · ${escapeHtml(sysInfo)}${draft.chapterName?' · '+escapeHtml(draft.chapterName):''}</span>
+          <span>·</span>
+          <span>第 ${curIdx+1}/${totalQ} 题</span>
+          <span>·</span>
+          <span>${timeAgo}</span>
+        </div>
+        <div class="resume-progress-bar"><div class="resume-progress-fill" style="width:${pct}%"></div></div>
+      </div>
+      <div class="resume-btns">
+        <button class="rb-continue" onclick="resumeQuiz()">继续做题 →</button>
+        <button class="rb-skip" onclick="discardDraft()">清除记录</button>
+      </div>
+    </div>`;
+  }
 
   // 模式选择器
   let modeHtml = '<div class="mode-selector">';
@@ -549,7 +585,14 @@ async function renderQuiz(){
   });
   gridHtml += '</div>';
 
-  el.innerHTML = modeHtml + '<h3 style="font-size:1rem;margin:1.2rem 0 .8rem">选择科目开始刷题</h3>' + gridHtml;
+  el.innerHTML = resumeHtml + modeHtml + '<h3 style="font-size:1rem;margin:1.2rem 0 .8rem">选择科目开始刷题</h3>' + gridHtml;
+}
+
+function discardDraft(){
+  if(confirm('确定清除上次未完成的做题记录吗？此操作不可撤销。')){
+    clearQuizDraft();
+    renderQuiz();
+  }
 }
 
 function enterSubject(subject){
@@ -596,13 +639,75 @@ function enterSubject(subject){
 }
 
 function backToSubjects(){
+  // 退出前先保存草稿（此时 currentSubject 等变量还未清空）
+  saveQuizDraft();
   currentSubject = null;
+  currentChapterName = null;
   renderQuiz();
+}
+
+/* === 刷题草稿/进度 持久化（按题目存储） === */
+function getDraftKey(){ return `xuecheng_draft_${currentUserId}`; }
+
+/* 保存当前题目进度到 draftProgress，再写入 localStorage */
+function saveQuizDraft(){
+  if(!currentQuestions || currentQuestions.length===0) return;
+  // 先把当前题目的作答状态存入 draftProgress
+  const qId = currentQuestions[currentQuestionIndex]?.id;
+  if(qId){
+    draftProgress[qId] = {
+      placements: { ...quizState.placements },
+      answered: quizState.answered
+    };
+  }
+  const draft = {
+    subject: currentSubject,
+    system: currentSystem,
+    chapterName: currentChapterName,
+    questionIds: currentQuestions.map(q=>q.id),
+    currentIndex: currentQuestionIndex,
+    progress: { ...draftProgress },
+    timestamp: Date.now()
+  };
+  localStorage.setItem(getDraftKey(), JSON.stringify(draft));
+}
+
+function loadQuizDraft(){
+  try{
+    const raw = localStorage.getItem(getDraftKey());
+    if(!raw) return null;
+    return JSON.parse(raw);
+  }catch(e){ return null; }
+}
+
+function clearQuizDraft(){
+  localStorage.removeItem(getDraftKey());
+  draftProgress = {};
+}
+
+/* 继续上次刷题 */
+function resumeQuiz(){
+  const draft = loadQuizDraft();
+  if(!draft) return;
+  const qs = allQuestions.filter(q=>draft.questionIds.includes(q.id));
+  if(qs.length===0){ clearQuizDraft(); renderQuiz(); return; }
+  // 按 draft 中的顺序排列
+  const ordered = draft.questionIds.map(id=>qs.find(q=>q.id===id)).filter(Boolean);
+  currentQuestions = ordered;
+  currentQuestionIndex = Math.min(draft.currentIndex, ordered.length-1);
+  currentSubject = draft.subject;
+  currentSystem = draft.system;
+  currentChapterName = draft.chapterName;
+  draftProgress = draft.progress || {};
+  renderQuestion();
 }
 
 async function startQuiz(subject, system, chapterId, chapterName){
   currentSubject = subject;
   currentSystem = system;
+  currentChapterName = chapterName;
+  // 新开一轮刷题，重置进度
+  draftProgress = {};
   // 按章节精确匹配，回退到科目+系统
   let qs = allQuestions.filter(q=>q.subject===subject && q.system===system && q.chapter===chapterName);
   if(qs.length===0){
@@ -623,7 +728,11 @@ async function renderQuestion(){
     el.innerHTML = '<div class="empty-state"><div class="es-icon">📭</div><p>该章节暂无题目</p></div>';
     return;
   }
-  quizState = { selectedOption:null, placements:{}, answered:false };
+  // 从 draftProgress 恢复当前题目的作答状态
+  const saved = draftProgress[q.id];
+  const savedPlacements = saved ? saved.placements : null;
+  const wasAnswered = saved ? saved.answered : false;
+  quizState = { selectedOption:null, placements: savedPlacements ? {...savedPlacements} : {}, answered: false };
   const progress = currentQuestions.length>0 ? ((currentQuestionIndex+1)/currentQuestions.length*100).toFixed(0) : 0;
   
   // 打乱选项顺序（仅影响显示，不影响答案判定，因答案按 ID 映射）
@@ -652,6 +761,7 @@ async function renderQuestion(){
           <div class="quiz-progress">第 <strong>${currentQuestionIndex+1}</strong> / ${currentQuestions.length} 题</div>
         </div>
         <div class="progress-bar-wrap"><div class="progress-fill" style="width:${progress}%"></div></div>
+        ${wasAnswered?'<div class="quiz-resume-hint"><span class="qrh-icon">📌</span><span class="qrh-text">上次已提交过本题，已恢复你的作答，可修改后重新<strong>提交</strong></span></div>':''}
         <div style="display:flex;gap:.5rem;margin-bottom:.6rem;flex-wrap:wrap">
           <span style="background:var(--green-bg);color:var(--green);padding:.15rem .6rem;border-radius:6px;font-size:.72rem;font-weight:600">✅ 正确 ${correctCount}次</span>
           <span style="background:var(--red-bg);color:var(--red);padding:.15rem .6rem;border-radius:6px;font-size:.72rem;font-weight:600">❌ 错误 ${wrongCount}次</span>
@@ -784,6 +894,7 @@ function selectCategory(catId){
   }
   quizState.selectedOption = null;
   updateMatchingUI();
+  saveQuizDraft();
 }
 
 function removePlacement(catId, optId){
@@ -792,6 +903,7 @@ function removePlacement(catId, optId){
   quizState.placements[optId] = cats.filter(c => c !== catId);
   if(quizState.placements[optId].length === 0) delete quizState.placements[optId];
   updateMatchingUI();
+  saveQuizDraft();
 }
 
 async function submitAnswer(){
@@ -861,19 +973,69 @@ async function submitAnswer(){
   const score = Math.round(correctCount/total*100);
   const isCorrect = wrongCount===0 && missedCount===0;
 
-  // 答案揭示
+  // 答案揭示（新版卡片式）
   const reveal = document.getElementById('answerReveal');
-  let ansRows = q.categories.map(cat=>{
-    const correctOpts = q.options.filter(o=>getCorrectCats(q.answer, o.id).includes(cat.id)).map(o=>`${o.id}.${o.text}`).join('；');
-    return `<div class="ans-row"><span class="ans-cat">${escapeHtml(cat.label)}：</span><span class="ans-vals">${escapeHtml(correctOpts)}</span></div>`;
+  // 构建分类名映射
+  const catNameMap = {};
+  q.categories.forEach(c=>{ catNameMap[c.id] = c.label; });
+
+  // 按分类构建答案卡片
+  let ansCards = q.categories.map((cat,ci)=>{
+    const optsInCat = q.options.filter(o=>getCorrectCats(q.answer, o.id).includes(cat.id));
+    let allCorrect = true;
+    const optRows = optsInCat.map(opt=>{
+      const correctCats = getCorrectCats(q.answer, opt.id);
+      const userCats = quizState.placements[opt.id] || [];
+      const isCorrect = correctCats.length===userCats.length && correctCats.every(c=>userCats.includes(c));
+      const isMissed = userCats.length===0;
+      if(!isCorrect) allCorrect = false;
+      // 构建标签
+      let tagHtml = '';
+      if(isCorrect){
+        // 正确，无标签
+      } else if(isMissed){
+        tagHtml = '<span class="ar-opt-tag missed">未作答</span>';
+      } else {
+        // 答错，显示"你的选择：X（应为Y）"
+        const userCatNames = userCats.map(uc=>catNameMap[uc]||uc).join('、');
+        const correctCatNames = correctCats.map(cc=>catNameMap[cc]||cc).join('、');
+        tagHtml = `<span class="ar-opt-tag your">你的选择：${escapeHtml(userCatNames)}（应为${escapeHtml(correctCatNames)}）</span>`;
+      }
+      const letterClass = isCorrect ? 'right' : (isMissed ? 'miss' : 'wrong');
+      return `<div class="ar-opt-row">
+        <span class="ar-opt-letter ${letterClass}">${escapeHtml(opt.id)}</span>
+        <span class="ar-opt-text">${escapeHtml(opt.text)}</span>
+        ${tagHtml}
+      </div>`;
+    }).join('');
+    return `<div class="ar-card">
+      <div class="ar-card-header ${allCorrect?'ok':'no'}">
+        <span class="ar-card-num">${ci+1}</span>
+        <span>${escapeHtml(cat.label)}</span>
+        <span class="ar-card-status">${allCorrect?'✓ 全对':'✗ 有错误'}</span>
+      </div>
+      <div class="ar-card-body">${optRows}</div>
+    </div>`;
   }).join('');
+
   reveal.innerHTML = `
-    <div class="score-bar">
-      <div class="score-num" style="color:${isCorrect?'var(--green)':'var(--red)'}">${score}分</div>
-      <div style="font-size:.82rem;color:var(--muted)">正确 ${correctCount} · 错误 ${wrongCount} · 遗漏 ${missedCount} ${isCorrect?'🎉 全部正确！':'继续加油！'}</div>
+    <div class="ar-banner ${isCorrect?'pass':'fail'}">
+      <div class="arb-score ${isCorrect?'pass':'fail'}">${score}</div>
+      <div class="arb-divider"></div>
+      <div class="arb-stats">
+        <div class="arb-stat"><span class="arb-dot ok"></span><span style="color:var(--green);font-weight:700">${correctCount}</span><span style="color:var(--muted)">正确</span></div>
+        <div class="arb-stat"><span class="arb-dot no"></span><span style="color:var(--red);font-weight:700">${wrongCount}</span><span style="color:var(--muted)">错误</span></div>
+        <div class="arb-stat"><span class="arb-dot miss"></span><span style="color:var(--yellow);font-weight:700">${missedCount}</span><span style="color:var(--muted)">遗漏</span></div>
+      </div>
+      <div class="arb-emoji">${isCorrect?'🎉':'💪'}</div>
     </div>
-    ${ansRows}
-    <div class="ans-note">💡 ${escapeHtml(q.explanation)}</div>`;
+    <div class="ar-legend">
+      <div class="ar-legend-item"><span class="ar-legend-dot green"></span>答对</div>
+      <div class="ar-legend-item"><span class="ar-legend-dot red"></span>答错</div>
+      <div class="ar-legend-item"><span class="ar-legend-dot yellow"></span>遗漏</div>
+    </div>
+    <div class="ar-grid">${ansCards}</div>
+    <div class="ar-note"><strong>💡 解析：</strong>${escapeHtml(q.explanation)}</div>`;
   reveal.classList.add('show');
 
   // 切换按钮：提交后禁用提交键，下一题始终可用
@@ -895,16 +1057,20 @@ async function submitAnswer(){
   if(autoSyncEnabled){
     try{ await syncToCloud(); }catch(e){ console.warn('自动同步失败',e); }
   }
+  // 保存草稿（记录已提交状态）
+  saveQuizDraft();
 }
 
 function prevQuestion(){
   if(currentQuestionIndex > 0){
+    saveQuizDraft();
     currentQuestionIndex--;
     renderQuestion();
   }
 }
 
 function nextQuestion(){
+  saveQuizDraft();
   currentQuestionIndex++;
   if(currentQuestionIndex >= currentQuestions.length){
     showCompletion();
@@ -914,6 +1080,8 @@ function nextQuestion(){
 }
 
 function showCompletion(){
+  // 全部完成，清除草稿
+  clearQuizDraft();
   const el = document.getElementById('quizContent');
   el.innerHTML = `
     <div class="quiz-player show">
@@ -2322,6 +2490,12 @@ async function init(){
 }
 
 document.addEventListener('DOMContentLoaded', init);
+
+/* ====== 页面关闭时自动保存草稿 ====== */
+window.addEventListener('pagehide', () => { saveQuizDraft(); });
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'hidden') saveQuizDraft();
+});
 
 /* ====== PWA Service Worker 注册 ====== */
 if ('serviceWorker' in navigator) {
