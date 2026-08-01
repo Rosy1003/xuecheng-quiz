@@ -939,6 +939,39 @@ body{font-family:var(--font);color:var(--ink);background:var(--bg);line-height:1
 }
 .quiz-resume-hint .qrh-icon{font-size:.9rem;flex-shrink:0}
 .quiz-resume-hint .qrh-text strong{color:var(--yellow)}
+
+/* === 完成统计页 === */
+.cs-stats-banner{
+  display:flex;align-items:stretch;gap:0;
+  background:var(--surface);border:1px solid var(--rule);
+  border-radius:var(--radius);padding:1rem .5rem;margin-bottom:1rem;
+}
+.cs-stat-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:.2rem}
+.cs-stat-value{font-size:1.8rem;font-weight:800;line-height:1}
+.cs-stat-value small{font-size:.8rem;font-weight:600}
+.cs-stat-label{font-size:.68rem;color:var(--muted);font-weight:600}
+.cs-stat-divider{width:1px;background:var(--rule);margin:.2rem 0}
+.cs-q-list{display:flex;flex-direction:column;gap:.4rem;max-height:300px;overflow-y:auto;padding-right:.3rem}
+.cs-q-row{
+  display:flex;align-items:center;gap:.5rem;
+  padding:.5rem .7rem;border-radius:var(--radius-sm);
+  background:var(--surface);border:1px solid var(--rule);
+}
+.cs-q-row.pass{border-left:3px solid var(--green)}
+.cs-q-row.fail{border-left:3px solid var(--red)}
+.cs-q-num{
+  width:24px;height:24px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.68rem;font-weight:700;flex-shrink:0;
+  background:var(--bg2);color:var(--muted);
+}
+.cs-q-title{flex:1;font-size:.78rem;color:var(--ink);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cs-q-score{font-size:.85rem;font-weight:700;flex-shrink:0}
+.cs-q-score small{font-size:.65rem;font-weight:400;color:var(--muted)}
+.cs-q-score.pass{color:var(--green)}
+.cs-q-score.fail{color:var(--red)}
+.cs-q-icon{font-size:1rem;flex-shrink:0}
 </style>
 </head>
 <body>

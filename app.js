@@ -405,9 +405,11 @@ let currentNoteImages = [];
 let favoritedIds = new Set();
 let wrongFilterSubject = 'all';
 let noteFilterSubject = 'all';
+let noteFilterSystem = 'all';
 let autoSyncEnabled = false;
 let shuffleOptionsEnabled = false;
 let darkModeEnabled = false;
+let fontScalePos = 50; // 0=小(13px), 50=中(15px), 100=大(18px)
 
 const PANEL_TITLES = { home:'首页总览', quiz:'刷题练习', wrong:'错题本', stats:'学习统计', fav:'收藏夹', notes:'我的解析', settings:'设置' };
 const USER_COLORS = ['#9a8e82','#7d9e7d','#7a95b0','#a08eb0','#c9a96a','#b87a7a'];
@@ -721,6 +723,43 @@ async function startQuiz(subject, system, chapterId, chapterName){
   renderQuestion();
 }
 
+/* 检查本章节所有题目是否已答完 */
+function allQuestionsAnswered(){
+  return currentQuestions.length > 0 && currentQuestions.every(q => {
+    const saved = draftProgress[q.id];
+    return saved && saved.answered;
+  });
+}
+
+/* 获取已答题目数 */
+function getAnsweredCount(){
+  return currentQuestions.filter(q => {
+    const saved = draftProgress[q.id];
+    return saved && saved.answered;
+  }).length;
+}
+
+/* 提交后更新进度文字和"完成"按钮状态 */
+function updateQuizProgress(){
+  const progressEl = document.querySelector('.quiz-progress');
+  if(progressEl){
+    progressEl.innerHTML = `第 <strong>${currentQuestionIndex+1}</strong> / ${currentQuestions.length} 题 · 已答 <strong style="color:var(--green)">${getAnsweredCount()}</strong> 题`;
+  }
+  const nextBtn = document.getElementById('nextBtn');
+  if(nextBtn && currentQuestionIndex >= currentQuestions.length - 1){
+    const allDone = allQuestionsAnswered();
+    nextBtn.disabled = !allDone;
+    nextBtn.style.opacity = allDone ? '' : '.4';
+  }
+  const hintEl = document.getElementById('completionHint');
+  if(hintEl){
+    const remaining = currentQuestions.length - getAnsweredCount();
+    const showHint = currentQuestionIndex >= currentQuestions.length - 1 && remaining > 0;
+    hintEl.style.display = showHint ? 'block' : 'none';
+    if(showHint) hintEl.textContent = `还有 ${remaining} 题未作答，全部完成后可点击"完成"`;
+  }
+}
+
 async function renderQuestion(){
   const q = currentQuestions[currentQuestionIndex];
   const el = document.getElementById('quizContent');
@@ -732,7 +771,7 @@ async function renderQuestion(){
   const saved = draftProgress[q.id];
   const savedPlacements = saved ? saved.placements : null;
   const wasAnswered = saved ? saved.answered : false;
-  quizState = { selectedOption:null, placements: savedPlacements ? {...savedPlacements} : {}, answered: false };
+  quizState = { selectedOption:null, placements: savedPlacements ? {...savedPlacements} : {}, answered: wasAnswered };
   const progress = currentQuestions.length>0 ? ((currentQuestionIndex+1)/currentQuestions.length*100).toFixed(0) : 0;
   
   // 打乱选项顺序（仅影响显示，不影响答案判定，因答案按 ID 映射）
@@ -758,10 +797,10 @@ async function renderQuestion(){
       <div class="quiz-area">
         <div class="quiz-header">
           <div class="quiz-title">${escapeHtml(q.title)}</div>
-          <div class="quiz-progress">第 <strong>${currentQuestionIndex+1}</strong> / ${currentQuestions.length} 题</div>
+          <div class="quiz-progress">第 <strong>${currentQuestionIndex+1}</strong> / ${currentQuestions.length} 题 · 已答 <strong style="color:var(--green)">${getAnsweredCount()}</strong> 题</div>
         </div>
         <div class="progress-bar-wrap"><div class="progress-fill" style="width:${progress}%"></div></div>
-        ${wasAnswered?'<div class="quiz-resume-hint"><span class="qrh-icon">📌</span><span class="qrh-text">上次已提交过本题，已恢复你的作答，可修改后重新<strong>提交</strong></span></div>':''}
+        ${wasAnswered?'<div class="quiz-resume-hint"><span class="qrh-icon">🔒</span><span class="qrh-text">本题已提交，答案已锁定（只读查看）</span></div>':''}
         <div style="display:flex;gap:.5rem;margin-bottom:.6rem;flex-wrap:wrap">
           <span style="background:var(--green-bg);color:var(--green);padding:.15rem .6rem;border-radius:6px;font-size:.72rem;font-weight:600">✅ 正确 ${correctCount}次</span>
           <span style="background:var(--red-bg);color:var(--red);padding:.15rem .6rem;border-radius:6px;font-size:.72rem;font-weight:600">❌ 错误 ${wrongCount}次</span>
@@ -788,16 +827,21 @@ async function renderQuestion(){
         </div>
         <div class="action-bar">
           <button class="btn btn-outline" id="prevBtn" onclick="prevQuestion()" ${currentQuestionIndex===0?'disabled style="opacity:.4"':''}>← 上一题</button>
-          <button class="btn btn-primary" id="submitBtn" onclick="submitAnswer()">提交答案</button>
-          <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">${currentQuestionIndex>=currentQuestions.length-1?'完成 ✓':'下一题 →'}</button>
+          <button class="btn btn-primary" id="submitBtn" onclick="submitAnswer()" ${wasAnswered?'disabled style="opacity:.4"':''}>提交答案</button>
+          <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()" ${(currentQuestionIndex>=currentQuestions.length-1 && !allQuestionsAnswered())?'disabled style="opacity:.4"':''}>${currentQuestionIndex>=currentQuestions.length-1?'完成 ✓':'下一题 →'}</button>
           <button class="btn btn-outline" onclick="openNoteModal('${q.id}')">📝 添加解析</button>
           <button class="btn btn-outline" id="favBtn" onclick="toggleFavorite()">${favoritedIds.has(q.id)?'⭐ 取消收藏':'☆ 收藏'}</button>
           <button class="btn btn-outline" onclick="backToSubjects()">退出</button>
         </div>
+        <div id="completionHint" style="text-align:center;font-size:.74rem;color:var(--yellow);margin-top:.4rem;${(currentQuestionIndex>=currentQuestions.length-1 && !allQuestionsAnswered())?'':'display:none;'}">还有 ${currentQuestions.length-getAnsweredCount()} 题未作答，全部完成后可点击"完成"</div>
         <div class="answer-reveal" id="answerReveal"></div>
       </div>
     </div>`;
   updateMatchingUI();
+  // 如果该题已提交过，自动显示答案揭示（锁定只读）
+  if(wasAnswered){
+    renderAnswerReveal(q);
+  }
 }
 
 /* 重新渲染选项池与分类区（根据 quizState） */
@@ -906,11 +950,8 @@ function removePlacement(catId, optId){
   saveQuizDraft();
 }
 
-async function submitAnswer(){
-  const q = currentQuestions[currentQuestionIndex];
-  if(!q) return;
-  quizState.answered = true;
-
+/* === 答案揭示渲染（从 submitAnswer 提取，可复用于已提交题目恢复） === */
+async function renderAnswerReveal(q){
   let correctCount=0, wrongCount=0, missedCount=0;
 
   // 标记选项
@@ -922,7 +963,6 @@ async function submitAnswer(){
     if(el){
       el.classList.remove('placed','selected');
       if(correctCats.length===0){
-        // 无正确答案的选项不统计
       } else if(isCorrect){
         correctCount++;
         el.classList.add('correct');
@@ -975,11 +1015,9 @@ async function submitAnswer(){
 
   // 答案揭示（新版卡片式）
   const reveal = document.getElementById('answerReveal');
-  // 构建分类名映射
   const catNameMap = {};
   q.categories.forEach(c=>{ catNameMap[c.id] = c.label; });
 
-  // 按分类构建答案卡片
   let ansCards = q.categories.map((cat,ci)=>{
     const optsInCat = q.options.filter(o=>getCorrectCats(q.answer, o.id).includes(cat.id));
     let allCorrect = true;
@@ -989,14 +1027,11 @@ async function submitAnswer(){
       const isCorrect = correctCats.length===userCats.length && correctCats.every(c=>userCats.includes(c));
       const isMissed = userCats.length===0;
       if(!isCorrect) allCorrect = false;
-      // 构建标签
       let tagHtml = '';
       if(isCorrect){
-        // 正确，无标签
       } else if(isMissed){
         tagHtml = '<span class="ar-opt-tag missed">未作答</span>';
       } else {
-        // 答错，显示"你的选择：X（应为Y）"
         const userCatNames = userCats.map(uc=>catNameMap[uc]||uc).join('、');
         const correctCatNames = correctCats.map(cc=>catNameMap[cc]||cc).join('、');
         tagHtml = `<span class="ar-opt-tag your">你的选择：${escapeHtml(userCatNames)}（应为${escapeHtml(correctCatNames)}）</span>`;
@@ -1018,6 +1053,34 @@ async function submitAnswer(){
     </div>`;
   }).join('');
 
+  // 查询用户添加的解析
+  let userNoteHtml = '';
+  const allNotes = await dbGetAll('notes');
+  const qNotes = allNotes.filter(n=>n.userId===currentUserId && n.questionId===q.id);
+  if(qNotes.length > 0){
+    qNotes.sort((a,b)=>new Date(b.createdDate)-new Date(a.createdDate));
+    const notesHtml = qNotes.map(n=>{
+      let imgs = '';
+      if(n.images && n.images.length>0){
+        imgs = '<div class="ar-usernote-imgs">' + n.images.map((src,i)=>
+          `<div class="ar-usernote-thumb" onclick="zoomNoteImage(this)" data-src="${escapeHtml(src)}"><img src="${escapeHtml(src)}"><span class="ar-usernote-zoom">🔍</span></div>`
+        ).join('') + '</div>';
+      }
+      return `<div class="ar-usernote-item">
+        ${n.text ? `<div class="ar-usernote-text">${escapeHtml(n.text)}</div>` : ''}
+        ${imgs}
+        <div class="ar-usernote-date">📅 ${formatDate(n.createdDate)}</div>
+      </div>`;
+    }).join('');
+    userNoteHtml = `<div class="ar-usernote">
+      <div class="ar-usernote-header">
+        <div class="ar-usernote-icon">📝</div>
+        <div class="ar-usernote-title">我的解析（${qNotes.length}条）</div>
+      </div>
+      ${notesHtml}
+    </div>`;
+  }
+
   reveal.innerHTML = `
     <div class="ar-banner ${isCorrect?'pass':'fail'}">
       <div class="arb-score ${isCorrect?'pass':'fail'}">${score}</div>
@@ -1035,12 +1098,59 @@ async function submitAnswer(){
       <div class="ar-legend-item"><span class="ar-legend-dot yellow"></span>遗漏</div>
     </div>
     <div class="ar-grid">${ansCards}</div>
-    <div class="ar-note"><strong>💡 解析：</strong>${escapeHtml(q.explanation)}</div>`;
+    <div class="ar-note"><strong>💡 解析：</strong>${escapeHtml(q.explanation)}</div>
+    ${userNoteHtml}`;
   reveal.classList.add('show');
 
-  // 切换按钮：提交后禁用提交键，下一题始终可用
-  document.getElementById('submitBtn').disabled = true;
-  document.getElementById('submitBtn').style.opacity = '.4';
+  // 禁用提交按钮
+  const submitBtn = document.getElementById('submitBtn');
+  if(submitBtn){ submitBtn.disabled = true; submitBtn.style.opacity = '.4'; }
+}
+
+/* 图片放大弹窗 */
+function zoomNoteImage(thumb){
+  const src = thumb.getAttribute('data-src');
+  let overlay = document.getElementById('noteZoomOverlay');
+  if(!overlay){
+    overlay = document.createElement('div');
+    overlay.id = 'noteZoomOverlay';
+    overlay.className = 'note-zoom-overlay';
+    overlay.innerHTML = '<button class="note-zoom-close">✕</button><img>';
+    overlay.addEventListener('click', function(e){
+      if(e.target===overlay || e.target.classList.contains('note-zoom-close')){
+        overlay.classList.remove('show');
+      }
+    });
+    document.body.appendChild(overlay);
+  }
+  overlay.querySelector('img').src = src;
+  overlay.classList.add('show');
+}
+
+async function submitAnswer(){
+  const q = currentQuestions[currentQuestionIndex];
+  if(!q) return;
+  quizState.answered = true;
+  saveQuizDraft();
+
+  const total = q.options.length;
+  let correctCount=0, wrongCount=0, missedCount=0;
+  q.options.forEach(opt=>{
+    const userCats = quizState.placements[opt.id] || [];
+    const correctCats = getCorrectCats(q.answer, opt.id);
+    const isCorrect = correctCats.length===userCats.length && correctCats.every(c=>userCats.includes(c));
+    if(correctCats.length===0) return;
+    if(isCorrect) correctCount++;
+    else if(userCats.length===0) missedCount++;
+    else wrongCount++;
+  });
+  const score = Math.round(correctCount/total*100);
+  const isCorrect = wrongCount===0 && missedCount===0;
+
+  // 渲染答案揭示
+  await renderAnswerReveal(q);
+  // 更新进度和"完成"按钮状态
+  updateQuizProgress();
 
   // 记录到 IndexedDB
   await recordAnswer(q, isCorrect, score);
@@ -1057,8 +1167,6 @@ async function submitAnswer(){
   if(autoSyncEnabled){
     try{ await syncToCloud(); }catch(e){ console.warn('自动同步失败',e); }
   }
-  // 保存草稿（记录已提交状态）
-  saveQuizDraft();
 }
 
 function prevQuestion(){
@@ -1073,6 +1181,12 @@ function nextQuestion(){
   saveQuizDraft();
   currentQuestionIndex++;
   if(currentQuestionIndex >= currentQuestions.length){
+    // 安全检查：必须全部答完才能完成
+    if(!allQuestionsAnswered()){
+      currentQuestionIndex = currentQuestions.length - 1;
+      renderQuestion();
+      return;
+    }
     showCompletion();
   } else {
     renderQuestion();
@@ -1080,19 +1194,79 @@ function nextQuestion(){
 }
 
 function showCompletion(){
-  // 全部完成，清除草稿
+  // 先计算成绩统计（需要在清除草稿前读取 draftProgress）
+  let totalScore = 0, correctQs = 0, wrongQs = 0;
+  const qStats = currentQuestions.map((q,idx)=>{
+    const saved = draftProgress[q.id];
+    if(!saved || !saved.answered) return { idx:idx+1, answered:false, score:0, correct:false, title:q.title };
+    let cc=0, wc=0, mc=0;
+    const pl = saved.placements || {};
+    q.options.forEach(opt=>{
+      const uc = pl[opt.id] || [];
+      const cor = getCorrectCats(q.answer, opt.id);
+      const ok = cor.length===uc.length && cor.every(c=>uc.includes(c));
+      if(cor.length===0) return;
+      if(ok) cc++; else if(uc.length===0) mc++; else wc++;
+    });
+    const sc = Math.round(cc/q.options.length*100);
+    const ok = wc===0 && mc===0;
+    totalScore += sc;
+    if(ok) correctQs++; else wrongQs++;
+    return { idx:idx+1, answered:true, score:sc, correct:ok, title:q.title };
+  });
+  const answeredCount = qStats.filter(s=>s.answered).length;
+  const avgScore = answeredCount>0 ? Math.round(totalScore/answeredCount) : 0;
+  const accuracy = currentQuestions.length>0 ? Math.round(correctQs/currentQuestions.length*100) : 0;
+  const chapterName = currentChapterName;
+
+  // 全部完成，清除草稿并重置会话状态
   clearQuizDraft();
+  currentQuestions = [];
+  currentQuestionIndex = 0;
+
   const el = document.getElementById('quizContent');
+  const statsHtml = qStats.map(s=>`
+    <div class="cs-q-row ${s.correct?'pass':'fail'}">
+      <span class="cs-q-num">${s.idx}</span>
+      <span class="cs-q-title">${escapeHtml(s.title||'')}</span>
+      <span class="cs-q-score ${s.correct?'pass':'fail'}">${s.score}<small>分</small></span>
+      <span class="cs-q-icon">${s.correct?'✅':'❌'}</span>
+    </div>`).join('');
+
   el.innerHTML = `
     <div class="quiz-player show">
-      <div class="home-card" style="text-align:center;padding:3rem 2rem">
-        <div style="font-size:3rem;margin-bottom:1rem">🎉</div>
-        <h2 style="font-size:1.4rem;margin-bottom:.5rem">本章刷题完成！</h2>
-        <p style="color:var(--muted);font-size:.88rem;margin-bottom:1.5rem">已完成 ${currentQuestions.length} 道题目，快去首页查看复习计划吧</p>
-        <div class="action-bar" style="justify-content:center">
+      <div class="home-card" style="padding:2rem 1.5rem">
+        <div style="text-align:center;margin-bottom:1.5rem">
+          <div style="font-size:3rem;margin-bottom:.5rem">🎉</div>
+          <h2 style="font-size:1.4rem;margin-bottom:.3rem">本章刷题完成！</h2>
+          <p style="color:var(--muted);font-size:.82rem">${escapeHtml(chapterName||'')} · 共 ${qStats.length} 题</p>
+        </div>
+        <div class="cs-stats-banner">
+          <div class="cs-stat-item">
+            <div class="cs-stat-value" style="color:var(--blue)">${avgScore}</div>
+            <div class="cs-stat-label">平均分</div>
+          </div>
+          <div class="cs-stat-divider"></div>
+          <div class="cs-stat-item">
+            <div class="cs-stat-value" style="color:var(--green)">${accuracy}<small>%</small></div>
+            <div class="cs-stat-label">正确率</div>
+          </div>
+          <div class="cs-stat-divider"></div>
+          <div class="cs-stat-item">
+            <div class="cs-stat-value" style="color:var(--green)">${correctQs}</div>
+            <div class="cs-stat-label">答对</div>
+          </div>
+          <div class="cs-stat-divider"></div>
+          <div class="cs-stat-item">
+            <div class="cs-stat-value" style="color:var(--red)">${wrongQs}</div>
+            <div class="cs-stat-label">答错</div>
+          </div>
+        </div>
+        <div class="cs-q-list">${statsHtml}</div>
+        <div class="action-bar" style="justify-content:center;margin-top:1.5rem">
           <button class="btn btn-primary" onclick="renderQuiz()">返回科目选择</button>
-          <button class="btn btn-outline" onclick="switchPanel('home')">查看首页</button>
           <button class="btn btn-outline" onclick="switchPanel('wrong')">查看错题</button>
+          <button class="btn btn-outline" onclick="switchPanel('home')">查看首页</button>
         </div>
       </div>
     </div>`;
@@ -1669,50 +1843,127 @@ async function renderNotes(){
     </div>
   </div>`;
 
-  // 过滤栏
-  html += '<div class="filter-bar">';
-  html += `<button class="filter-pill ${noteFilterSubject==='all'?'active':''}" onclick="setNoteFilter('all')">全部</button>`;
+  // 科目筛选栏
+  html += '<div class="filter-bar"><span style="font-size:.68rem;color:var(--muted);font-weight:700;align-self:center;margin-right:.3rem">科目</span>';
+  html += `<button class="filter-pill ${noteFilterSubject==='all'?'active':''}" onclick="setNoteFilter('subject','all')">全部</button>`;
   Object.entries(SUBJECTS).forEach(([key,sub])=>{
     const has = notes.some(n=>n.subject===key);
-    if(has) html += `<button class="filter-pill ${noteFilterSubject===key?'active':''}" onclick="setNoteFilter('${key}')">${sub.icon} ${sub.name}</button>`;
+    if(has) html += `<button class="filter-pill ${noteFilterSubject===key?'active':''}" onclick="setNoteFilter('subject','${key}')">${sub.icon} ${sub.name}</button>`;
   });
   html += '</div>';
 
-  if(noteFilterSubject!=='all'){
-    notes = notes.filter(n=>n.subject===noteFilterSubject);
+  // 系统筛选栏
+  const sysData = (noteFilterSubject !== 'all') ? (getSystems()[noteFilterSubject] || {}) : {};
+  const availableSystems = new Set();
+  notes.forEach(n=>{
+    if(noteFilterSubject === 'all' || n.subject === noteFilterSubject){
+      if(n.system) availableSystems.add(n.subject + '|' + n.system);
+    }
+  });
+  html += '<div class="filter-bar"><span style="font-size:.68rem;color:var(--muted);font-weight:700;align-self:center;margin-right:.3rem">系统</span>';
+  html += `<button class="filter-pill ${noteFilterSystem==='all'?'active':''}" onclick="setNoteFilter('system','all')">全部</button>`;
+  Object.entries(SUBJECTS).forEach(([subKey,sub])=>{
+    const sysObj = getSystems()[subKey] || {};
+    Object.entries(sysObj).forEach(([sysKey,sys])=>{
+      const fullKey = subKey + '|' + sysKey;
+      if(availableSystems.has(fullKey) && (noteFilterSubject === 'all' || noteFilterSubject === subKey)){
+        html += `<button class="filter-pill ${noteFilterSystem===fullKey?'active':''}" onclick="setNoteFilter('system','${escapeHtml(fullKey)}')">${escapeHtml(sys.name)}</button>`;
+      }
+    });
+  });
+  html += '</div>';
+
+  // 筛选
+  let filtered = notes;
+  if(noteFilterSubject !== 'all'){
+    filtered = filtered.filter(n=>n.subject === noteFilterSubject);
+  }
+  if(noteFilterSystem !== 'all'){
+    const [subKey, sysKey] = noteFilterSystem.split('|');
+    filtered = filtered.filter(n=>n.subject === subKey && n.system === sysKey);
   }
 
-  if(notes.length===0){
+  if(filtered.length === 0){
     html += '<div class="empty-state"><div class="es-icon">📋</div><p>还没有添加解析笔记，刷题时点击"添加解析"即可记录</p></div>';
   } else {
-    notes.sort((a,b)=>new Date(b.createdDate)-new Date(a.createdDate));
-    notes.forEach(n=>{
-      const sub = SUBJECTS[n.subject] || {icon:'📝',name:'未知'};
-      let imgs = '';
-      if(n.images && n.images.length>0){
-        imgs = '<div class="nc-images">'+n.images.map(src=>`<div class="nc-thumb" onclick="window.open('${src}')"><img src="${src}" style="width:100%;height:100%;object-fit:cover"></div>`).join('')+'</div>';
-      }
-      html += `<div class="note-card">
-        <div class="nc-header">
-          <span class="tag tag-blue">${sub.icon} ${sub.name}</span>
-          <span style="font-size:.72rem;color:var(--muted)">${escapeHtml(n.chapter||'')}</span>
-          <span class="nc-title">${escapeHtml(n.title)}</span>
-        </div>
-        ${n.text?`<div style="font-size:.85rem;line-height:1.7;white-space:pre-wrap">${escapeHtml(n.text)}</div>`:''}
-        ${imgs}
-        <div style="font-size:.72rem;color:var(--muted);margin-top:.4rem">📅 ${formatDate(n.createdDate)}</div>
-        <div class="nc-actions">
-          <button class="btn-sm" onclick="editNote('${n.id}')">编辑</button>
-          <button class="btn-sm" onclick="deleteNote('${n.id}')">删除</button>
-        </div>
-      </div>`;
+    // 按科目分组
+    const bySubject = {};
+    filtered.forEach(n=>{
+      if(!bySubject[n.subject]) bySubject[n.subject] = [];
+      bySubject[n.subject].push(n);
+    });
+
+    // 按科目顺序输出
+    Object.entries(SUBJECTS).forEach(([subKey,sub])=>{
+      const subNotes = bySubject[subKey];
+      if(!subNotes || subNotes.length === 0) return;
+
+      html += `<div class="note-group open">
+        <div class="note-group-header" onclick="this.parentElement.classList.toggle('open')">
+          <span class="note-group-toggle">▶</span>
+          <span class="note-group-icon">${sub.icon}</span>
+          <span class="note-group-name">${sub.name}</span>
+          <span class="note-group-count">${subNotes.length}条</span>
+        </div>`;
+
+      // 按系统分组
+      const bySystem = {};
+      subNotes.forEach(n=>{
+        const sysKey = n.system || 'other';
+        if(!bySystem[sysKey]) bySystem[sysKey] = [];
+        bySystem[sysKey].push(n);
+      });
+
+      const sysObj = getSystems()[subKey] || {};
+      Object.entries(bySystem).forEach(([sysKey, sysNotes])=>{
+        const sysInfo = sysObj[sysKey];
+        const sysName = sysInfo ? sysInfo.name : '其他';
+        sysNotes.sort((a,b)=>new Date(b.createdDate)-new Date(a.createdDate));
+
+        html += `<div class="note-sub-group open">
+          <div class="note-sub-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="note-sub-toggle">▶</span>
+            <span class="note-sub-name">${escapeHtml(sysName)}</span>
+            <span class="note-sub-count">${sysNotes.length}条</span>
+          </div>
+          <div class="note-sub-notes">`;
+
+        sysNotes.forEach(n=>{
+          let imgs = '';
+          if(n.images && n.images.length>0){
+            imgs = '<div class="nc-images">'+n.images.map(src=>`<div class="nc-thumb" onclick="zoomNoteImage(this)" data-src="${escapeHtml(src)}"><img src="${escapeHtml(src)}" style="width:100%;height:100%;object-fit:cover"><span class="nc-thumb-zoom">🔍</span></div>`).join('')+'</div>';
+          }
+          html += `<div class="note-card">
+            <div class="nc-header">
+              <span class="nc-title">${escapeHtml(n.title)}</span>
+              <span style="font-size:.72rem;color:var(--muted)">${escapeHtml(n.chapter||'')}</span>
+            </div>
+            ${n.text?`<div style="font-size:.85rem;line-height:1.7;white-space:pre-wrap">${escapeHtml(n.text)}</div>`:''}
+            ${imgs}
+            <div style="font-size:.72rem;color:var(--muted);margin-top:.4rem">📅 ${formatDate(n.createdDate)}</div>
+            <div class="nc-actions">
+              <button class="btn-sm" onclick="editNote('${n.id}')">编辑</button>
+              <button class="btn-sm" onclick="deleteNote('${n.id}')">删除</button>
+            </div>
+          </div>`;
+        });
+
+        html += '</div></div>';
+      });
+
+      html += '</div>';
     });
   }
   el.innerHTML = html;
 }
 
-function setNoteFilter(subject){
-  noteFilterSubject = subject;
+function setNoteFilter(type, val){
+  if(type === 'subject'){
+    noteFilterSubject = val;
+    noteFilterSystem = 'all';
+  } else {
+    noteFilterSystem = val;
+  }
   renderNotes();
 }
 
@@ -1831,6 +2082,27 @@ async function renderSettings(){
       <div class="setting-label">🌙 深色模式<div class="sl-desc">切换到深色主题，护眼夜间使用</div></div>
       <div class="setting-control">
         <div class="toggle ${darkModeEnabled?'on':''}" data-toggle="darkMode" onclick="toggleDarkMode()"></div>
+      </div>
+    </div>
+    <div class="setting-row" style="flex-direction:column;align-items:stretch">
+      <div class="setting-label">🔤 字体大小<div class="sl-desc">拖动滑块调整全页面字体大小，实时生效</div></div>
+      <div class="setting-control" style="margin-top:.6rem">
+        <div class="font-slider-wrap">
+          <div class="font-slider-labels">
+            <span id="fsLabelSmall" onclick="setFontSize(0)">小</span>
+            <span id="fsLabelMid" class="active" onclick="setFontSize(50)">中</span>
+            <span id="fsLabelLarge" onclick="setFontSize(100)">大</span>
+          </div>
+          <div class="font-slider-row">
+            <input type="range" min="0" max="100" value="${fontScalePos}" step="1" class="font-slider" id="fontRange" oninput="onFontSliderChange(this.value)" style="--fill:${fontScalePos}%">
+            <span class="font-value-badge" id="fontValueBadge">${sliderToPx(fontScalePos)}px</span>
+          </div>
+          <div class="font-presets">
+            <button class="font-preset-btn ${fontScalePos===0?'active':''}" onclick="setFontSize(0)">小</button>
+            <button class="font-preset-btn ${fontScalePos===50?'active':''}" onclick="setFontSize(50)">中（默认）</button>
+            <button class="font-preset-btn ${fontScalePos===100?'active':''}" onclick="setFontSize(100)">大</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>`;
@@ -2123,6 +2395,54 @@ function applyDarkMode(){
   }
 }
 
+/* === 字体大小 === */
+function sliderToPx(v){ return Math.round((13 + (v/100)*5) * 10) / 10; }
+
+function onFontSliderChange(val){
+  var pos = parseInt(val);
+  fontScalePos = pos;
+  var px = sliderToPx(pos);
+  document.documentElement.style.fontSize = px + 'px';
+  var badge = document.getElementById('fontValueBadge');
+  if(badge) badge.textContent = (px % 1 === 0 ? px : px.toFixed(1)) + 'px';
+  var slider = document.getElementById('fontRange');
+  if(slider){ slider.style.setProperty('--fill', pos + '%'); }
+  updateFontLabels(pos);
+  saveUserSetting('fontScale', pos);
+}
+
+function setFontSize(pos){
+  fontScalePos = pos;
+  var px = sliderToPx(pos);
+  document.documentElement.style.fontSize = px + 'px';
+  var slider = document.getElementById('fontRange');
+  if(slider){ slider.value = pos; slider.style.setProperty('--fill', pos + '%'); }
+  var badge = document.getElementById('fontValueBadge');
+  if(badge) badge.textContent = (px % 1 === 0 ? px : px.toFixed(1)) + 'px';
+  updateFontLabels(pos);
+  saveUserSetting('fontScale', pos);
+}
+
+function updateFontLabels(pos){
+  ['fsLabelSmall','fsLabelMid','fsLabelLarge'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.classList.remove('active');
+  });
+  var presets = document.querySelectorAll('.font-preset-btn');
+  presets.forEach(function(b){ b.classList.remove('active'); });
+  if(pos <= 12){ var s = document.getElementById('fsLabelSmall'); if(s) s.classList.add('active'); }
+  else if(pos >= 88){ var l = document.getElementById('fsLabelLarge'); if(l) l.classList.add('active'); }
+  else { var m = document.getElementById('fsLabelMid'); if(m) m.classList.add('active'); }
+  presets.forEach(function(b){
+    var bp = parseInt(b.getAttribute('onclick').match(/\d+/)[0]);
+    if(bp === pos) b.classList.add('active');
+  });
+}
+
+function applyFontSize(){
+  document.documentElement.style.fontSize = sliderToPx(fontScalePos) + 'px';
+}
+
 /* ==========================================================
  * 3.14 用户管理
  * ========================================================== */
@@ -2262,8 +2582,10 @@ async function loadUserSettings(){
     if(typeof settings.autoSync === 'boolean') autoSyncEnabled = settings.autoSync;
     if(typeof settings.shuffleOptions === 'boolean') shuffleOptionsEnabled = settings.shuffleOptions;
     if(typeof settings.darkMode === 'boolean') darkModeEnabled = settings.darkMode;
+    if(typeof settings.fontScale === 'number') fontScalePos = settings.fontScale;
   }
   applyDarkMode();
+  applyFontSize();
 }
 
 /* ==========================================================
