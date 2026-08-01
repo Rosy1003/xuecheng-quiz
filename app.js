@@ -84,38 +84,38 @@ const SAMPLE_QUESTIONS = [
   {id:'path_082',subject:'pathology',system:'tumor',chapter:'癌基因',type:'matching',title:'癌基因与功能分类配伍',description:'将下列癌基因按其功能产物分类进行配伍',options:[{id:'A',text:'PDGF'},{id:'B',text:'KIT'},{id:'C',text:'BRAF'},{id:'D',text:'CyclinD1'},{id:'E',text:'ERBB2/HER2'},{id:'F',text:'RAS'},{id:'G',text:'c-MYC'},{id:'H',text:'MYC'},{id:'I',text:'ABL'}],categories:[{id:'C1',label:'生长因子'},{id:'C2',label:'生长因子受体'},{id:'C3',label:'信号转导蛋白'},{id:'C4',label:'转录因子'},{id:'C5',label:'细胞周期调节蛋白'}],answer:{'A':'C1','B':'C2','E':'C2','C':'C3','F':'C3','I':'C3','G':'C4','H':'C4','D':'C5'},explanation:'PDGF为生长因子；KIT和ERBB2/HER2为生长因子受体；BRAF、RAS、ABL为信号转导蛋白；c-MYC和MYC为转录因子；CyclinD1为细胞周期调节蛋白。'},
   {id:'path_083',subject:'pathology',system:'tumor',chapter:'癌基因',type:'matching',title:'癌基因异常形式配伍',description:'将下列癌基因/抑癌基因与相应的异常激活/失活方式进行配伍',options:[{id:'A',text:'PDGF'},{id:'B',text:'KIT'},{id:'C',text:'BRAF'},{id:'D',text:'CyclinD1'},{id:'E',text:'ERBB2/HER2'},{id:'F',text:'RAS'},{id:'G',text:'c-MYC'},{id:'H',text:'MYC'},{id:'I',text:'ABL'},{id:'J',text:'p53'}],categories:[{id:'C1',label:'过度表达'},{id:'C2',label:'点突变'},{id:'C3',label:'转位'},{id:'C4',label:'扩增'}],answer:{'A':'C1','B':'C1','C':'C2','F':'C2','J':'C2','D':'C3','G':'C3','I':'C3','E':'C4','H':'C4'},explanation:'PDGF和KIT可过度表达；BRAF（V600E）、RAS、p53常见点突变；CyclinD1（t(11;14)）、c-MYC（t(8;14)）、ABL（t(9;22)）涉及染色体转位；ERBB2/HER2和MYC常见基因扩增。B(KIT)可能在点突变或过度表达中，。'},
   {id:'path_084',subject:'pathology',system:'tumor',chapter:'癌基因',type:'matching',title:'原癌基因与抑癌基因分类配伍',description:'将下列基因分类为原癌基因或抑癌基因',options:[{id:'A',text:'PDGF'},{id:'B',text:'P53'},{id:'C',text:'RAS'},{id:'D',text:'BRAF'},{id:'E',text:'ABL'},{id:'F',text:'BRCA'},{id:'G',text:'NF'},{id:'H',text:'ERBB2/HER2'},{id:'I',text:'WT'},{id:'J',text:'KIT'},{id:'K',text:'VHL'},{id:'L',text:'c-MYC'},{id:'M',text:'MYC'},{id:'N',text:'CyclinD1'}],categories:[{id:'C1',label:'原癌基因'},{id:'C2',label:'抑癌基因'}],answer:{'A':'C1','C':'C1','D':'C1','E':'C1','H':'C1','J':'C1','L':'C1','M':'C1','N':'C1','B':'C2','F':'C2','G':'C2','I':'C2','K':'C2'},explanation:'原癌基因促进细胞生长增殖，包括PDGF、RAS、BRAF、ABL、ERBB2/HER2、KIT、c-MYC、MYC、CyclinD1。抑癌基因抑制细胞增殖，包括P53、BRCA、NF、WT、VHL。'},
-  {id:'int_001',subject:'internal',system:'respiratory',chapter:'慢性阻塞性肺疾病(COPD)',type:'matching',title:'COPD急性加重风险预测、mMRC问卷分级及治疗选药',description:'将下列选项与对应分类匹配：包括急性加重风险预测、mMRC问卷分级、症状分组及治疗选药',options:[{id:'A',text:'去年中度急性加重<1次'},{id:'B',text:'平地快步走或爬缓坡时出现呼吸困难'},{id:'C',text:'去年中度急性加重>2次、或因急性加重住院'},{id:'D',text:'由于呼吸困难，平地走时比同龄人慢或需停下来休息'},{id:'E',text:'剧烈活动时出现呼吸困难'},{id:'F',text:'SABA'},{id:'G',text:'3级：平地走100米或数分钟后需停下来喘气（休息）'},{id:'H',text:'LAMA'},{id:'I',text:'急性加重住院史'},{id:'J',text:'因严重呼吸困难不能离开家、或穿衣脱衣时即出现呼吸困难'},{id:'K',text:'每年>2次中度急性加重'},{id:'L',text:'LABA'},{id:'M',text:'血嗜酸性粒细胞>300'},{id:'N',text:'SAMA'},{id:'O',text:'哮喘史或伴哮喘特征'},{id:'P',text:'ICS'},{id:'Q',text:'茶碱类'}],categories:[{id:'C1',label:'低风险'},{id:'C2',label:'高风险'},{id:'C3',label:'mMRC 0级'},{id:'C4',label:'mMRC 1级'},{id:'C5',label:'mMRC 2级'},{id:'C6',label:'mMRC 3级'},{id:'C7',label:'mMRC 4级'},{id:'C8',label:'A组治疗（低风险+症状少）'},{id:'C9',label:'B组治疗（低风险+症状多）'},{id:'C10',label:'E组治疗（高风险）'},{id:'C11',label:'推荐加用ICS的条件'}],answer:{'A':'C1','I':'C11','K':'C11','C':'C2','E':'C3','B':'C4','D':'C5','G':'C6','J':'C7','F':'C8','H':'C10','L':'C10','N':'C8','Q':'C8','P':'C10','M':'C11','O':'C11'},explanation:'COPD按急性加重风险和mMRC症状分级选择治疗方案。低风险+症状少用单药支气管扩张剂，低风险+症状多用LAMA+LABA，高风险需LAMA+LABA并考虑加ICS。'},
+  {id:'int_001',subject:'internal',system:'respiratory',chapter:'慢性阻塞性肺疾病(COPD)',type:'matching',title:'COPD急性加重风险预测、mMRC问卷分级及治疗选药',description:'将下列选项与对应分类匹配：包括急性加重风险预测、mMRC问卷分级、症状分组及治疗选药',options:[{id:'A',text:'去年中度急性加重<1次'},{id:'B',text:'平地快步走或爬缓坡时出现呼吸困难'},{id:'C',text:'去年中度急性加重>2次、或因急性加重住院'},{id:'D',text:'由于呼吸困难，平地走时比同龄人慢或需停下来休息'},{id:'E',text:'剧烈活动时出现呼吸困难'},{id:'F',text:'SABA'},{id:'G',text:'3级：平地走100米或数分钟后需停下来喘气（休息）'},{id:'H',text:'LAMA'},{id:'I',text:'急性加重住院史'},{id:'J',text:'因严重呼吸困难不能离开家、或穿衣脱衣时即出现呼吸困难'},{id:'K',text:'每年>2次中度急性加重'},{id:'L',text:'LABA'},{id:'M',text:'血嗜酸性粒细胞>300'},{id:'N',text:'SAMA'},{id:'O',text:'哮喘史或伴哮喘特征'},{id:'P',text:'ICS'},{id:'Q',text:'茶碱类'}],categories:[{id:'C1',label:'低风险'},{id:'C2',label:'高风险'},{id:'C3',label:'mMRC 0级'},{id:'C4',label:'mMRC 1级'},{id:'C5',label:'mMRC 2级'},{id:'C6',label:'mMRC 3级'},{id:'C7',label:'mMRC 4级'},{id:'C8',label:'A组治疗（低风险+症状少）'},{id:'C9',label:'B组治疗（低风险+症状多）'},{id:'C10',label:'E组治疗（高风险）'},{id:'C11',label:'推荐加用ICS的条件'}],answer:{'A':'C1','I':'C11','K':'C11','C':'C2','E':'C3','B':'C4','D':'C5','G':'C6','J':'C7','F':'C8','H':['C8','C9','C10'],'L':['C8','C9','C10'],'N':'C8','Q':'C8','P':'C10','M':'C11','O':'C11'},explanation:'COPD按急性加重风险和mMRC症状分级选择治疗方案。低风险+症状少用单药支气管扩张剂，低风险+症状多用LAMA+LABA，高风险需LAMA+LABA并考虑加ICS。'},
   {id:'int_002',subject:'internal',system:'respiratory',chapter:'肺功能检查',type:'matching',title:'阻塞性通气障碍与限制性通气障碍鉴别',description:'将下列选项归类为阻塞性通气障碍/气流受限性疾病或限制性通气障碍',options:[{id:'A',text:'气道阻塞致非弹性阻力过大'},{id:'B',text:'FEV1↓'},{id:'C',text:'FEV1↓/正常'},{id:'D',text:'吸气性呼吸困难'},{id:'E',text:'TLC↑/正常'},{id:'F',text:'气流流速下降为主'},{id:'G',text:'FVC↓'},{id:'H',text:'COPD'},{id:'I',text:'MMF↓'},{id:'J',text:'FEV1/FVC正常或↑'},{id:'K',text:'支气管哮喘'},{id:'L',text:'PEF↓'},{id:'M',text:'ARDS'},{id:'N',text:'RV/TLC明显↑（>40%为肺气肿）'},{id:'O',text:'支扩'},{id:'P',text:'TLC↓'},{id:'Q',text:'FVC↓/正常'},{id:'R',text:'弹性阻力过大致肺泡扩张受限'},{id:'S',text:'细支气管炎'},{id:'T',text:'RV↑'},{id:'U',text:'呼气性呼吸困难'},{id:'V',text:'FRC↑'},{id:'W',text:'肺容积下降为主'},{id:'X',text:'RV↓'},{id:'Y',text:'FEV1/FVC↓'},{id:'Z',text:'间质性肺病'},{id:'①',text:'RV/TLC正常或略↑'},{id:'②',text:'胸膜病变'},{id:'③',text:'FRC↓'}],categories:[{id:'C1',label:'阻塞性通气障碍/气流受限性疾病'},{id:'C2',label:'限制性通气障碍'}],answer:{'A':'C1','B':'C1','E':'C1','F':'C1','H':'C1','I':'C1','K':'C1','L':'C1','N':'C1','O':'C1','Q':'C1','S':'C1','T':'C1','U':'C1','V':'C1','Y':'C1','C':'C2','D':'C2','G':'C2','J':'C2','M':'C2','P':'C2','R':'C2','W':'C2','X':'C2','Z':'C2','①':'C2','②':'C2','③':'C2'},explanation:'阻塞性通气障碍以气流流速下降为主，RV/TLC升高；限制性以肺容积下降为主，TLC↓。'},
-  {id:'int_003',subject:'internal',system:'respiratory',chapter:'慢性阻塞性肺疾病急性加重(AECOPD)',type:'matching',title:'AECOPD分级',description:'将下列选项按AECOPD严重程度分级匹配',options:[{id:'A',text:'无高碳酸血症'},{id:'B',text:'有高碳酸血症'},{id:'C',text:'无呼吸衰竭'},{id:'D',text:'无意识状态改变'},{id:'E',text:'有呼吸衰竭'},{id:'F',text:'有意识状态改变（肺性脑病）'}],categories:[{id:'C1',label:'I级'},{id:'C2',label:'II级'},{id:'C3',label:'III级'}],answer:{'A':'C1','C':'C1','D':'C2','B':'C3','E':'C3','F':'C3'},explanation:'I级无呼衰无高碳酸血症；II级有高碳酸血症无意识改变；III级有呼衰及意识改变（肺性脑病）。'},
+  {id:'int_003',subject:'internal',system:'respiratory',chapter:'慢性阻塞性肺疾病急性加重(AECOPD)',type:'matching',title:'AECOPD分级',description:'将下列选项按AECOPD严重程度分级匹配',options:[{id:'A',text:'无高碳酸血症'},{id:'B',text:'有高碳酸血症'},{id:'C',text:'无呼吸衰竭'},{id:'D',text:'无意识状态改变'},{id:'E',text:'有呼吸衰竭'},{id:'F',text:'有意识状态改变（肺性脑病）'}],categories:[{id:'C1',label:'I级'},{id:'C2',label:'II级'},{id:'C3',label:'III级'}],answer:{'A':'C1','C':'C1','D':['C1','C2'],'B':['C2','C3'],'E':['C2','C3'],'F':'C3'},explanation:'I级无呼衰无高碳酸血症(ACD)；II级有高碳酸血症及呼衰但无意识改变(BDE)；III级有呼衰及意识改变（肺性脑病）(BEF)。B/D/E存在交叉分类。'},
   {id:'int_004',subject:'internal',system:'respiratory',chapter:'慢性肺源性心脏病',type:'matching',title:'慢性肺心病临床表现（代偿期vs失代偿期）',description:'将下列选项归类为代偿期和失代偿期均可有、仅失代偿期可有',options:[{id:'A',text:'颈静脉怒张'},{id:'B',text:'肝颈静脉回流征阳性'},{id:'C',text:'剑突下/三尖瓣区收缩期杂音'},{id:'D',text:'三尖瓣区舒张期杂音'},{id:'E',text:'肝大且有压痛'},{id:'F',text:'肝界下移'},{id:'G',text:'双下肢水肿、腹水'},{id:'H',text:'呼衰'}],categories:[{id:'C1',label:'代偿期和失代偿期均可有'},{id:'C2',label:'仅失代偿期才可有'}],answer:{'A':'C1','C':'C1','F':'C1','B':'C2','D':'C2','E':'C2','G':'C2','H':'C2'},explanation:'代偿期可有颈静脉怒张、剑突下收缩期杂音、肝界下移；失代偿期才出现肝颈回流征阳性、肝大压痛、下肢水肿、呼衰等。诊断右心衰最有价值的是B。'},
   {id:'int_005',subject:'internal',system:'respiratory',chapter:'慢性肺源性心脏病',type:'matching',title:'慢性肺心病体征与代偿期/失代偿期匹配',description:'将颈静脉怒张、剑突下收缩期杂音、肝界下移等体征匹配到代偿期或失代偿期',options:[{id:'A',text:'肺气肿→胸腔负压负值↓→腔静脉回流↓'},{id:'B',text:'右心室扩大→三尖瓣相对关闭不全→三尖瓣区收缩期杂音'},{id:'C',text:'肺气肿+右心功能不全'},{id:'E',text:'右心室肥厚→乳头肌功能障碍→三尖瓣相对关闭不全→三尖瓣区收缩期杂音'},{id:'F',text:'肺气肿'}],categories:[{id:'C1',label:'代偿期'},{id:'C2',label:'失代偿期'}],answer:{'A':'C1','E':'C1','F':'C1','B':'C2','C':'C2'},explanation:'代偿期颈静脉怒张因肺气肿致胸腔负压减小；失代偿期因右心室扩大致三尖瓣关闭不全。诊断右心衰最有价值为肝颈静脉回流征阳性。'},
-  {id:'int_006',subject:'internal',system:'respiratory',chapter:'肺血栓栓塞症',type:'matching',title:'急性肺血栓栓塞症检查方法分类',description:'将下列检查方法归类为疑诊检查、确诊检查、用于危险分层、排除诊断等',options:[{id:'A',text:'超声'},{id:'B',text:'动脉血气分析'},{id:'C',text:'超声心动图'},{id:'D',text:'CT肺动脉造影CTPA'},{id:'E',text:'磁共振肺动脉造影MRPA'},{id:'F',text:'血浆D-二聚体'},{id:'G',text:'X线'},{id:'H',text:'心电图'},{id:'I',text:'肺动脉造影DSA'},{id:'J',text:'放射性核素肺通气/血流灌注（V/Q）显像'}],categories:[{id:'C1',label:'疑诊检查'},{id:'C2',label:'确诊检查'},{id:'C3',label:'用于危险分层'},{id:'C4',label:'排除诊断'},{id:'C5',label:'首选确诊检查'},{id:'C6',label:'金标准'},{id:'C7',label:'严重肾功能不全/碘过敏/妊娠患者可用'}],answer:{'A':'C1','B':'C1','C':'C3','F':'C4','G':'C1','H':'C1','D':'C5','E':'C7','I':'C6','J':'C7'},explanation:'疑诊检查包括超声、血气、超声心动图、D-二聚体、X线、心电图；确诊首选CTPA，金标准为肺动脉造影DSA；D-二聚体用于排除诊断。'},
-  {id:'int_007',subject:'internal',system:'respiratory',chapter:'抗凝与抗血小板药物',type:'matching',title:'抗凝、抗血小板及溶栓药物分类与机制',description:'将下列药物按作用机制和分类匹配',options:[{id:'A',text:'肝素'},{id:'B',text:'枸橼酸'},{id:'C',text:'阿司匹林'},{id:'D',text:'氯吡格雷'},{id:'E',text:'尿激酶'},{id:'F',text:'阿昔单抗'},{id:'G',text:'t-PA'},{id:'H',text:'草酸'},{id:'I',text:'吲哚布芬'},{id:'J',text:'华法林'},{id:'K',text:'替格瑞洛'},{id:'L',text:'替罗非班'}],categories:[{id:'C1',label:'抗凝药'},{id:'C2',label:'抗血小板聚集药'},{id:'C3',label:'溶栓药'},{id:'C4',label:'体内抗凝'},{id:'C5',label:'体外抗凝'},{id:'C6',label:'体内>体外抗凝'},{id:'C7',label:'抗凝首选'}],answer:{'A':'C7','B':'C5','H':'C5','J':'C1','C':'C2','D':'C2','F':'C2','I':'C2','K':'C2','L':'C2','E':'C3','G':'C3'},explanation:'肝素增强抗凝血酶活性，体内>体外抗凝，为抗凝首选；枸橼酸/草酸整合Ca2+为体外抗凝；华法林拮抗VitK。溶栓药为尿激酶和t-PA。'},
-  {id:'int_008',subject:'internal',system:'respiratory',chapter:'肺血栓栓塞症',type:'matching',title:'急性肺栓塞危险分层',description:'将下列选项按低危、中危、高危/大面积分层匹配',options:[{id:'A',text:'无右心功能不全'},{id:'B',text:'右心功能不全'},{id:'C',text:'血压正常'},{id:'D',text:'先溶栓（rt-PA等），再抗凝（普通肝素等）'},{id:'E',text:'血流动力学不稳定'},{id:'F',text:'不溶栓直接抗凝'},{id:'G',text:'先抗凝，可考虑溶栓'},{id:'H',text:'休克即收缩压<90mmHg、收缩压降低>40mmHg、或心搏骤停'}],categories:[{id:'C1',label:'低危'},{id:'C2',label:'中危'},{id:'C3',label:'高危/大面积'}],answer:{'A':'C1','C':'C2','F':'C1','B':'C3','G':'C2','D':'C3','E':'C3','H':'C3'},explanation:'低危无右心功能不全、血压正常、不溶栓直接抗凝；中危有右心功能不全但血压正常；高危血流动力学不稳定需先溶栓再抗凝。'},
+  {id:'int_006',subject:'internal',system:'respiratory',chapter:'肺血栓栓塞症',type:'matching',title:'急性肺血栓栓塞症检查方法分类',description:'将下列检查方法归类为疑诊检查、确诊检查、用于危险分层、排除诊断等',options:[{id:'A',text:'超声'},{id:'B',text:'动脉血气分析'},{id:'C',text:'超声心动图'},{id:'D',text:'CT肺动脉造影CTPA'},{id:'E',text:'磁共振肺动脉造影MRPA'},{id:'F',text:'血浆D-二聚体'},{id:'G',text:'X线'},{id:'H',text:'心电图'},{id:'I',text:'肺动脉造影DSA'},{id:'J',text:'放射性核素肺通气/血流灌注（V/Q）显像'}],categories:[{id:'C1',label:'疑诊检查'},{id:'C2',label:'确诊检查'},{id:'C3',label:'用于危险分层'},{id:'C4',label:'排除诊断'},{id:'C5',label:'首选确诊检查'},{id:'C6',label:'金标准'},{id:'C7',label:'严重肾功能不全/碘过敏/妊娠患者可用'}],answer:{'A':'C1','B':'C1','C':['C1','C3'],'F':['C1','C4'],'G':'C1','H':'C1','D':['C2','C5'],'E':['C2','C7'],'I':['C2','C6'],'J':['C2','C7']},explanation:'疑诊检查包括超声、血气、超声心动图、D-二聚体、X线、心电图；确诊首选CTPA，金标准为肺动脉造影DSA；D-二聚体用于排除诊断。'},
+  {id:'int_007',subject:'internal',system:'respiratory',chapter:'抗凝与抗血小板药物',type:'matching',title:'抗凝、抗血小板及溶栓药物分类与机制',description:'将下列药物按作用机制和分类匹配',options:[{id:'A',text:'肝素'},{id:'B',text:'枸橼酸'},{id:'C',text:'阿司匹林'},{id:'D',text:'氯吡格雷'},{id:'E',text:'尿激酶'},{id:'F',text:'阿昔单抗'},{id:'G',text:'t-PA'},{id:'H',text:'草酸'},{id:'I',text:'吲哚布芬'},{id:'J',text:'华法林'},{id:'K',text:'替格瑞洛'},{id:'L',text:'替罗非班'}],categories:[{id:'C1',label:'抗凝药'},{id:'C2',label:'抗血小板聚集药'},{id:'C3',label:'溶栓药'},{id:'C4',label:'体内抗凝'},{id:'C5',label:'体外抗凝'},{id:'C6',label:'体内>体外抗凝'},{id:'C7',label:'抗凝首选'}],answer:{'A':['C1','C6','C7'],'B':['C1','C5'],'H':['C1','C5'],'J':['C1','C4'],'C':'C2','D':'C2','F':'C2','I':'C2','K':'C2','L':'C2','E':'C3','G':'C3'},explanation:'肝素增强抗凝血酶活性，体内>体外抗凝，为抗凝首选；枸橼酸/草酸整合Ca2+为体外抗凝；华法林拮抗VitK。溶栓药为尿激酶和t-PA。'},
+  {id:'int_008',subject:'internal',system:'respiratory',chapter:'肺血栓栓塞症',type:'matching',title:'急性肺栓塞危险分层',description:'将下列选项按低危、中危、高危/大面积分层匹配',options:[{id:'A',text:'无右心功能不全'},{id:'B',text:'右心功能不全'},{id:'C',text:'血压正常'},{id:'D',text:'先溶栓（rt-PA等），再抗凝（普通肝素等）'},{id:'E',text:'血流动力学不稳定'},{id:'F',text:'不溶栓直接抗凝'},{id:'G',text:'先抗凝，可考虑溶栓'},{id:'H',text:'休克即收缩压<90mmHg、收缩压降低>40mmHg、或心搏骤停'}],categories:[{id:'C1',label:'低危'},{id:'C2',label:'中危'},{id:'C3',label:'高危/大面积'}],answer:{'A':'C1','C':['C1','C2'],'F':'C1','B':['C2','C3'],'G':'C2','D':'C3','E':'C3','H':'C3'},explanation:'低危无右心功能不全、血压正常、不溶栓直接抗凝；中危有右心功能不全但血压正常；高危血流动力学不稳定需先溶栓再抗凝。'},
   {id:'int_009',subject:'internal',system:'respiratory',chapter:'低氧血症',type:'matching',title:'低氧血症最主要的机制',description:'将以下机制与对应疾病匹配',options:[{id:'A',text:'肺泡通气量↓'},{id:'B',text:'VA/Q失调'},{id:'C',text:'弥散障碍（DLco↓）'},{id:'D',text:'肺内分流'}],categories:[{id:'C1',label:'COPD'},{id:'C2',label:'肺动脉栓塞'},{id:'C3',label:'支气管哮喘'},{id:'C4',label:'间质性肺疾病'},{id:'C5',label:'肺炎'},{id:'C6',label:'肺泡蛋白沉着症'},{id:'C7',label:'ARDS'}],answer:{'A':['C1','C3'],'B':['C2','C5'],'C':'C4','D':['C6','C7']},explanation:'COPD：A。肺动脉栓塞：B。支气管哮喘：A。间质性肺疾病：C。肺炎：B。肺泡蛋白沉着症：D。ARDS：D。'},
   {id:'int_010',subject:'internal',system:'respiratory',chapter:'间质性肺疾病',type:'matching',title:'间质性肺疾病鉴别诊断',description:'将以下检查特征与对应疾病匹配',options:[{id:'A',text:'支气管肺泡灌洗液BALF：中性粒、嗜酸性粒细胞↑'},{id:'B',text:'BALF：CD4T↑细胞为主'},{id:'C',text:'影像学：磨玻璃影与正常组织截然分开呈地图样、铺路石样、蝴蝶样（肺门周围的肺泡渗出）'},{id:'D',text:'影像学：肺水肿反转形状（反酸）'},{id:'E',text:'HRCT：双肺外带胸膜下、基底部分布为主，伴或不伴牵拉支气管扩张'},{id:'F',text:'BALF：CD8T细胞↑为主'},{id:'G',text:'HRCT：双肺门淋巴结肿大，沿支气管血管束分布的结节'},{id:'H',text:'BALF：嗜酸性粒细胞明显↑'},{id:'I',text:'BALF：奶白色、稠厚、分层、PAS（+）'},{id:'J',text:'影像学：磨玻璃斑片影的马赛克征'}],categories:[{id:'C1',label:'特发性肺间质纤维化'},{id:'C2',label:'结节病'},{id:'C3',label:'肺泡蛋白沉着症'},{id:'C4',label:'过敏性肺炎'},{id:'C5',label:'嗜酸性粒细胞性肺炎'}],answer:{'A':'C1','B':'C2','C':'C3','D':'C5','E':'C1','F':'C4','G':'C2','H':'C5','I':'C3','J':'C4'},explanation:'特发性肺间质纤维化：AE。结节病：BG。肺泡蛋白沉着症：CI。过敏性肺炎：FJ。嗜酸性粒细胞性肺炎：DH。'},
-  {id:'int_011',subject:'internal',system:'respiratory',chapter:'结节病',type:'matching',title:'结节病分期',description:'将下列影像学表现与结节病分期匹配',options:[{id:'A',text:'双肺门淋巴结肿大、肺部浸润影'},{id:'B',text:'肺部浸润影'},{id:'C',text:'双肺门淋巴结肿大'},{id:'D',text:'蜂窝肺、肺纤维化、肺气肿'}],categories:[{id:'C1',label:'I期'},{id:'C2',label:'II期'}],answer:{'A':'C1','C':'C1','B':'C2'},explanation:'I期为双肺门淋巴结肿大（可伴肺部浸润影）；II期已有肺部浸润影。III/IV期进一步进展至纤维化。'},
-  {id:'int_012',subject:'internal',system:'respiratory',chapter:'结节病与肺结核鉴别',type:'matching',title:'肺结节病与肺结核鉴别',description:'将下列特征归类为肺结节病或肺结核',options:[{id:'A',text:'CD4T细胞相关'},{id:'B',text:'肉芽肿'},{id:'C',text:'发热、体重减轻、盗汗、结节性红斑、关节炎'},{id:'D',text:'干酪性肉芽肿'},{id:'E',text:'肺门淋巴结肿大多为双侧'},{id:'F',text:'PPD试验多(-)'},{id:'G',text:'肺上叶多见，肺门淋巴结肿大，蜂窝肺'},{id:'H',text:'非干酪性肉芽肿'},{id:'I',text:'肺门淋巴结肿大多为单侧'},{id:'J',text:'PPD试验多(+)'},{id:'K',text:'治疗时间至少6个月（肺结核初治：强化期2个月、巩固期4个月）'}],categories:[{id:'C1',label:'肺结节病'},{id:'C2',label:'肺结核'}],answer:{'A':'C1','B':'C2','C':'C2','E':'C1','F':'C1','H':'C1','K':'C2','D':'C2','G':'C2','I':'C2','J':'C2'},explanation:'结节病为非干酪性肉芽肿、PPD多阴性、肺门淋巴结双侧肿大；肺结核为干酪性肉芽肿、PPD多阳性、肺门淋巴结单侧肿大。'},
-  {id:'int_013',subject:'internal',system:'respiratory',chapter:'支气管扩张',type:'matching',title:'支气管扩张的治疗（咯血治疗与感染治疗）',description:'将下列治疗选项按咯血治疗和感染治疗分类匹配',options:[{id:'A',text:'垂体后叶素'},{id:'B',text:'针对流感嗜血杆菌'},{id:'C',text:'>500ml/d或>100ml/次'},{id:'D',text:'妥布霉素'},{id:'E',text:'亚胺培南'},{id:'F',text:'介入栓塞支气管动脉'},{id:'G',text:'头孢他啶/哌酮/吡等三四代头孢'},{id:'H',text:'氨苄西林'},{id:'I',text:'手术切除'},{id:'J',text:'美罗培南'},{id:'K',text:'环丙沙星'},{id:'L',text:'阿莫西林'},{id:'M',text:'厄他培南'},{id:'N',text:'二三代头孢'},{id:'O',text:'左氧氟沙星'},{id:'P',text:'呼吸喹诺酮类'},{id:'Q',text:'诺氟沙星'},{id:'R',text:'哌拉西林-他唑巴坦'},{id:'S',text:'住院'},{id:'T',text:'酚妥拉明'},{id:'U',text:'头孢曲松'}],categories:[{id:'C1',label:'咯血治疗-量中'},{id:'C2',label:'咯血治疗-量大'},{id:'C3',label:'咯血治疗-病变局限'},{id:'C4',label:'咯血治疗-病变弥漫'},{id:'C5',label:'感染治疗-无铜绿假单胞菌感染高危因素'},{id:'C6',label:'感染治疗-有铜绿假单胞菌感染高危因素'},{id:'C7',label:'有铜绿假单胞菌感染高危因素不选'}],answer:{'A':'C1','T':'C1','C':'C2','I':'C3','F':'C4','B':'C5','H':'C5','K':'C6','L':'C5','N':'C5','O':'C6','P':'C6','D':'C6','E':'C6','G':'C6','J':'C6','R':'C6','S':'C6','M':'C7','Q':'C7','U':'C7'},explanation:'咯血量中用垂体后叶素/酚妥拉明；量大(>500ml/d)需介入栓塞或手术。无铜绿高危选氨苄西林等；有铜绿高危选三四代头孢、碳青霉烯、哌拉西林他唑巴坦等。'},
-  {id:'int_014',subject:'internal',system:'respiratory',chapter:'支气管扩张与COPD鉴别',type:'matching',title:'支气管扩张VS COPD',description:'将下列特征归类为支扩或COPD',options:[{id:'A',text:'多无咯血和杵状指'},{id:'B',text:'长期咳痰'},{id:'C',text:'大量脓痰'},{id:'D',text:'多有咯血和杵状指'}],categories:[{id:'C1',label:'支扩'},{id:'C2',label:'COPD'}],answer:{'B':'C2','C':'C1','D':'C1','A':'C2'},explanation:'支扩特点为大量脓痰、咯血和杵状指；COPD为长期咳痰但多无咯血和杵状指。'},
+  {id:'int_011',subject:'internal',system:'respiratory',chapter:'结节病',type:'matching',title:'结节病分期',description:'将下列影像学表现与结节病分期匹配',options:[{id:'A',text:'双肺门淋巴结肿大、肺部浸润影'},{id:'B',text:'肺部浸润影'},{id:'C',text:'双肺门淋巴结肿大'},{id:'D',text:'蜂窝肺、肺纤维化、肺气肿'}],categories:[{id:'C1',label:'I期'},{id:'C2',label:'II期'},{id:'C3',label:'III期'},{id:'C4',label:'IV期'}],answer:{'C':'C1','A':'C2','B':'C3','D':'C4'},explanation:'I期为双肺门淋巴结肿大(C)；II期为双肺门淋巴结肿大伴肺部浸润影(A)；III期仅有肺部浸润影(B)；IV期为蜂窝肺、肺纤维化、肺气肿(D)。'},
+  {id:'int_012',subject:'internal',system:'respiratory',chapter:'结节病与肺结核鉴别',type:'matching',title:'肺结节病与肺结核鉴别',description:'将下列特征归类为肺结节病或肺结核',options:[{id:'A',text:'CD4T细胞相关'},{id:'B',text:'肉芽肿'},{id:'C',text:'发热、体重减轻、盗汗、结节性红斑、关节炎'},{id:'D',text:'干酪性肉芽肿'},{id:'E',text:'肺门淋巴结肿大多为双侧'},{id:'F',text:'PPD试验多(-)'},{id:'G',text:'肺上叶多见，肺门淋巴结肿大，蜂窝肺'},{id:'H',text:'非干酪性肉芽肿'},{id:'I',text:'肺门淋巴结肿大多为单侧'},{id:'J',text:'PPD试验多(+)'},{id:'K',text:'治疗时间至少6个月（肺结核初治：强化期2个月、巩固期4个月）'}],categories:[{id:'C1',label:'肺结节病'},{id:'C2',label:'肺结核'}],answer:{'A':['C1','C2'],'B':['C1','C2'],'C':['C1','C2'],'E':'C1','F':'C1','H':'C1','K':['C1','C2'],'D':'C2','G':['C1','C2'],'I':'C2','J':'C2'},explanation:'结节病为非干酪性肉芽肿、PPD多阴性、肺门淋巴结双侧肿大；肺结核为干酪性肉芽肿、PPD多阳性、肺门淋巴结单侧肿大。'},
+  {id:'int_013',subject:'internal',system:'respiratory',chapter:'支气管扩张',type:'matching',title:'支气管扩张的治疗（咯血治疗与感染治疗）',description:'将下列治疗选项按咯血治疗和感染治疗分类匹配',options:[{id:'A',text:'垂体后叶素'},{id:'B',text:'针对流感嗜血杆菌'},{id:'C',text:'>500ml/d或>100ml/次'},{id:'D',text:'妥布霉素'},{id:'E',text:'亚胺培南'},{id:'F',text:'介入栓塞支气管动脉'},{id:'G',text:'头孢他啶/哌酮/吡等三四代头孢'},{id:'H',text:'氨苄西林'},{id:'I',text:'手术切除'},{id:'J',text:'美罗培南'},{id:'K',text:'环丙沙星'},{id:'L',text:'阿莫西林'},{id:'M',text:'厄他培南'},{id:'N',text:'二三代头孢'},{id:'O',text:'左氧氟沙星'},{id:'P',text:'呼吸喹诺酮类'},{id:'Q',text:'诺氟沙星'},{id:'R',text:'哌拉西林-他唑巴坦'},{id:'S',text:'住院'},{id:'T',text:'酚妥拉明'},{id:'U',text:'头孢曲松'}],categories:[{id:'C1',label:'咯血治疗-量中'},{id:'C2',label:'咯血治疗-量大'},{id:'C3',label:'咯血治疗-病变局限'},{id:'C4',label:'咯血治疗-病变弥漫'},{id:'C5',label:'感染治疗-无铜绿假单胞菌感染高危因素'},{id:'C6',label:'感染治疗-有铜绿假单胞菌感染高危因素'},{id:'C7',label:'有铜绿假单胞菌感染高危因素不选'}],answer:{'A':'C1','T':'C1','C':'C2','I':'C3','F':'C4','B':'C5','H':'C5','K':['C5','C6'],'L':'C5','N':'C5','O':['C5','C6'],'P':['C5','C6'],'D':'C6','E':'C6','G':'C6','J':'C6','R':'C6','S':'C6','M':'C7','Q':'C7','U':'C7'},explanation:'咯血量中用垂体后叶素/酚妥拉明；量大(>500ml/d)需介入栓塞或手术。无铜绿高危选氨苄西林等；有铜绿高危选三四代头孢、碳青霉烯、哌拉西林他唑巴坦等。'},
+  {id:'int_014',subject:'internal',system:'respiratory',chapter:'支气管扩张与COPD鉴别',type:'matching',title:'支气管扩张VS COPD',description:'将下列特征归类为支扩或COPD',options:[{id:'A',text:'多无咯血和杵状指'},{id:'B',text:'长期咳痰'},{id:'C',text:'大量脓痰'},{id:'D',text:'多有咯血和杵状指'}],categories:[{id:'C1',label:'支扩'},{id:'C2',label:'COPD'}],answer:{'B':['C1','C2'],'C':'C1','D':'C1','A':'C2'},explanation:'支扩特点为大量脓痰、咯血和杵状指；COPD为长期咳痰但多无咯血和杵状指。'},
   {id:'int_016b',subject:'internal',system:'respiratory',chapter:'支气管扩张',type:'matching',title:'支扩VS肺结核',description:'将以下特征与对应疾病匹配',options:[{id:'A',text:'多有咯血'},{id:'B',text:'大量脓痰'},{id:'C',text:'多长期低热'},{id:'D',text:'多不发热或高热（继发感染）'}],categories:[{id:'C1',label:'支气管扩张'},{id:'C2',label:'肺结核'}],answer:{'A':['C1','C2'],'B':'C1','C':'C2','D':'C1'},explanation:'支扩：ABD。肺结核：AC。'},
   {id:'int_016c',subject:'internal',system:'respiratory',chapter:'支气管扩张',type:'matching',title:'支扩VS慢性肺脓肿',description:'将以下特征与对应疾病匹配',options:[{id:'A',text:'长期咳大量脓痰'},{id:'B',text:'多有咯血和杵状指'},{id:'C',text:'痰分3层、厚壁空洞'},{id:'D',text:'痰分4层、薄壁囊腔'}],categories:[{id:'C1',label:'支气管扩张'},{id:'C2',label:'慢性肺脓肿'}],answer:{'A':['C1','C2'],'B':['C1','C2'],'C':'C2','D':'C1'},explanation:'支扩：ABD。慢性肺脓肿：ABC。'},
-  {id:'int_017',subject:'internal',system:'respiratory',chapter:'肺炎',type:'matching',title:'社区获得性肺炎(CAP)与医院获得性肺炎(HAP)鉴别',description:'将下列选项归类为CAP或HAP，并识别CAP最常见病原体',options:[{id:'A',text:'在医院外发生的肺炎、或在医院外感染了有明确潜伏期的病原体而在入院后平均潜伏期内发病的肺炎'},{id:'B',text:'肺炎链球菌'},{id:'C',text:'G-杆菌（大肠杆菌、克雷伯杆菌、鲍曼不动杆菌、铜绿假单胞菌）'},{id:'D',text:'支原体'},{id:'E',text:'空气吸入、误吸上呼吸道定植菌、邻近感染灶蔓延、血行播散等'},{id:'F',text:'衣原体'},{id:'G',text:'误吸胃肠道定植菌（胃食管反流病、脑卒中、醉酒等）'},{id:'H',text:'流感嗜血杆菌'},{id:'I',text:'呼吸道病毒'},{id:'J',text:'金葡菌'},{id:'K',text:'在入院时不存在、也不处于潜伏期，在入院>48小时后在医院内新发生的肺炎'},{id:'L',text:'通过人工气道吸入环境中的致病菌'}],categories:[{id:'C1',label:'社区获得性肺炎CAP'},{id:'C2',label:'医院获得性肺炎HAP'},{id:'C3',label:'CAP最常见病原体'}],answer:{'A':'C1','B':'C3','D':'C1','E':'C1','F':'C1','H':'C1','I':'C1','C':'C2','G':'C2','J':'C2','K':'C2','L':'C2'},explanation:'CAP病原体以肺炎链球菌最常见，还包括支原体、衣原体、流感嗜血杆菌、病毒等；HAP以G-杆菌和金葡菌为主。'},
-  {id:'int_018',subject:'internal',system:'respiratory',chapter:'肺炎',type:'matching',title:'各类肺炎的临床表现、影像学及治疗鉴别',description:'将下列选项按肺炎类型（肺炎链球菌、金葡菌、克雷伯杆菌、支原体、军团菌、病毒性）匹配',options:[{id:'A',text:'主要导致大叶性肺炎'},{id:'B',text:'主要导致小叶性肺炎'},{id:'C',text:'属于间质性肺炎'},{id:'D',text:'属于非典型病原体'},{id:'E',text:'本身抵抗力较强的青壮年在抵抗力突然变差时出现'},{id:'F',text:'中老年多见，常发生在醉酒、脑卒中等误吸'},{id:'G',text:'儿童、青年多见'},{id:'H',text:'受凉、醉酒等多见'},{id:'I',text:'糖尿病、痈、骨髓炎、住院频繁用抗生素等多见'},{id:'J',text:'急性起病、寒战高热、血WBC↑'},{id:'K',text:'起病较缓（潜伏期约2-3周），一般低中热或不发热，血WBC正常或略↑'},{id:'L',text:'脓痰带血'},{id:'M',text:'咳铁锈色痰'},{id:'N',text:'砖红色胶冻状痰'},{id:'O',text:'痰少'},{id:'P',text:'呈持久阵发性剧咳（发热退完后咳嗽还可持续存在）'},{id:'Q',text:'口角单纯疱疹在本身抵抗力较强的青壮年在抵抗力突然变差时疱疹病毒趁虚而入'},{id:'R',text:'口角单纯疱疹在抵抗力本身较差常感染'},{id:'S',text:'常有野游史'},{id:'T',text:'实变体征'},{id:'U',text:'冬春季节多见'},{id:'V',text:'肺外表现（耳痛、皮疹等）多见'},{id:'W',text:'急性起病，寒战高热，血WBC多正常或↓（淋巴细胞可↑可↓）'},{id:'X',text:'具有自限性'},{id:'Y',text:'全身症状突出，肺部体征可轻微、可严重（如SARS并发ARDS）'},{id:'Z',text:'症状多如腹泻'},{id:'①',text:'X线或CT支气管充气征，大叶性实变影'},{id:'②',text:'叶间隙下坠、蜂窝状脓肿'},{id:'③',text:'绝无空洞'},{id:'④',text:'易形成空洞，斑片或实变影'},{id:'⑤',text:'肺炎中最易形成空洞，斑片或实变影'},{id:'a',text:'不宜用抗生素预防继发性的细菌感染。一旦合并细菌感染再及时选用敏感抗生素'},{id:'b',text:'治疗首选青霉素'},{id:'c',text:'苯唑西林、氯唑西林或头孢呋辛'},{id:'d',text:'若青霉素耐药用喹诺酮、头孢噻肟、头孢曲松'},{id:'e',text:'β-内酰胺类，重症联合喹诺酮类或氨基糖苷类（阿米卡星/妥布霉素）'},{id:'f',text:'对大环内酯类如红霉素/罗红霉素/阿奇霉素高耐药'},{id:'g',text:'对症治疗、抗病毒药（奥司他韦/利巴韦林/阿昔洛韦）'},{id:'h',text:'首选喹诺酮如左氧氟沙星/莫西沙星'},{id:'i',text:'耐甲氧西林金葡菌MRSA用多肽类万古霉素、替考拉宁、利奈唑胺或头孢洛林'},{id:'j',text:'四环素类'},{id:'k',text:'重症者可酌情用糖皮质激素'},{id:'⑥',text:'不易形成空洞'},{id:'⑦',text:'磨玻璃斑片或实变影，多分布在双肺外周胸膜下'},{id:'⑧',text:'早期网格影，后期沿支气管／肺纹理散在分布的不规则斑片影、多累及双肺下叶'},{id:'⑨',text:'大片实变及明显胸腔积液少见'},{id:'⑩',text:'多发易变结节、空洞、液气囊腔（可致脓气胸）'},{id:'l',text:'β内酰胺类如青霉素、头孢菌素类'}],categories:[{id:'C1',label:'肺炎链球菌肺炎'},{id:'C2',label:'金葡菌肺炎'},{id:'C3',label:'克雷伯杆菌肺炎'},{id:'C4',label:'支原体肺炎'},{id:'C5',label:'军团菌肺炎'},{id:'C6',label:'病毒性肺炎'}],answer:{'A':'C1','E':'C1','H':'C1','J':['C1','C2','C3','C5'],'M':'C1','Q':'C1','T':'C1','①':'C1','③':'C1','b':'C1','d':'C1','B':['C2','C3'],'I':'C2','L':['C2','C3'],'R':['C2','C3'],'⑤':'C2','⑩':'C2','c':'C2','i':'C2','F':'C3','N':'C3','④':'C3','e':'C3','C':['C4','C6'],'D':['C4','C5'],'G':'C4','K':'C4','O':['C4','C5','C6'],'P':'C4','S':['C4','C5'],'V':['C4','C5'],'X':'C4','⑥':['C4','C5','C6'],'⑧':['C4','C5'],'f':'C4','h':'C4','j':'C4','Z':'C5','U':'C6','W':'C6','Y':'C6','⑦':'C6','⑨':'C6','a':'C6','g':'C6','k':'C6'},explanation:'肺炎链球菌肺炎：表现AEHJMQT，影像①③，治疗bd。金葡菌肺炎：表现BIJLR，影像⑤⑩，治疗ci。克雷伯杆菌肺炎：表现BFJLNR，影像④，治疗e。支原体肺炎：表现CDGKOPSVX，影像⑥⑧，治疗fhj，对支原体无效的：l。军团菌肺炎：表现DJOSVZ，影像⑥⑧，治疗无答案。病毒性肺炎：表现COUWY，影像⑥⑦⑨，治疗agk。HAP见到脓痰带血首先考虑金葡菌。肺炎题中看到磨玻璃影首选考虑病毒性肺炎。'},
+  {id:'int_017',subject:'internal',system:'respiratory',chapter:'肺炎',type:'matching',title:'社区获得性肺炎(CAP)与医院获得性肺炎(HAP)鉴别',description:'将下列选项归类为CAP或HAP，并识别CAP最常见病原体',options:[{id:'A',text:'在医院外发生的肺炎、或在医院外感染了有明确潜伏期的病原体而在入院后平均潜伏期内发病的肺炎'},{id:'B',text:'肺炎链球菌'},{id:'C',text:'G-杆菌（大肠杆菌、克雷伯杆菌、鲍曼不动杆菌、铜绿假单胞菌）'},{id:'D',text:'支原体'},{id:'E',text:'空气吸入、误吸上呼吸道定植菌、邻近感染灶蔓延、血行播散等'},{id:'F',text:'衣原体'},{id:'G',text:'误吸胃肠道定植菌（胃食管反流病、脑卒中、醉酒等）'},{id:'H',text:'流感嗜血杆菌'},{id:'I',text:'呼吸道病毒'},{id:'J',text:'金葡菌'},{id:'K',text:'在入院时不存在、也不处于潜伏期，在入院>48小时后在医院内新发生的肺炎'},{id:'L',text:'通过人工气道吸入环境中的致病菌'}],categories:[{id:'C1',label:'社区获得性肺炎CAP'},{id:'C2',label:'医院获得性肺炎HAP'},{id:'C3',label:'CAP最常见病原体'}],answer:{'A':'C1','B':['C1','C3'],'D':'C1','E':'C1','F':'C1','H':'C1','I':'C1','C':'C2','G':'C2','J':'C2','K':'C2','L':'C2'},explanation:'CAP病原体以肺炎链球菌最常见（B同时归属CAP和CAP最常见病原体），还包括支原体、衣原体、流感嗜血杆菌、病毒等；HAP以G-杆菌和金葡菌为主。'},
+  {id:'int_018',subject:'internal',system:'respiratory',chapter:'肺炎',type:'matching',title:'各类肺炎的临床表现、影像学及治疗鉴别',description:'将下列选项按肺炎类型（肺炎链球菌、金葡菌、克雷伯杆菌、支原体、军团菌、病毒性）匹配',options:[{id:'A',text:'主要导致大叶性肺炎'},{id:'B',text:'主要导致小叶性肺炎'},{id:'C',text:'属于间质性肺炎'},{id:'D',text:'属于非典型病原体'},{id:'E',text:'本身抵抗力较强的青壮年在抵抗力突然变差时出现'},{id:'F',text:'中老年多见，常发生在醉酒、脑卒中等误吸'},{id:'G',text:'儿童、青年多见'},{id:'H',text:'受凉、醉酒等多见'},{id:'I',text:'糖尿病、痈、骨髓炎、住院频繁用抗生素等多见'},{id:'J',text:'急性起病、寒战高热、血WBC↑'},{id:'K',text:'起病较缓（潜伏期约2-3周），一般低中热或不发热，血WBC正常或略↑'},{id:'L',text:'脓痰带血'},{id:'M',text:'咳铁锈色痰'},{id:'N',text:'砖红色胶冻状痰'},{id:'O',text:'痰少'},{id:'P',text:'呈持久阵发性剧咳（发热退完后咳嗽还可持续存在）'},{id:'Q',text:'口角单纯疱疹在本身抵抗力较强的青壮年在抵抗力突然变差时疱疹病毒趁虚而入'},{id:'R',text:'口角单纯疱疹在抵抗力本身较差常感染'},{id:'S',text:'常有野游史'},{id:'T',text:'实变体征'},{id:'U',text:'冬春季节多见'},{id:'V',text:'肺外表现（耳痛、皮疹等）多见'},{id:'W',text:'急性起病，寒战高热，血WBC多正常或↓（淋巴细胞可↑可↓）'},{id:'X',text:'具有自限性'},{id:'Y',text:'全身症状突出，肺部体征可轻微、可严重（如SARS并发ARDS）'},{id:'Z',text:'症状多如腹泻'},{id:'①',text:'X线或CT支气管充气征，大叶性实变影'},{id:'②',text:'叶间隙下坠、蜂窝状脓肿'},{id:'③',text:'绝无空洞'},{id:'④',text:'易形成空洞，斑片或实变影'},{id:'⑤',text:'肺炎中最易形成空洞，斑片或实变影'},{id:'a',text:'不宜用抗生素预防继发性的细菌感染。一旦合并细菌感染再及时选用敏感抗生素'},{id:'b',text:'治疗首选青霉素'},{id:'c',text:'苯唑西林、氯唑西林或头孢呋辛'},{id:'d',text:'若青霉素耐药用喹诺酮、头孢噻肟、头孢曲松'},{id:'e',text:'β-内酰胺类，重症联合喹诺酮类或氨基糖苷类（阿米卡星/妥布霉素）'},{id:'f',text:'对大环内酯类如红霉素/罗红霉素/阿奇霉素高耐药'},{id:'g',text:'对症治疗、抗病毒药（奥司他韦/利巴韦林/阿昔洛韦）'},{id:'h',text:'首选喹诺酮如左氧氟沙星/莫西沙星'},{id:'i',text:'耐甲氧西林金葡菌MRSA用多肽类万古霉素、替考拉宁、利奈唑胺或头孢洛林'},{id:'j',text:'四环素类'},{id:'k',text:'重症者可酌情用糖皮质激素'},{id:'⑥',text:'不易形成空洞'},{id:'⑦',text:'磨玻璃斑片或实变影，多分布在双肺外周胸膜下'},{id:'⑧',text:'早期网格影，后期沿支气管／肺纹理散在分布的不规则斑片影、多累及双肺下叶'},{id:'⑨',text:'大片实变及明显胸腔积液少见'},{id:'⑩',text:'多发易变结节、空洞、液气囊腔（可致脓气胸）'},{id:'l',text:'β内酰胺类如青霉素、头孢菌素类'}],categories:[{id:'C1',label:'肺炎链球菌肺炎'},{id:'C2',label:'金葡菌肺炎'},{id:'C3',label:'克雷伯杆菌肺炎'},{id:'C4',label:'支原体肺炎'},{id:'C5',label:'军团菌肺炎'},{id:'C6',label:'病毒性肺炎'}],answer:{'A':'C1','E':'C1','H':'C1','J':['C1','C2','C3','C5'],'M':'C1','Q':'C1','T':'C1','①':'C1','③':'C1','b':'C1','d':'C1','B':['C2','C3'],'I':'C2','L':['C2','C3'],'R':['C2','C3'],'⑤':'C2','⑩':'C2','c':'C2','i':'C2','F':'C3','N':'C3','④':'C3','②':'C3','e':'C3','C':['C4','C6'],'D':['C4','C5'],'G':'C4','K':'C4','O':['C4','C5','C6'],'P':'C4','S':['C4','C5'],'V':['C4','C5'],'X':'C4','⑥':['C4','C5','C6'],'⑧':['C4','C5'],'f':'C4','h':['C4','C5'],'j':'C4','Z':'C5','U':'C6','W':'C6','Y':'C6','⑦':'C6','⑨':'C6','a':'C6','g':'C6','k':'C6'},explanation:'肺炎链球菌肺炎：表现AEHJMQT，影像①③，治疗bd。金葡菌肺炎：表现BIJLR，影像⑤⑩，治疗ci。克雷伯杆菌肺炎：表现BFJLNR，影像④，治疗e。支原体肺炎：表现CDGKOPSVX，影像⑥⑧，治疗fhj，对支原体无效的：l。军团菌肺炎：表现DJOSVZ，影像⑥⑧，治疗h（喹诺酮对支原体和军团菌均有效）。病毒性肺炎：表现COUWY，影像⑥⑦⑨，治疗agk。HAP见到脓痰带血首先考虑金葡菌。肺炎题中看到磨玻璃影首选考虑病毒性肺炎。'},
   {id:'int_018b',subject:'internal',system:'respiratory',chapter:'肺炎',type:'matching',title:'肺部疾病好发部位匹配',description:'将以下好发部位与对应疾病匹配',options:[{id:'A',text:'上叶下部、下叶上部近胸膜处'},{id:'B',text:'单侧肺下叶'},{id:'C',text:'上叶尖后段'},{id:'D',text:'双肺下叶和背侧'},{id:'E',text:'左肺下叶'},{id:'F',text:'下叶'},{id:'G',text:'右肺上叶后段或下叶背段'},{id:'H',text:'双肺胸膜下、基底部'},{id:'I',text:'上叶尖后段、下叶背段和后基底段'}],categories:[{id:'C1',label:'大叶性肺炎'},{id:'C2',label:'小叶性肺炎'},{id:'C3',label:'支扩'},{id:'C4',label:'干性支扩'},{id:'C5',label:'吸入性肺脓肿仰卧位'},{id:'C6',label:'原发型肺结核'},{id:'C7',label:'继发型肺结核'},{id:'C8',label:'肺梗死'},{id:'C9',label:'特发性肺间质纤维化'},{id:'C10',label:'HIV/AIDS并发肺结核'}],answer:{'A':'C6','B':'C1','C':'C4','D':'C2','E':'C3','F':['C8','C10'],'G':'C5','H':'C9','I':'C7'},explanation:'大叶性肺炎：B(单侧肺下叶)。小叶性肺炎：D(双肺下叶和背侧)。支扩：E(左肺下叶)。干性支扩：C(上叶尖后段)。吸入性肺脓肿仰卧位：G(右肺上叶后段或下叶背段)。原发型肺结核：A(上叶下部、下叶上部近胸膜处)。继发型肺结核：I(上叶尖后段、下叶背段和后基底段)。肺梗死：F(下叶)。特发性肺间质纤维化：H(双肺胸膜下、基底部)。HIV/AIDS并发肺结核：F(下叶)。'},
   {id:'int_020',subject:'internal',system:'respiratory',chapter:'肺结核',type:'matching',title:'肺结核影像学表现（活动性vs局限修复）',description:'将下列影像学表现归类为活动性病变或局限修复',options:[{id:'A',text:'有渗出/空洞/播散（+钙化/纤维化/条索）'},{id:'B',text:'有钙化/纤维化/条索'}],categories:[{id:'C1',label:'活动性病变的影像学表现'},{id:'C2',label:'局限修复的影像学表现'}],answer:{'A':'C1','B':'C2'},explanation:'活动性病变表现为渗出、空洞、播散；局限修复表现为钙化、纤维化、条索影。'},
   {id:'int_021',subject:'internal',system:'respiratory',chapter:'肺结核诊断',type:'matching',title:'肺结核检查方法（PPD、痰涂片、痰培养）',description:'将下列检查方法的特点匹配到对应检查',options:[{id:'A',text:'感染结核杆菌4-8周内阴性，4-8周后阳性'},{id:'B',text:'确诊首选'},{id:'C',text:'属于常规检查，对提示结核病价值有限'},{id:'D',text:'确诊金标准'},{id:'E',text:'是确定肺结核是否为传染源的依据'},{id:'F',text:'阳性对提示婴幼儿、儿童结核病价值较大，特别是未接种卡介苗的婴幼儿'},{id:'G',text:'阳性提示为活动性肺结核'},{id:'H',text:'阳性提示开放性肺结核，传染性大'}],categories:[{id:'C1',label:'结核菌素试验PPD'},{id:'C2',label:'痰涂片'},{id:'C3',label:'痰培养'}],answer:{'A':'C1','C':'C1','F':'C1','B':'C2','E':'C2','H':'C2','D':'C3','G':'C3'},explanation:'PPD试验感染4-8周内阴性后转阳性，对婴幼儿价值大；痰涂片为确诊首选、确定传染源依据；痰培养为金标准、提示活动性肺结核。'},
-  {id:'int_022',subject:'internal',system:'respiratory',chapter:'肺结核治疗',type:'matching',title:'结核菌菌群分类与药物敏感性',description:'将下列特征匹配到结核菌A/B/C/D群',options:[{id:'A',text:'最活跃，干酪液化处特别多，极易耐药'},{id:'B',text:'无任何药物敏感'},{id:'C',text:'利福平最敏感'},{id:'D',text:'异烟肼最敏感'},{id:'E',text:'吡嗪酰胺最敏感'},{id:'F',text:'处于半静止状态，繁殖速度较慢'},{id:'G',text:'完全休眠状态、无致病力、无传染性'}],categories:[{id:'C1',label:'A群'},{id:'C2',label:'B群'},{id:'C3',label:'C群'},{id:'C4',label:'D群'}],answer:{'A':'C1','D':'C1','E':'C2','F':'C3','C':'C3','B':'C4','G':'C4'},explanation:'A群最活跃，异烟肼最敏感；B群半静止，吡嗪酰胺最敏感；C群利福平最敏感；D群完全休眠无任何药物敏感。'},
-  {id:'int_023',subject:'internal',system:'respiratory',chapter:'抗结核药物',type:'matching',title:'抗结核药物特点与不良反应',description:'将下列特征匹配到对应抗结核药物',options:[{id:'A',text:'周围神经炎（手足麻）→需加VitB6'},{id:'B',text:'能渗入全身各组织，易通过血脑屏障，在干酪性病灶、胸水中药物浓度都很高'},{id:'C',text:'在细胞外杀菌'},{id:'D',text:'在细胞内杀菌'},{id:'E',text:'若治疗后一过性转氨酶升高：加用保肝药继续用药'},{id:'F',text:'抑菌剂'},{id:'G',text:'杀细胞内外TB'},{id:'H',text:'高尿酸'},{id:'I',text:'肾毒性、耳毒性'},{id:'J',text:'ALT升高3倍以上或黄疸：停药'},{id:'K',text:'视神经炎'}],categories:[{id:'C1',label:'异烟肼H'},{id:'C2',label:'利福霉素类（利福平R/利福喷丁）'},{id:'C3',label:'吡嗪酰胺Z'},{id:'C4',label:'链霉素S'},{id:'C5',label:'乙胺丁醇E'}],answer:{'A':'C1','B':'C1','G':'C2','C':'C4','E':'C5','J':'C3','D':'C3','H':'C3','F':'C5','I':'C4','K':'C5'},explanation:'异烟肼易通过血脑屏障、致周围神经炎需加B6；利福平杀细胞内外TB、转氨酶升高3倍以上停药；吡嗪酰胺高尿酸；链霉素肾耳毒性；乙胺丁醇视神经炎。'},
+  {id:'int_022',subject:'internal',system:'respiratory',chapter:'肺结核治疗',type:'matching',title:'结核菌菌群分类与药物敏感性',description:'将下列特征匹配到结核菌A/B/C/D群',options:[{id:'A',text:'最活跃，干酪液化处特别多，极易耐药'},{id:'B',text:'无任何药物敏感'},{id:'C',text:'利福平最敏感'},{id:'D',text:'异烟肼最敏感'},{id:'E',text:'吡嗪酰胺最敏感'},{id:'F',text:'处于半静止状态，繁殖速度较慢'},{id:'G',text:'完全休眠状态、无致病力、无传染性'}],categories:[{id:'C1',label:'A群'},{id:'C2',label:'B群'},{id:'C3',label:'C群'},{id:'C4',label:'D群'}],answer:{'A':'C1','D':'C1','E':'C2','F':['C2','C3'],'C':'C3','B':'C4','G':'C4'},explanation:'A群最活跃，异烟肼最敏感；B群半静止，吡嗪酰胺最敏感；C群利福平最敏感；D群完全休眠无任何药物敏感。'},
+  {id:'int_023',subject:'internal',system:'respiratory',chapter:'抗结核药物',type:'matching',title:'抗结核药物特点与不良反应',description:'将下列特征匹配到对应抗结核药物',options:[{id:'A',text:'周围神经炎（手足麻）→需加VitB6'},{id:'B',text:'能渗入全身各组织，易通过血脑屏障，在干酪性病灶、胸水中药物浓度都很高'},{id:'C',text:'在细胞外杀菌'},{id:'D',text:'在细胞内杀菌'},{id:'E',text:'若治疗后一过性转氨酶升高：加用保肝药继续用药'},{id:'F',text:'抑菌剂'},{id:'G',text:'杀细胞内外TB'},{id:'H',text:'高尿酸'},{id:'I',text:'肾毒性、耳毒性'},{id:'J',text:'ALT升高3倍以上或黄疸：停药'},{id:'K',text:'视神经炎'}],categories:[{id:'C1',label:'异烟肼H'},{id:'C2',label:'利福霉素类（利福平R/利福喷丁）'},{id:'C3',label:'吡嗪酰胺Z'},{id:'C4',label:'链霉素S'},{id:'C5',label:'乙胺丁醇E'}],answer:{'A':'C1','B':'C1','G':['C1','C2'],'C':'C4','E':'C2','J':'C2','D':'C3','H':'C3','F':'C5','I':'C4','K':'C5'},explanation:'异烟肼易通过血脑屏障、致周围神经炎需加B6；利福平杀细胞内外TB、转氨酶升高3倍以上停药；吡嗪酰胺高尿酸；链霉素肾耳毒性；乙胺丁醇视神经炎。'},
   {id:'int_024',subject:'internal',system:'respiratory',chapter:'抗结核药物',type:'matching',title:'抗结核药物分类（全杀菌/半杀菌/抑菌）',description:'将下列抗结核药物按杀菌特性分类',options:[{id:'A',text:'异烟肼H'},{id:'B',text:'乙胺丁醇E'},{id:'C',text:'吡嗪酰胺Z'},{id:'D',text:'链霉素S'},{id:'E',text:'利福霉素类如利福平R和利福喷丁'}],categories:[{id:'C1',label:'全杀菌药'},{id:'C2',label:'半杀菌药'},{id:'C3',label:'抑菌药'}],answer:{'A':'C1','E':'C1','C':'C2','D':'C2','B':'C3'},explanation:'全杀菌药为异烟肼和利福平（杀细胞内外TB）；半杀菌药为吡嗪酰胺（细胞内）和链霉素（细胞外）；乙胺丁醇为抑菌药。'},
-  {id:'int_025',subject:'internal',system:'respiratory',chapter:'发热热型',type:'matching',title:'热型与疾病匹配',description:'将下列热型特征和疾病匹配到对应热型分类',options:[{id:'A',text:'体温在高热水平(>39度），24小时内波动范围不超过1度'},{id:'B',text:'体温在高热水平，24小时内波动范围超过2度'},{id:'C',text:'布氏杆菌病'},{id:'D',text:'败血症'},{id:'E',text:'化脓性炎症'},{id:'F',text:'大叶性肺炎'},{id:'G',text:'重症结核'},{id:'H',text:'伤寒'},{id:'I',text:'高热期与无热期各持续数小时后反复交替出现'},{id:'J',text:'结核'},{id:'K',text:'急性肾盂肾炎'},{id:'L',text:'高热期与无热期各持续数天后反复交替出现'},{id:'M',text:'风湿热'},{id:'N',text:'疟疾'},{id:'O',text:'斑疹伤寒'},{id:'P',text:'体温逐渐上升、数天后逐渐下降、后又逐渐上升'},{id:'Q',text:'霍奇金淋巴瘤'},{id:'R',text:'热型无一定规律'}],categories:[{id:'C1',label:'稽留热'},{id:'C2',label:'弛张热'},{id:'C3',label:'间歇热'},{id:'C4',label:'回归热'},{id:'C5',label:'波状热'},{id:'C6',label:'不规则热'}],answer:{'A':'C1','F':'C1','H':'C1','J':'C6','O':'C1','B':'C2','D':'C2','E':'C2','G':'C2','M':'C2','I':'C3','K':'C3','N':'C3','L':'C4','Q':'C4','C':'C5','P':'C5','R':'C6'},explanation:'稽留热见于大叶性肺炎、伤寒；弛张热见于败血症、风湿热；间歇热见于疟疾、急性肾盂肾炎；波状热见于布氏杆菌病；回归热见于霍奇金淋巴瘤。'},
+  {id:'int_025',subject:'internal',system:'respiratory',chapter:'发热热型',type:'matching',title:'热型与疾病匹配',description:'将下列热型特征和疾病匹配到对应热型分类',options:[{id:'A',text:'体温在高热水平(>39度），24小时内波动范围不超过1度'},{id:'B',text:'体温在高热水平，24小时内波动范围超过2度'},{id:'C',text:'布氏杆菌病'},{id:'D',text:'败血症'},{id:'E',text:'化脓性炎症'},{id:'F',text:'大叶性肺炎'},{id:'G',text:'重症结核'},{id:'H',text:'伤寒'},{id:'I',text:'高热期与无热期各持续数小时后反复交替出现'},{id:'J',text:'结核'},{id:'K',text:'急性肾盂肾炎'},{id:'L',text:'高热期与无热期各持续数天后反复交替出现'},{id:'M',text:'风湿热'},{id:'N',text:'疟疾'},{id:'O',text:'斑疹伤寒'},{id:'P',text:'体温逐渐上升、数天后逐渐下降、后又逐渐上升'},{id:'Q',text:'霍奇金淋巴瘤'},{id:'R',text:'热型无一定规律'}],categories:[{id:'C1',label:'稽留热'},{id:'C2',label:'弛张热'},{id:'C3',label:'间歇热'},{id:'C4',label:'回归热'},{id:'C5',label:'波状热'},{id:'C6',label:'不规则热'}],answer:{'A':'C1','F':'C1','H':'C1','J':['C1','C6'],'O':'C1','B':'C2','D':'C2','E':'C2','G':'C2','M':'C2','I':'C3','K':'C3','N':'C3','L':'C4','Q':'C4','C':'C5','P':'C5','R':'C6'},explanation:'稽留热见于大叶性肺炎、伤寒、结核、斑疹伤寒；弛张热见于败血症、风湿热、重症结核；间歇热见于疟疾、急性肾盂肾炎；波状热见于布氏杆菌病；回归热见于霍奇金淋巴瘤；不规则热见于结核。结核(J)在原图中同时归属稽留热和不规则热。'},
   {id:'int_026',subject:'internal',system:'respiratory',chapter:'支气管哮喘',type:'matching',title:'支气管哮喘药物分类（缓解性vs控制性）',description:'将下列哮喘药物归类为缓解性药物或控制性药物',options:[{id:'A',text:'吸入型糖皮质激素(ICS)'},{id:'B',text:'短效β受体激动剂(SABA)'},{id:'C',text:'联合用药（ICS+LABA, ICS+LABA+LAMA）'},{id:'D',text:'短效吸入型抗胆碱药物(SAMA)'},{id:'E',text:'白三烯调节剂'},{id:'F',text:'ICS+福莫特罗'},{id:'G',text:'长效β受体激动剂(LABA)'},{id:'H',text:'缓释茶碱'},{id:'I',text:'短效茶碱'},{id:'J',text:'抗IgE抗体'},{id:'K',text:'全身用糖皮质激素'},{id:'L',text:'抗IL-5抗体/抗IL-5R抗体'},{id:'M',text:'抗IL-4R抗体/抗TSLP抗体'}],categories:[{id:'C1',label:'缓解性药物'},{id:'C2',label:'控制性药物'}],answer:{'B':'C1','D':'C1','F':'C1','I':'C1','K':'C1','A':'C2','C':'C2','E':'C2','G':'C2','H':'C2','J':'C2','L':'C2','M':'C2'},explanation:'缓解性药物包括SABA、SAMA、短效茶碱、全身激素、ICS+福莫特罗；控制性药物包括ICS、LABA、白三烯调节剂、缓释茶碱、抗IgE等。'},
-  {id:'int_027',subject:'internal',system:'respiratory',chapter:'支气管哮喘',type:'matching',title:'哮喘急性发作与长期抗炎治疗药物选择',description:'将下列药物按急性发作可用、长期抗炎可用、急性发作首选、长期抗炎首选、适用夜间哮喘分类',options:[{id:'A',text:'静注糖皮质激素'},{id:'B',text:'LABA+ICS'},{id:'C',text:'静注茶碱'},{id:'D',text:'SABA'},{id:'E',text:'ICS'},{id:'F',text:'口服缓释茶碱'}],categories:[{id:'C1',label:'急性发作可用'},{id:'C2',label:'长期抗炎可用'},{id:'C3',label:'急性发作首选'},{id:'C4',label:'长期抗炎首选'},{id:'C5',label:'适用夜间哮喘控制炎症'}],answer:{'A':'C1','C':'C1','D':'C3','B':'C2','E':'C4','F':'C5'},explanation:'急性发作首选SABA，可用静注激素和茶碱；长期抗炎首选ICS，可用LABA+ICS和缓释茶碱；夜间哮喘适用口服缓释茶碱。'},
-  {id:'int_028',subject:'internal',system:'respiratory',chapter:'支气管哮喘',type:'matching',title:'哮喘急性发作严重程度分级',description:'将下列临床表现匹配到轻度、中度、重度、危重度',options:[{id:'A',text:'步行或上楼时气短'},{id:'B',text:'不能讲话'},{id:'C',text:'稍活动气短'},{id:'D',text:'讲话正常'},{id:'E',text:'端坐呼吸'},{id:'F',text:'弥漫响亮哮鸣音，明显三凹征和奇脉'},{id:'G',text:'意识障碍'},{id:'H',text:'单字表达'},{id:'I',text:'讲话中断'},{id:'J',text:'散在哮鸣音'},{id:'K',text:'R>30、PEF<60%、心率>120'},{id:'L',text:'弥漫响亮哮鸣音，可三凹征和奇脉'},{id:'M',text:'可沉默肺（哮鸣音减弱甚至消失），脉率慢或不规则、血压↓，胸腹矛盾运动'}],categories:[{id:'C1',label:'轻度'},{id:'C2',label:'中度'},{id:'C3',label:'重度'},{id:'C4',label:'危重度'}],answer:{'A':'C1','D':'C1','J':'C1','C':'C2','I':'C2','L':'C2','E':'C3','F':'C3','H':'C3','K':'C4','B':'C4','G':'C4','M':'C4'},explanation:'轻度可步行上楼、讲话正常、散在哮鸣音；危重度不能讲话、意识障碍、沉默肺。'},
-  {id:'int_029',subject:'internal',system:'respiratory',chapter:'呼吸衰竭',type:'matching',title:'呼吸衰竭分型与疾病/氧疗匹配',description:'将下列选项按I型呼衰、II型呼衰（急性/慢性或急性）分类匹配',options:[{id:'A',text:'ARDS'},{id:'B',text:'肺换气障碍为主'},{id:'C',text:'严重哮喘'},{id:'D',text:'肺通气障碍为主'},{id:'E',text:'脑干出血'},{id:'F',text:'COPD'},{id:'G',text:'脊柱侧凸/胸廓畸形'},{id:'H',text:'低浓度吸氧（<35%）'},{id:'I',text:'镇静催眠剂中毒'},{id:'J',text:'PaO2<60，PaCO2正常或降低'},{id:'K',text:'膈肌麻痹（重症肌无力）'},{id:'L',text:'间质性肺疾病'},{id:'M',text:'急性肺栓塞'},{id:'N',text:'急性肺水肿/急性左心衰'},{id:'O',text:'严重肺部感染'},{id:'P',text:'PaCO2>50，伴或不伴低氧血症（治疗后可不伴）'},{id:'Q',text:'高浓度吸氧'},{id:'R',text:'气管异物'}],categories:[{id:'C1',label:'I型呼衰'},{id:'C2',label:'II型呼衰'},{id:'C3',label:'II型呼衰急性'},{id:'C4',label:'II型呼衰慢性或急性'},{id:'C5',label:'I型呼衰氧疗'},{id:'C6',label:'II型呼衰氧疗'}],answer:{'A':'C1','B':'C1','J':'C1','L':'C4','M':'C3','N':'C3','O':'C3','Q':'C5','D':'C2','P':'C2','H':'C6','E':'C3','I':'C3','C':'C4','F':'C4','G':'C4','K':'C4','R':'C4'},explanation:'I型呼衰为换气障碍、PaO2<60且PaCO2正常或降低，高浓度吸氧；II型呼衰为通气障碍、PaCO2>50，低浓度吸氧。'},
+  {id:'int_027',subject:'internal',system:'respiratory',chapter:'支气管哮喘',type:'matching',title:'哮喘急性发作与长期抗炎治疗药物选择',description:'将下列药物按急性发作可用、长期抗炎可用、急性发作首选、长期抗炎首选、适用夜间哮喘分类',options:[{id:'A',text:'静注糖皮质激素'},{id:'B',text:'LABA+ICS'},{id:'C',text:'静注茶碱'},{id:'D',text:'SABA'},{id:'E',text:'ICS'},{id:'F',text:'口服缓释茶碱'}],categories:[{id:'C1',label:'急性发作可用'},{id:'C2',label:'长期抗炎可用'},{id:'C3',label:'急性发作首选'},{id:'C4',label:'长期抗炎首选'},{id:'C5',label:'适用夜间哮喘控制炎症'}],answer:{'A':'C1','C':'C1','D':['C1','C3'],'B':'C2','E':['C2','C4'],'F':['C2','C5']},explanation:'急性发作首选SABA，可用静注激素和茶碱；长期抗炎首选ICS，可用LABA+ICS和缓释茶碱；夜间哮喘适用口服缓释茶碱。'},
+  {id:'int_028',subject:'internal',system:'respiratory',chapter:'支气管哮喘',type:'matching',title:'哮喘急性发作严重程度分级',description:'将下列临床表现匹配到轻度、中度、重度、危重度',options:[{id:'A',text:'步行或上楼时气短'},{id:'B',text:'不能讲话'},{id:'C',text:'稍活动气短'},{id:'D',text:'讲话正常'},{id:'E',text:'端坐呼吸'},{id:'F',text:'弥漫响亮哮鸣音，明显三凹征和奇脉'},{id:'G',text:'意识障碍'},{id:'H',text:'单字表达'},{id:'I',text:'讲话中断'},{id:'J',text:'散在哮鸣音'},{id:'K',text:'R>30、PEF<60%、心率>120'},{id:'L',text:'弥漫响亮哮鸣音，可三凹征和奇脉'},{id:'M',text:'可沉默肺（哮鸣音减弱甚至消失），脉率慢或不规则、血压↓，胸腹矛盾运动'}],categories:[{id:'C1',label:'轻度'},{id:'C2',label:'中度'},{id:'C3',label:'重度'},{id:'C4',label:'危重度'}],answer:{'A':'C1','D':'C1','J':'C1','C':'C2','I':'C2','L':['C2','C4'],'E':'C3','F':'C3','H':'C3','K':'C3','B':'C4','G':'C4','M':'C4'},explanation:'轻度可步行上楼、讲话正常、散在哮鸣音；危重度不能讲话、意识障碍、沉默肺。'},
+  {id:'int_029',subject:'internal',system:'respiratory',chapter:'呼吸衰竭',type:'matching',title:'呼吸衰竭分型与疾病/氧疗匹配',description:'将下列选项按I型呼衰、II型呼衰（急性/慢性或急性）分类匹配',options:[{id:'A',text:'ARDS'},{id:'B',text:'肺换气障碍为主'},{id:'C',text:'严重哮喘'},{id:'D',text:'肺通气障碍为主'},{id:'E',text:'脑干出血'},{id:'F',text:'COPD'},{id:'G',text:'脊柱侧凸/胸廓畸形'},{id:'H',text:'低浓度吸氧（<35%）'},{id:'I',text:'镇静催眠剂中毒'},{id:'J',text:'PaO2<60，PaCO2正常或降低'},{id:'K',text:'膈肌麻痹（重症肌无力）'},{id:'L',text:'间质性肺疾病'},{id:'M',text:'急性肺栓塞'},{id:'N',text:'急性肺水肿/急性左心衰'},{id:'O',text:'严重肺部感染'},{id:'P',text:'PaCO2>50，伴或不伴低氧血症（治疗后可不伴）'},{id:'Q',text:'高浓度吸氧'},{id:'R',text:'气管异物'}],categories:[{id:'C1',label:'I型呼衰'},{id:'C2',label:'II型呼衰'},{id:'C3',label:'I型呼衰急性'},{id:'C4',label:'I型呼衰慢性或急性'},{id:'C5',label:'II型呼衰急性'},{id:'C6',label:'II型呼衰慢性或急性'}],answer:{'A':['C1','C3'],'B':'C1','J':'C1','L':['C1','C4'],'M':['C1','C3'],'N':['C1','C3'],'O':['C1','C3'],'Q':'C1','D':'C2','P':'C2','H':'C2','C':['C2','C5'],'E':['C2','C5'],'I':['C2','C5'],'K':['C2','C5'],'R':['C2','C5'],'F':['C2','C6'],'G':['C2','C6']},explanation:'I型呼衰为换气障碍、PaO2<60且PaCO2正常或降低（ABJLMNOQ），高浓度吸氧(Q)；I型急性为AMNO，I型慢性或急性为L。II型呼衰为通气障碍、PaCO2>50（CDEFGHIKPR），低浓度吸氧(H)；II型急性为CEIKR，II型慢性或急性为FG。'},
   {id:'int_030',subject:'internal',system:'respiratory',chapter:'肺癌',type:'matching',title:'肺癌临床表现分类',description:'将下列表现按原发肿瘤引起、肿瘤局部扩展引起、肿瘤远处转移引起、胸外表现/副癌综合征分类',options:[{id:'A',text:'刺激性咳嗽'},{id:'B',text:'进行性吞咽困难，严重者可有气管-食管瘘'},{id:'C',text:'痰中带血'},{id:'D',text:'肥大性骨关节病'},{id:'E',text:'淋巴转移'},{id:'F',text:'支气管狭窄'},{id:'G',text:'男性乳腺发育'},{id:'H',text:'局限性哮鸣音'},{id:'I',text:'胸痛、胸腔积液'},{id:'J',text:'神经-肌病综合征'},{id:'K',text:'三阻征（阻塞性肺炎/肺不张/肺气肿）'},{id:'L',text:'心包积液'},{id:'M',text:'体重下降'},{id:'N',text:'库欣综合征'},{id:'O',text:'血道转移'},{id:'P',text:'低热'},{id:'Q',text:'颈静脉怒张、面颈部和上肢水肿'},{id:'R',text:'顽固性/稀释性低血钠'},{id:'S',text:'喉返神经→声音嘶哑'},{id:'T',text:'高血钙'},{id:'U',text:'类癌综合征'},{id:'V',text:'膈神经→呃逆'}],categories:[{id:'C1',label:'原发肿瘤引起'},{id:'C2',label:'肿瘤局部扩展引起'},{id:'C3',label:'肿瘤远处转移引起'},{id:'C4',label:'胸外表现/副癌综合征'}],answer:{'A':'C1','C':'C1','F':'C1','H':'C1','K':'C1','M':'C1','P':'C1','B':'C2','I':'C2','L':'C2','Q':'C2','S':'C2','V':'C2','E':'C3','O':'C3','D':'C4','G':'C4','J':'C4','N':'C4','R':'C4','T':'C4','U':'C4'},explanation:'原发肿瘤引起咳嗽、痰血等；局部扩展引起胸痛、声音嘶哑等；远处转移引起淋巴和血道转移；副癌综合征包括肥大性骨关节病、库欣综合征等。'},
-  {id:'int_031',subject:'internal',system:'respiratory',chapter:'肺癌',type:'matching',title:'肺癌胸外表现与分泌激素及病理类型匹配',description:'将下列胸外表现、分泌激素与对应病理类型匹配',options:[{id:'A',text:'男性乳腺发育'},{id:'B',text:'库欣综合征'},{id:'C',text:'高血钙'},{id:'D',text:'肥大性骨关节病'},{id:'E',text:'顽固性/稀释性低血钠'},{id:'F',text:'类癌综合征'},{id:'R',text:'神经-肌病综合征'}],categories:[{id:'C1',label:'促性腺激素'},{id:'C2',label:'甲状旁腺激素'},{id:'C3',label:'5-HT'},{id:'C4',label:'抗利尿激素'},{id:'C5',label:'ACTH'},{id:'C6',label:'类癌'},{id:'C7',label:'鳞癌'},{id:'C8',label:'NSCLC'},{id:'C9',label:'小细胞癌'},{id:'C10',label:'大细胞癌'},{id:'C11',label:'腺癌'}],answer:{'A':'C10','C':'C7','F':'C9','E':'C9','B':'C9','D':'C8','R':'C9'},explanation:'促性腺激素致男性乳腺发育（大细胞癌）；ACTH致库欣综合征（小细胞癌）；PTH致高血钙（鳞癌）；ADH致低血钠（小细胞癌）；5-HT致类癌综合征。'},
-  {id:'int_032',subject:'internal',system:'respiratory',chapter:'肺癌',type:'matching',title:'肺癌治疗策略与病理类型/分期匹配',description:'将下列治疗策略与病理类型和分期匹配',options:[{id:'A',text:'厄洛替尼'},{id:'B',text:'首选化疗'},{id:'C',text:'首选手术'},{id:'D',text:'贝伐珠单抗'},{id:'E',text:'依托泊苷+铂类'},{id:'F',text:'放化疗'},{id:'G',text:'克唑替尼'},{id:'H',text:'吉非替尼'},{id:'I',text:'派姆单抗'},{id:'J',text:'以EGFR/HER1/ERBB1突变为靶点'},{id:'K',text:'以ALK或ROS1重排为靶点'},{id:'L',text:'以肿瘤血管生成为靶点'},{id:'M',text:'以PD-L1为靶点'}],categories:[{id:'C1',label:'小细胞癌'},{id:'C2',label:'I、II期等NSCLC'},{id:'C3',label:'T4、N3、M1等'},{id:'C4',label:'EGFR靶点'},{id:'C5',label:'ALK/ROS1靶点'},{id:'C6',label:'血管生成靶点'},{id:'C7',label:'PD-L1靶点'}],answer:{'B':'C1','E':'C1','C':'C2','F':'C3','A':'C4','H':'C4','G':'C5','D':'C6','I':'C7'},explanation:'小细胞癌首选化疗（依托泊苷+铂类）；早期NSCLC首选手术；晚期放化疗。EGFR突变用厄洛替尼/吉非替尼；ALK重排用克唑替尼。'},
+  {id:'int_031',subject:'internal',system:'respiratory',chapter:'肺癌',type:'matching',title:'肺癌胸外表现与分泌激素及病理类型匹配',description:'将下列胸外表现、分泌激素与对应病理类型匹配',options:[{id:'A',text:'男性乳腺发育'},{id:'B',text:'库欣综合征'},{id:'C',text:'高血钙'},{id:'D',text:'肥大性骨关节病'},{id:'E',text:'顽固性/稀释性低血钠'},{id:'F',text:'类癌综合征'},{id:'R',text:'神经-肌病综合征'}],categories:[{id:'C1',label:'促性腺激素'},{id:'C2',label:'甲状旁腺激素'},{id:'C3',label:'5-HT'},{id:'C4',label:'抗利尿激素'},{id:'C5',label:'ACTH'},{id:'C6',label:'类癌'},{id:'C7',label:'鳞癌'},{id:'C8',label:'NSCLC'},{id:'C9',label:'小细胞癌'},{id:'C10',label:'大细胞癌'},{id:'C11',label:'腺癌'}],answer:{'A':['C1','C10'],'B':['C5','C6','C9'],'C':['C2','C7'],'D':'C8','E':['C4','C9'],'F':['C3','C9','C11'],'R':'C9'},explanation:'激素分类：促性腺激素→A（男性乳腺发育），PTH→C（高血钙），5-HT→F（类癌综合征），ADH→E（低血钠），ACTH→B（库欣综合征），类癌→B（类癌可分泌ACTH致库欣综合征）。病理类型：大细胞癌→A，鳞癌→C，NSCLC→D，小细胞癌→BEFR，腺癌→F。'},
+  {id:'int_032',subject:'internal',system:'respiratory',chapter:'肺癌',type:'matching',title:'肺癌治疗策略与病理类型/分期匹配',description:'将下列治疗策略与病理类型和分期匹配',options:[{id:'A',text:'厄洛替尼'},{id:'B',text:'首选化疗'},{id:'C',text:'首选手术'},{id:'D',text:'贝伐珠单抗'},{id:'E',text:'依托泊苷+铂类'},{id:'F',text:'放化疗'},{id:'G',text:'克唑替尼'},{id:'H',text:'吉非替尼'},{id:'I',text:'派姆单抗'},{id:'J',text:'以EGFR/HER1/ERBB1突变为靶点'},{id:'K',text:'以ALK或ROS1重排为靶点'},{id:'L',text:'以肿瘤血管生成为靶点'},{id:'M',text:'以PD-L1为靶点'}],categories:[{id:'C1',label:'小细胞癌'},{id:'C2',label:'I、II期等NSCLC'},{id:'C3',label:'T4、N3、M1等'},{id:'C4',label:'EGFR靶点'},{id:'C5',label:'ALK/ROS1靶点'},{id:'C6',label:'血管生成靶点'},{id:'C7',label:'PD-L1靶点'}],answer:{'B':'C1','E':'C1','C':'C2','F':'C3','A':'C4','H':'C4','J':'C4','G':'C5','K':'C5','D':'C6','L':'C6','I':'C7','M':'C7'},explanation:'小细胞癌首选化疗（依托泊苷+铂类）；早期NSCLC首选手术；晚期放化疗。EGFR靶点：厄洛替尼/吉非替尼(J)以EGFR突变为靶点；ALK/ROS1靶点：克唑替尼(K)以ALK/ROS1重排为靶点；血管生成靶点：贝伐珠单抗(L)以肿瘤血管生成为靶点；PD-L1靶点：派姆单抗(M)以PD-L1为靶点。'},
   {id:'int_033',subject:'internal',system:'respiratory',chapter:'肺癌TNM分期',type:'matching',title:'肺癌TNM分期',description:'将下列选项按T、N、M分期匹配',options:[{id:'A',text:'>3、≤5cm'},{id:'B',text:'无区域淋巴结转移'},{id:'C',text:'同侧纵隔、隆突下淋巴结转移'},{id:'D',text:'≤3cm'},{id:'E',text:'恶性胸腔/心包积液或胸膜/心包结节'},{id:'F',text:'>5、≤7cm'},{id:'G',text:'>7cm'},{id:'H',text:'同侧支气管周围、肺门、肺内淋巴结转移'},{id:'I',text:'对侧肺叶出现癌结节'},{id:'J',text:'对侧肺门、纵隔淋巴结转移，或前斜角肌及锁骨上淋巴结转移'},{id:'K',text:'无远处转移'},{id:'L',text:'远处器官转移灶'}],categories:[{id:'C1',label:'T1'},{id:'C2',label:'T2'},{id:'C3',label:'T3'},{id:'C4',label:'T4'},{id:'C5',label:'N0'},{id:'C6',label:'N1'},{id:'C7',label:'N2'},{id:'C8',label:'N3'},{id:'C9',label:'M0'},{id:'C10',label:'M1'}],answer:{'D':'C1','A':'C2','F':'C3','G':'C4','E':'C10','B':'C5','H':'C6','C':'C7','J':'C8','K':'C9','I':'C10','L':'C10'},explanation:'T1≤3cm，T2>3≤5cm，T3>5≤7cm，T4>7cm或恶性胸水；N0无淋巴结转移，N1同侧支气管周围，N2同侧纵隔，N3对侧。'},
   {id:'int_034',subject:'internal',system:'respiratory',chapter:'胸腔积液',type:'matching',title:'胸腔积液病因（漏出性vs渗出性）',description:'将下列病因归类为漏出性胸水或渗出性胸水',options:[{id:'A',text:'右心衰'},{id:'B',text:'肝硬化'},{id:'C',text:'结核'},{id:'D',text:'心包积液'},{id:'E',text:'普通细菌等感染'},{id:'F',text:'营养不良'},{id:'G',text:'间皮瘤'},{id:'H',text:'缩窄性心包炎'},{id:'I',text:'恶性肿瘤转移'},{id:'J',text:'膈下炎症'},{id:'K',text:'腹膜透析'},{id:'L',text:'类风湿'},{id:'M',text:'上腔静脉或奇静脉受阻'},{id:'N',text:'SLE'},{id:'O',text:'血管通透性↑→药物过敏'},{id:'P',text:'血管通透性↑→炎症'},{id:'Q',text:'肺梗死'},{id:'R',text:'气胸'},{id:'S',text:'血浆胶渗压↓'},{id:'T',text:'胸膜毛细血管静水压/血压↑'},{id:'U',text:'膈下脓肿'},{id:'V',text:'胸膜淋巴引流受阻'},{id:'W',text:'肝脓肿'},{id:'X',text:'黏液性水肿'},{id:'Y',text:'急性胰腺炎'}],categories:[{id:'C1',label:'漏出性胸水'},{id:'C2',label:'渗出性胸水'}],answer:{'A':'C1','B':'C1','D':'C1','F':'C1','H':'C1','K':'C1','M':'C1','S':'C1','T':'C1','X':'C1','C':'C2','E':'C2','G':'C2','I':'C2','J':'C2','L':'C2','N':'C2','O':'C2','P':'C2','Q':'C2','R':'C2','U':'C2','V':'C2','W':'C2','Y':'C2'},explanation:'漏出性胸水因静水压↑或胶渗压↓（心衰、肝硬化、营养不良等）；渗出性胸水因毛细血管通透性↑或淋巴回流受阻（感染、肿瘤、结核等）。'},
   {id:'int_035',subject:'internal',system:'respiratory',chapter:'胸腔积液',type:'matching',title:'胸腔积液发生机制与疾病匹配',description:'将下列机制与对应疾病匹配',options:[{id:'A',text:'静脉和毛细血管的血压/静水压↑'},{id:'B',text:'血浆胶渗压↓'},{id:'C',text:'毛细血管通透性↑'},{id:'D',text:'淋巴回流受阻'}],categories:[{id:'C1',label:'营养不良'},{id:'C2',label:'丝虫病'},{id:'C3',label:'炎症（感染/烧伤等）'},{id:'C4',label:'心衰'},{id:'C5',label:'过敏'},{id:'C6',label:'丹毒象皮肿'},{id:'C7',label:'肝硬化'},{id:'C8',label:'乳腺癌橘皮样变'},{id:'C9',label:'肾病'}],answer:{'B':'C9','D':'C8','C':'C5','A':'C4'},explanation:'静水压↑见于心衰；胶渗压↓见于营养不良、肝硬化、肾病；通透性↑见于炎症和过敏；淋巴回流受阻见于丝虫病、乳腺癌等。'},
@@ -165,7 +165,7 @@ const SAMPLE_QUESTIONS = [
   {id:'int_080',subject:'internal',system:'digestive',chapter:'急性胰腺炎',type:'matching',title:'急性胰腺炎实验室检查的意义',description:'将下列实验室检查与其临床意义进行匹配',options:[{id:'A',text:'诊断急性胰腺炎的首选'},{id:'B',text:'与病情严重程度相关'},{id:'C',text:'与病情严重程度无关'},{id:'D',text:'诊断水肿型急性胰腺炎的最佳'},{id:'E',text:'不是诊断重症胰腺炎的最佳'},{id:'F',text:'与诊断的准确率相关'},{id:'G',text:'诊断重症胰腺炎的最佳'},{id:'H',text:'发病一周选择'}],categories:[{id:'C1',label:'血淀粉酶/脂肪酶'},{id:'C2',label:'腹水淀粉酶/脂肪酶'},{id:'C3',label:'血脂肪酶'}],answer:{'A':'C1','B':'C1','C':'C1','D':'C2','E':'C2','F':'C2','G':'C3','H':'C3'},explanation:'血淀粉酶/脂肪酶为诊断首选且与严重程度相关(ACDEF)；腹水淀粉酶/脂肪酶诊断水肿型最佳但不适合重症(BG)；血脂肪酶为诊断重症最佳，发病一周选择(H)'},
   {id:'int_081',subject:'internal',system:'digestive',chapter:'急性胰腺炎',type:'matching',title:'急性胰腺炎可升高和可降低的生化指标',description:'将下列生化指标分为可升高和可降低两类',options:[{id:'A',text:'腹水淀粉酶和脂肪酶'},{id:'B',text:'血钙'},{id:'C',text:'血钾'},{id:'D',text:'血糖(无糖尿病者血糖常>11.1mmol/L)'},{id:'E',text:'甘油三酯'},{id:'F',text:'血/尿淀粉酶'},{id:'G',text:'WBC'},{id:'H',text:'C-反应蛋白CRP'},{id:'I',text:'血氧分压'},{id:'J',text:'Cr和BUN'},{id:'K',text:'血白/清蛋白'},{id:'L',text:'胆红素和转氨酶'},{id:'M',text:'正铁血白蛋白'},{id:'N',text:'血脂肪酶'}],categories:[{id:'C1',label:'可升高的指标'},{id:'C2',label:'可降低的指标'}],answer:{'A':'C1','B':'C2','C':'C1','D':'C1','E':'C1','F':'C1','G':'C1','H':'C1','I':'C2','J':'C1','K':'C2','L':'C1','M':'C1','N':'C1'},explanation:'可升高:淀粉酶、血钾、血糖、甘油三酯、WBC、CRP、Cr/BUN、胆红素、正铁血白蛋白、脂肪酶；可降低:血钙、血氧分压、白蛋白'},
   {id:'int_082',subject:'internal',system:'renal',chapter:'泌尿系统总论',type:'matching',title:'蛋白尿的类型与特征',description:'将下列蛋白尿相关特征与蛋白尿类型进行匹配',options:[{id:'A',text:'肾小管对小分子蛋白质的重吸收障碍'},{id:'B',text:'运动、发热时出现'},{id:'C',text:'血中小分子蛋白质增多从肾小球滤过、超过了肾小管的重吸收极限'},{id:'D',text:'直立时出现'},{id:'E',text:'VitA结合蛋白'},{id:'F',text:'30-300mg/d'},{id:'G',text:'多<2g/d'},{id:'H',text:'血管内溶血的血红蛋白'},{id:'I',text:'溶菌酶'},{id:'J',text:'糖尿病肾病早期'},{id:'K',text:'横纹肌溶解的肌红蛋白(如挤压综合征)'},{id:'L',text:'尿中排出IgA增多'},{id:'M',text:'核糖核酸酶'},{id:'N',text:'骨髓瘤的本周蛋白'},{id:'O',text:'B2-微球蛋白'},{id:'P',text:'尿中为小分子TH糖蛋白'},{id:'Q',text:'凝溶蛋白'},{id:'R',text:'终尿以白蛋白为主'},{id:'S',text:'轻链蛋白'},{id:'T',text:'游离免疫球蛋白的轻链'},{id:'U',text:'游离免疫球蛋白的重链'},{id:'V',text:'终尿有白蛋白、免疫球蛋白、补体C3等'}],categories:[{id:'C1',label:'生理性蛋白尿(功能性/体位性)'},{id:'C2',label:'肾小球性蛋白尿(选择性/非选择性)'},{id:'C3',label:'肾小管性蛋白尿'},{id:'C4',label:'溢出性蛋白尿'},{id:'C5',label:'分泌性蛋白尿'},{id:'C6',label:'组织性蛋白尿'},{id:'C7',label:'微量蛋白尿'}],answer:{'A':'C3','B':'C1','C':'C4','D':'C1','E':'C3','F':'C7','G':'C3','H':'C4','I':'C3','J':'C7','K':'C4','L':'C5','M':'C4','N':'C4','O':'C3','P':'C6','Q':'C4','R':'C2','S':'C4','T':'C4','U':'C4','V':'C2'},explanation:'生理性:运动发热B、直立D；肾小球性:选择性R、非选择性V；肾小管性:AEGIO；溢出性:CHKNQT；分泌性:L；组织性P；微量蛋白尿FJ'},
-  {id:'int_083',subject:'internal',system:'renal',chapter:'泌尿系统总论',type:'matching',title:'管型类型与临床意义',description:'将下列临床特征与管型类型进行匹配',options:[{id:'A',text:'预后差'},{id:'B',text:'肾小球源性血尿'},{id:'C',text:'肾盂肾炎'},{id:'D',text:'肾单位长期阻塞(肾衰竭)'},{id:'E',text:'肾脏免疫反应'},{id:'F',text:'肾小管坏死'},{id:'G',text:'肾小管严重病变'},{id:'H',text:'肾小管上皮脂肪变性等(肾病综合征)'}],categories:[{id:'C1',label:'红细胞管型'},{id:'C2',label:'白细胞管型'},{id:'C3',label:'蜡样管型'},{id:'C4',label:'上皮细胞管型'},{id:'C5',label:'脂肪管型'}],answer:{'A':'C3','B':'C1','C':'C2','D':'C3','E':'C3','F':'C4','G':'C4','H':'C5'},explanation:'红细胞管型→肾小球源性血尿B；白细胞管型→肾盂肾炎CE；蜡样管型→预后差ADG；上皮细胞管型→肾小管坏死/严重病变FG；脂肪管型→肾病综合征H'},
+  {id:'int_083',subject:'internal',system:'renal',chapter:'泌尿系统总论',type:'matching',title:'管型类型与临床意义',description:'将下列临床特征与管型类型进行匹配',options:[{id:'A',text:'预后差'},{id:'B',text:'肾小球源性血尿'},{id:'C',text:'肾盂肾炎'},{id:'D',text:'肾单位长期阻塞(肾衰竭)'},{id:'E',text:'肾脏免疫反应'},{id:'F',text:'肾小管坏死'},{id:'G',text:'肾小管严重病变'},{id:'H',text:'肾小管上皮脂肪变性等(肾病综合征)'}],categories:[{id:'C1',label:'红细胞管型'},{id:'C2',label:'白细胞管型'},{id:'C3',label:'蜡样管型'},{id:'C4',label:'上皮细胞管型'},{id:'C5',label:'脂肪管型'}],answer:{'A':'C3','B':'C1','C':'C2','D':'C3','E':'C2','F':'C4','G':['C3','C4'],'H':'C5'},explanation:'红细胞管型→肾小球源性血尿B；白细胞管型→肾盂肾炎CE；蜡样管型→预后差ADG；上皮细胞管型→肾小管坏死/严重病变FG；脂肪管型→肾病综合征H'},
   {id:'int_084',subject:'internal',system:'renal',chapter:'尿路感染',type:'matching',title:'尿路感染常见细菌',description:'将下列细菌与尿路感染类型进行匹配',options:[{id:'A',text:'金葡菌'},{id:'B',text:'大肠杆菌'},{id:'C',text:'铜绿假单胞菌'},{id:'D',text:'变形杆菌'}],categories:[{id:'C1',label:'尿路感染最常见'},{id:'C2',label:'伴尿路结石多见于'},{id:'C3',label:'血源性尿感多见于'},{id:'C4',label:'尿路器械检查后尿感多见于'}],answer:{'A':'C3','B':'C1','C':'C4','D':'C2'},explanation:'大肠杆菌最常见B；变形杆菌伴结石D；金葡菌血源性A；铜绿假单胞菌器械检查后C'},
   {id:'int_085',subject:'internal',system:'renal',chapter:'尿路感染',type:'matching',title:'尿路感染抗生素选择与临床特征',description:'将下列临床特征和抗生素与尿路感染类型进行匹配',options:[{id:'A',text:'有全身症状(T>38、血WBC↑)'},{id:'B',text:'无真性细菌尿'},{id:'C',text:'磺胺类'},{id:'D',text:'复方新诺明(SMZ-TMP)'},{id:'E',text:'年轻未孕女性抗生素治疗3日短程疗法'},{id:'F',text:'有白细胞管型'},{id:'G',text:'有膀胱/尿道刺激症'},{id:'H',text:'β内酰胺类(青霉素类如阿莫西林、头孢菌素类)'},{id:'I',text:'停抗生素7天后复查尿菌培养若仍阳性应继续治疗至2周'},{id:'J',text:'无肾区叩痛'},{id:'K',text:'有明显脓尿'},{id:'L',text:'莫西沙星'},{id:'M',text:'半年内发作2次以上抗生素治疗6月(长程低剂量抑菌)'},{id:'N',text:'无白细胞管型'},{id:'O',text:'无膀胱/尿道刺激症'},{id:'P',text:'喹诺酮类'},{id:'Q',text:'免疫力低下、糖尿病、老年、妊娠、男性7日'},{id:'R',text:'复发(病原体与上次完全相同)抗生素治疗6周'},{id:'S',text:'无明显脓尿'},{id:'T',text:'呋喃妥因'},{id:'U',text:'有真性细菌尿'},{id:'V',text:'抗生素治疗2周'},{id:'W',text:'匹美西林'},{id:'X',text:'无全身症状'},{id:'Y',text:'有肾区叩痛'}],categories:[{id:'C1',label:'急性膀胱炎'},{id:'C2',label:'急性肾盂肾炎'},{id:'C3',label:'尿道综合征'}],answer:{'A':'C2','B':'C3','C':'C1','D':'C1','E':'C1','F':'C2','G':'C2','H':'C2','I':'C2','J':'C1','K':'C2','L':'C1','M':'C1','N':'C1','O':'C1','P':'C1','Q':'C2','R':'C2','S':'C3','T':'C1','U':'C2','V':'C2','W':'C1','X':'C1','Y':'C2'},explanation:'急性膀胱炎:无全身症状、无肾区叩痛、3日短程疗法等；急性肾盂肾炎:有全身症状、白细胞管型、肾区叩痛、2周治疗等；尿道综合征:无真性细菌尿'},
   {id:'int_086',subject:'internal',system:'renal',chapter:'急性肾损伤',type:'matching',title:'急性肾小管坏死(ATN)病因分类',description:'将下列病因按肾前性、肾性、肾后性进行分类',options:[{id:'A',text:'急性肾小管坏死ATN'},{id:'B',text:'最常见'},{id:'C',text:'尿路结石'},{id:'D',text:'肾缺血'},{id:'E',text:'大失血'},{id:'F',text:'间质性肾炎'},{id:'G',text:'前列腺增生'},{id:'H',text:'液体丢失过多'},{id:'I',text:'尿路梗阻'},{id:'J',text:'肾中毒(如氨基糖苷类抗生素/鱼胆/蘑菇/血红蛋白/肌红蛋白/轻链蛋白)'},{id:'K',text:'肝硬化'},{id:'L',text:'心衰'},{id:'M',text:'原尿外漏'},{id:'N',text:'盆腔肿瘤(如晚期宫颈癌直接蔓延侵犯膀胱)'},{id:'O',text:'机械通气'},{id:'P',text:'神经源性膀胱(尿潴留)'},{id:'Q',text:'有效循环血量↓'},{id:'R',text:'肾小管阻塞'}],categories:[{id:'C1',label:'肾前性'},{id:'C2',label:'肾性'},{id:'C3',label:'肾后性'}],answer:{'A':'C2','B':'C1','C':'C3','D':'C2','E':'C1','F':'C2','G':'C3','H':'C1','I':'C3','J':'C2','K':'C1','L':'C1','M':'C2','N':'C3','O':'C1','P':'C3','Q':'C1','R':'C2'},explanation:'肾前性:有效循环血量↓(B大失血E、液体丢失H、肝硬化K、心衰L、机械通气O)；肾性:ATN(A)、肾缺血D、间质性肾炎F、肾中毒J、原尿外漏M、肾小管阻塞R；肾后性:尿路梗阻(C结石、G前列腺增生、N盆腔肿瘤、P神经源性膀胱)'},
@@ -178,11 +178,11 @@ const SAMPLE_QUESTIONS = [
   {id:'int_093',subject:'internal',system:'renal',chapter:'肾炎综合征',type:'matching',title:'肾炎综合征的临床特征分类',description:'将以下表现与对应综合征匹配',options:[{id:'A',text:'RBC>3/HP'},{id:'B',text:'血尿、蛋白尿、水肿、高血压>3个月'},{id:'C',text:'蛋白尿>0.15g/d，轻中度为主'},{id:'D',text:'大量蛋白尿，定性多+++及以上、或>3.5g/d'},{id:'E',text:'水肿'},{id:'F',text:'无水肿'},{id:'G',text:'仅有肾小球源性血尿、或仅有蛋白尿、或仅有血尿+蛋白尿'},{id:'H',text:'白蛋白<30g/L'},{id:'I',text:'高血压'},{id:'J',text:'无高血压'},{id:'K',text:'高脂血症'},{id:'L',text:'无肾功能损害'}],categories:[{id:'C1',label:'急性肾炎综合症'},{id:'C2',label:'慢性肾炎综合症'},{id:'C3',label:'肾病综合征'},{id:'C4',label:'无症状性血尿和/或蛋白尿（隐匿性肾炎）'}],answer:{'A':'C1','B':'C2','C':'C1','D':'C3','E':'C1','F':'C4','G':'C4','H':'C3','I':'C1','J':'C4','K':'C3','L':'C4'},explanation:'急性肾炎综合症：ACEI。慢性肾炎综合症：B。肾病综合征：DEHK。无症状性血尿和/或蛋白尿（隐匿性肾炎）：FGJL。'},
   {id:'int_093b',subject:'internal',system:'renal',chapter:'肾炎综合征',type:'matching',title:'肾炎综合征的病理类型',description:'将以下病理类型与对应综合征匹配',options:[{id:'A',text:'脂性肾病'},{id:'B',text:'膜性肾病'},{id:'C',text:'急性肾炎'},{id:'D',text:'系膜增生性肾炎'},{id:'E',text:'急进性肾炎（《病理学》中也可叫急进性肾炎综合征）'},{id:'F',text:'系膜毛细血管性肾炎'},{id:'G',text:'慢性肾炎急性发作'},{id:'H',text:'局灶性节段性肾小球硬化'}],categories:[{id:'C1',label:'急性肾炎综合征'},{id:'C2',label:'肾病综合征'}],answer:{'A':'C2','B':'C2','C':'C1','D':'C2','E':'C1','F':'C2','G':'C1','H':'C2'},explanation:'急性肾炎综合征：CEG。肾病综合征：ABDFH。'},
   {id:'int_093c',subject:'internal',system:'renal',chapter:'肾炎综合征',type:'matching',title:'肾病综合征与急性肾炎综合征的水肿机制',description:'将以下机制与对应疾病匹配',options:[{id:'A',text:'水肿多从眼睑颜面部开始（憋出来的）'},{id:'B',text:'大量蛋白尿造成低蛋白血症致血浆胶渗压↓（主要）'},{id:'C',text:'肾小球滤过率↓致水钠潴留（肾小管重吸收功能基本正常-球管失衡）（主要）'},{id:'D',text:'原发于远端肾单位的水钠潴留因素'},{id:'E',text:'高血压和超敏反应引起毛细血管通透性增高'},{id:'F',text:'激活RAAS'},{id:'G',text:'容量依赖型高血压：进展快、可有血压突然升高所致的高血压脑病'},{id:'H',text:'肾素依赖性高血压（不常见）：进展慢、不会出现血压骤致的高血压脑病'},{id:'I',text:'抑制RAAS（血容量增加）'},{id:'J',text:'水肿多从下肢开始（锁不住水）、或从眼睑颜面部开始'},{id:'K',text:'有效循环血量↓激活RAAS-醛固酮和抗利尿激素↑-小管重吸收水钠增多致水钠潴留'}],categories:[{id:'C1',label:'肾病综合征（肾病性水肿）'},{id:'C2',label:'急性肾炎综合征（肾炎性水肿）'}],answer:{'A':'C2','B':'C1','C':'C2','D':'C1','E':'C2','F':'C1','G':'C2','H':'C1','I':'C2','J':'C1','K':'C1'},explanation:'肾病综合征（肾病性水肿）：BDFHJK。急性肾炎综合征（肾炎性水肿）：ACEGI。'},
-  {id:'int_095',subject:'internal',system:'renal',chapter:'肾小球疾病',type:'matching',title:'肾性水肿的发生机制',description:'将下列水肿机制与水肿类型进行匹配',options:[{id:'A',text:'水肿多从眼睑颜面部开始(憋出来的)'},{id:'B',text:'大量蛋白尿造成低蛋白血症致血浆胶渗压↓(主要)'},{id:'C',text:'肾小球滤过率↓致水钠潴留(球管失衡)(主要)'},{id:'D',text:'原发于远端肾单位的水钠潴留因素'},{id:'E',text:'高血压和超敏反应引起毛细血管通透性增高'},{id:'F',text:'激活RAAS'},{id:'G',text:'容量依赖型高血压:进展快、可有血压突然升高所致的高血压脑病'},{id:'H',text:'肾素依赖性高血压(不常见):进展慢'},{id:'I',text:'抑制RAAS(血容量增加)'},{id:'J',text:'水肿多从下肢开始(锁不住水)、或从眼睑颜面部开始'},{id:'K',text:'有效循环血量↓激活RAAS→醛固酮和抗利尿激素↑→小管重吸收水钠增多致水钠潴留'}],categories:[{id:'C1',label:'肾病综合征(肾病性水肿)'},{id:'C2',label:'急性肾炎综合征(肾炎性水肿)'}],answer:{'A':'C2','B':'C1','C':'C2','D':'C2','E':'C2','F':'C1','G':'C2','H':'C1','I':'C2','J':'C1','K':'C1'},explanation:'肾病性水肿:大量蛋白尿→低蛋白血症(B)、RAAS激活(FK)、水肿从下肢开始(J)、肾素依赖性高血压(H)；肾炎性水肿:GFR↓→水钠潴留(C)、从眼睑开始(A)、容量依赖型高血压(G)'},
+  {id:'int_095',subject:'internal',system:'renal',chapter:'肾小球疾病',type:'matching',title:'肾性水肿的发生机制',description:'将下列水肿机制与水肿类型进行匹配',options:[{id:'A',text:'水肿多从眼睑颜面部开始(憋出来的)'},{id:'B',text:'大量蛋白尿造成低蛋白血症致血浆胶渗压↓(主要)'},{id:'C',text:'肾小球滤过率↓致水钠潴留(球管失衡)(主要)'},{id:'D',text:'原发于远端肾单位的水钠潴留因素'},{id:'E',text:'高血压和超敏反应引起毛细血管通透性增高'},{id:'F',text:'激活RAAS'},{id:'G',text:'容量依赖型高血压:进展快、可有血压突然升高所致的高血压脑病'},{id:'H',text:'肾素依赖性高血压(不常见):进展慢'},{id:'I',text:'抑制RAAS(血容量增加)'},{id:'J',text:'水肿多从下肢开始(锁不住水)、或从眼睑颜面部开始'},{id:'K',text:'有效循环血量↓激活RAAS→醛固酮和抗利尿激素↑→小管重吸收水钠增多致水钠潴留'}],categories:[{id:'C1',label:'肾病综合征(肾病性水肿)'},{id:'C2',label:'急性肾炎综合征(肾炎性水肿)'}],answer:{'A':'C2','B':'C1','C':'C2','D':'C1','E':'C2','F':'C1','G':'C2','H':'C1','I':'C2','J':'C1','K':'C1'},explanation:'肾病性水肿:大量蛋白尿→低蛋白血症(B)、RAAS激活(FK)、水肿从下肢开始(J)、肾素依赖性高血压(H)、远端肾单位水钠潴留(D)；肾炎性水肿:GFR↓→水钠潴留(C)、从眼睑开始(A)、容量依赖型高血压(G)、毛细血管通透性增高(E)、抑制RAAS(I)'},
   {id:'int_096',subject:'internal',system:'renal',chapter:'肾小球疾病病理',type:'matching',title:'肾小球疾病病理特征与临床特点',description:'将下列病理特征和临床特点与肾小球疾病类型进行匹配',options:[{id:'A',text:'肾小囊脏层上皮细胞(足细胞)足突融合消失'},{id:'B',text:'毛细血管外增生性肾炎、新月体性肾炎'},{id:'C',text:'基膜明显增厚，有钉状突起、齿梳样、虫蚀样空隙'},{id:'D',text:'系膜细胞和基质增生、插入基膜和内皮细胞之间致双轨征'},{id:'E',text:'毛细血管内增生性肾炎:内皮细胞、系膜细胞增生'},{id:'F',text:'部分肾小球的部分毛细血管袢硬化(<50%)'},{id:'G',text:'系膜细胞和基质增生'},{id:'H',text:'光镜下肾小球无明显异常'},{id:'I',text:'近端小管脂肪变性'},{id:'J',text:'有纤维素样坏死'},{id:'K',text:'有玻璃样变性/透明变性'},{id:'L',text:'免疫复合物沉积在足细胞和基膜之间(上皮下)、呈驼峰状'},{id:'M',text:'无电子致密物'},{id:'N',text:'有电子致密物'},{id:'O',text:'颗粒状荧光'},{id:'P',text:'线状荧光'}],categories:[{id:'C1',label:'急性肾炎'},{id:'C2',label:'急进性肾炎'},{id:'C3',label:'脂性肾病'},{id:'C4',label:'膜性肾病'},{id:'C5',label:'系膜增生性肾炎'},{id:'C6',label:'系膜毛细血管性肾炎'},{id:'C7',label:'局灶性节段性肾小球硬化'},{id:'C8',label:'IgA肾病'},{id:'C9',label:'慢性肾小球肾炎'}],answer:{'A':'C3','B':'C2','C':'C4','D':'C6','E':'C1','F':'C7','G':'C5','H':'C3','I':'C3','J':'C2','K':'C7','L':'C1','M':'C3','N':'C1','O':'C1','P':'C4'},explanation:'急性肾炎:毛细血管内增生(E)、驼峰状沉积(L)、颗粒状荧光(O)；急进性:新月体(B)、纤维素样坏死(J)；脂性肾病:足突融合(A)、无明显异常(H)、无致密物(M)；膜性肾病:基膜增厚(C)、线状荧光(P)；系膜增生:G；系膜毛细血管:双轨(D)；FSGS:节段硬化(F)'},
   {id:'int_097',subject:'internal',system:'renal',chapter:'肾小球疾病治疗',type:'matching',title:'肾小球疾病的治疗方案',description:'将下列治疗方案与肾小球疾病类型进行匹配',options:[{id:'A',text:'强化疗法需配合泼尼松+环磷酰胺'},{id:'B',text:'对症治疗为主'},{id:'C',text:'初治单用激素'},{id:'D',text:'不用激素+环磷酰胺'},{id:'E',text:'不以消除肾炎综合征为目标'},{id:'F',text:'甲泼尼龙冲击强化'},{id:'G',text:'初治用激素+环磷酰胺'},{id:'H',text:'分情况如单纯血尿对症'},{id:'I',text:'血浆置换强化'},{id:'J',text:'收缩压<120、尿蛋白<1'},{id:'K',text:'无现症感染不用抗生素'}],categories:[{id:'C1',label:'急性肾炎'},{id:'C2',label:'急进性肾炎(I/III型)'},{id:'C3',label:'IgA肾病'},{id:'C4',label:'脂性肾病'},{id:'C5',label:'慢性肾炎'},{id:'C6',label:'局灶节段性肾小球硬化'},{id:'C7',label:'膜性肾病'},{id:'C8',label:'系膜毛细血管性肾炎'}],answer:{'A':'C2','B':'C1','C':'C4','D':'C5','E':'C5','F':'C2','G':'C7','H':'C3','I':'C2','J':'C5','K':'C1'},explanation:'急性肾炎:对症治疗(B)、不用抗生素(K)；急进性:甲泼尼龙冲击(F)、血浆置换(I)；IgA:分情况(H)；脂性肾病:单用激素(C)；慢性肾炎:不以消除综合征为目标(DE)、控制血压(J)'},
   {id:'int_098',subject:'internal',system:'renal',chapter:'继发性肾小球疾病',type:'matching',title:'IgA肾病与过敏性紫癜肾炎的特征',description:'将下列特征与疾病进行匹配',options:[{id:'A',text:'毛细血管内增生性肾炎'},{id:'B',text:'继发急进性肾炎、肾病综合征'},{id:'C',text:'IgA沉积为主'},{id:'D',text:'前驱感染1-3周后明显或不明显血尿'},{id:'E',text:'C3多正常'},{id:'F',text:'原发性肾小球疾病'},{id:'G',text:'多种病理变化'},{id:'H',text:'IgG沉积为主'},{id:'J',text:'前驱感染1-3周后明显血尿'},{id:'K',text:'前驱感染1-3天后明显血尿'},{id:'L',text:'C3↓(8周内恢复)'},{id:'M',text:'疾病特征:双下肢对称出血点'}],categories:[{id:'C1',label:'急性肾炎'},{id:'C2',label:'IgA肾病'},{id:'C3',label:'过敏性紫癜肾炎'}],answer:{'A':'C1','B':'C3','C':'C2','D':'C2','E':'C2','F':'C2','G':'C3','H':'C1','J':'C1','K':'C2','L':'C1','M':'C3'},explanation:'急性肾炎:毛细血管内增生(A)、IgG沉积(H)、前驱感染1-3周后明显血尿(J)、C3↓8周恢复(L)；IgA肾病:IgA沉积(C)、前驱1-3天后血尿(K)、C3正常(E)；过敏性紫癜:多种病理(G)、双下肢出血点(M)'},
-  {id:'int_099',subject:'internal',system:'renal',chapter:'肾小球疾病',type:'matching',title:'原发性高血压肾损害与慢性肾炎的鉴别',description:'将下列特征与原发性高血压或慢性肾炎进行匹配',options:[{id:'A',text:'先有高血压再有肾病'},{id:'B',text:'高血压程度较轻或较重'},{id:'C',text:'肾小球损害程度重(血尿、蛋白尿、少尿明显)'},{id:'D',text:'中老年多见'},{id:'E',text:'靶器官损害少见(若出现提示病情重)'},{id:'F',text:'先有肾病再有高血压'},{id:'G',text:'高血压程度较重'},{id:'H',text:'远曲小管功能损害(尿浓缩功能↓、夜尿、低比重尿)较肾小球损害早'},{id:'I',text:'青壮年多见'},{id:'J',text:'靶器官损害多见(心、脑、眼底等病变)'}],categories:[{id:'C1',label:'原发性高血压'},{id:'C2',label:'慢性肾炎'}],answer:{'A':'C1','B':'C1','C':'C2','D':'C1','E':'C1','F':'C2','G':'C2','H':'C1','I':'C2','J':'C1'},explanation:'原发性高血压:先有高血压(A)、中老年(D)、靶器官损害多见(J)、远曲小管损害早(H)；慢性肾炎:先有肾病(F)、肾小球损害重(C)、青壮年(I)、高血压较重(G)'},
+  {id:'int_099',subject:'internal',system:'renal',chapter:'肾小球疾病',type:'matching',title:'原发性高血压肾损害与慢性肾炎的鉴别',description:'将下列特征与原发性高血压或慢性肾炎进行匹配',options:[{id:'A',text:'先有高血压再有肾病'},{id:'B',text:'高血压程度较轻或较重'},{id:'C',text:'肾小球损害程度重(血尿、蛋白尿、少尿明显)'},{id:'D',text:'中老年多见'},{id:'E',text:'靶器官损害少见(若出现提示病情重)'},{id:'F',text:'先有肾病再有高血压'},{id:'G',text:'高血压程度较重'},{id:'H',text:'远曲小管功能损害(尿浓缩功能↓、夜尿、低比重尿)较肾小球损害早'},{id:'I',text:'青壮年多见'},{id:'J',text:'靶器官损害多见(心、脑、眼底等病变)'}],categories:[{id:'C1',label:'原发性高血压'},{id:'C2',label:'慢性肾炎'}],answer:{'A':'C1','B':'C2','C':'C2','D':'C1','E':'C2','F':'C2','G':'C1','H':'C1','I':'C2','J':'C1'},explanation:'原发性高血压:先有高血压(A)、中老年(D)、高血压程度较重(G)、远曲小管损害早(H)、靶器官损害多见(J)；慢性肾炎:先有肾病(F)、肾小球损害重(C)、青壮年(I)、高血压程度较轻或较重(B)、靶器官损害少见(E)'},
   {id:'int_100',subject:'internal',system:'hematology',chapter:'缺铁性贫血',type:'matching',title:'缺铁贫与巨幼贫的细胞形态学特征',description:'将下列细胞形态学特征与贫血类型进行匹配',options:[{id:'A',text:'核老浆幼'},{id:'B',text:'核幼浆老'}],categories:[{id:'C1',label:'缺铁贫'},{id:'C2',label:'巨幼贫'}],answer:{'A':'C1','B':'C2'},explanation:'缺铁贫:核老浆幼(胞核成熟但胞浆发育落后)；巨幼贫:核幼浆老(胞核发育落后但胞浆相对成熟)'},
   {id:'int_101',subject:'internal',system:'hematology',chapter:'铁代谢',type:'matching',title:'铁的价态与代谢环节',description:'将以下代谢环节与铁的价态匹配',options:[{id:'A',text:'储存'},{id:'B',text:'利用'},{id:'C',text:'吸收'},{id:'D',text:'运输'}],categories:[{id:'C1',label:'2价铁'},{id:'C2',label:'3价铁'}],answer:{'A':'C2','B':'C1','C':'C1','D':'C2'},explanation:'2价铁：BC。3价铁：AD。'},
   {id:'int_102',subject:'internal',system:'hematology',chapter:'缺铁性贫血',type:'matching',title:'缺铁性贫血的临床表现分类',description:'将下列临床表现分为一般贫血表现和组织缺铁表现',options:[{id:'A',text:'烦躁易怒、异食癖'},{id:'B',text:'皮肤干燥、毛发干枯易脱落'},{id:'C',text:'乏力'},{id:'D',text:'儿童智力低下和生长发育迟缓'},{id:'E',text:'头晕'},{id:'F',text:'口腔炎和口角炎、舌乳头萎缩呈镜面舌/光滑舌'},{id:'G',text:'心悸'},{id:'H',text:'体力耐力下降、易感染'},{id:'I',text:'苍白'},{id:'J',text:'匙状/勺状/反甲'},{id:'K',text:'Plummer-Vinson综合征(吞咽困难)'},{id:'L',text:'左心扩大及心尖部收缩期杂音'},{id:'M',text:'胃酸减少、消化功能下降'},{id:'N',text:'牛肉舌'},{id:'O',text:'一般在贫血改善后可恢复，严重时可致高排量心衰'}],categories:[{id:'C1',label:'一般贫血的表现'},{id:'C2',label:'组织缺铁的表现'}],answer:{'A':'C2','B':'C2','C':'C1','D':'C2','E':'C1','F':'C2','G':'C1','H':'C2','I':'C1','J':'C2','K':'C2','L':'C1','M':'C2','N':'C2','O':'C1'},explanation:'一般贫血:乏力、头晕、心悸、苍白、左心扩大等(CEGIL)；组织缺铁:异食癖、反甲、口腔炎、Plummer-Vinson、智力低下等(ABDFHJKMN)'},
@@ -209,7 +209,7 @@ const SAMPLE_QUESTIONS = [
   {id:'int_123',subject:'internal',system:'hematology',chapter:'白血病',type:'matching',title:'AML的FAB分型(M0-M7)',description:'将下列骨髓特征与AML的FAB分型进行匹配',options:[{id:'A',text:'骨髓原粒细胞占NEC>90%'},{id:'B',text:'骨髓原始细胞占NEC≥30%，各阶段粒细胞≥20%、各阶段单核细胞≥20%'},{id:'C',text:'骨髓原粒细胞占NEC的30-89%'},{id:'D',text:'骨髓原始细胞占NEC>30%、幼红细胞>50%'},{id:'E',text:'骨髓原始巨核细胞>30%、血小板抗原(+)'},{id:'F',text:'骨髓原始细胞>30%，CD13/33阳性，无Auer小体'},{id:'H',text:'骨髓原和幼单核占NEC≥30%、各阶段单核细胞>80%'},{id:'I',text:'骨髓早幼粒细胞占NEC>30%'}],categories:[{id:'C1',label:'M0(急髓微分化型)'},{id:'C2',label:'M1(急粒未分化型)'},{id:'C3',label:'M2(急粒部分分化型)'},{id:'C4',label:'M3(急性早幼粒APL)'},{id:'C5',label:'M4(急粒单AMML)'},{id:'C6',label:'M5(急单)'},{id:'C7',label:'M6(红白血病)'},{id:'C8',label:'M7(急巨核)'}],answer:{'A':'C1','B':'C5','C':'C2','D':'C7','E':'C8','F':'C1','H':'C6','I':'C4'},explanation:'M0:原粒>90%(A/F)；M1:原粒30-89%(C)；M2:部分分化；M3:早幼粒>30%(I)；M4:粒+单核各≥20%(B)；M5:单核>80%(H)；M6:幼红>50%(D)；M7:巨核>30%(E)'},
   {id:'int_124',subject:'internal',system:'hematology',chapter:'白血病',type:'matching',title:'中枢神经系统白血病与睾丸白血病',description:'将下列特征与中枢神经系统白血病或睾丸白血病进行匹配',options:[{id:'A',text:'次常见髓外浸润部位'},{id:'B',text:'多见于儿童'},{id:'C',text:'多为睾丸一侧无痛性肿大'},{id:'D',text:'最常见髓外浸润部位'},{id:'E',text:'多用鞘内注射化疗'},{id:'F',text:'甲氨蝶呤'},{id:'G',text:'双侧睾丸局部放疗'},{id:'H',text:'阿糖胞苷'},{id:'I',text:'糖皮质激素'},{id:'J',text:'多见于幼儿和青年'},{id:'K',text:'头痛、呕吐、颈项强直，脑脊液内原始或幼稚细胞'}],categories:[{id:'C1',label:'中枢白血病'},{id:'C2',label:'睾丸白血病'}],answer:{'A':'C2','B':'C1','C':'C2','D':'C1','E':'C1','F':'C1','G':'C2','H':'C1','I':'C1','J':'C2','K':'C1'},explanation:'中枢白血病:最常见髓外浸润(D)、多见于儿童(B)、头痛呕吐颈强直(K)、鞘内注射甲氨蝶呤(EF)；睾丸白血病:次常见(A)、一侧无痛性肿大(C)、多见于幼儿青年(J)、双侧放疗(G)'},
   {id:'int_125',subject:'internal',system:'hematology',chapter:'白血病',type:'matching',title:'白血病细胞免疫表型与来源',description:'将下列免疫表型与细胞来源进行匹配',options:[{id:'A',text:'CD13/33/117'},{id:'B',text:'CD19/20/79a等'},{id:'C',text:'CD14'},{id:'D',text:'CD1/2/3/4/5/7/8等'},{id:'E',text:'CD9'},{id:'F',text:'CD16/56'},{id:'G',text:'血小板GP'},{id:'H',text:'血型糖蛋白'},{id:'I',text:'不表达CD34和HLA-DR'},{id:'J',text:'CD41/61'},{id:'K',text:'CD10'}],categories:[{id:'C1',label:'B淋巴细胞来源'},{id:'C2',label:'T淋巴细胞来源'},{id:'C3',label:'NK细胞来源'},{id:'C4',label:'M3型'},{id:'C5',label:'单核细胞来源(M4/M5)'},{id:'C6',label:'红细胞来源(M6)'},{id:'C7',label:'巨核细胞来源(M7)'}],answer:{'A':'C4','B':'C1','C':'C5','D':'C2','E':'C4','F':'C3','G':'C7','H':'C6','I':'C4','J':'C7','K':'C1'},explanation:'B细胞:CD19/20/79a(B)、CD10(K)；T细胞:CD1-8(D)；NK:CD16/56(F)；M3型:CD13/33/117(A)、CD9(E)、不表达CD34/HLA-DR(I)；单核:CD14(C)；红细胞:血型糖蛋白(H)；巨核:血小板GP(G)、CD41/61(J)'},
-  {id:'int_126',subject:'internal',system:'hematology',chapter:'白血病',type:'matching',title:'白血病特征性染色体异常与预后',description:'将下列染色体异常与白血病类型及预后进行匹配',options:[{id:'A',text:'t(15;17)(q22;q12)形成PML-RARA'},{id:'B',text:'t(8;21)(q22;q22)形成RUNX-RUNX1T(AML1-ETO)'},{id:'C',text:'t(9;22)(q34;q11)形成BCR-ABL、t(6;9)、11q23异常、-5/5q-、-7'},{id:'D',text:'t(16;16)(p13;q22)形成CBFB-MYH11。M4Eo型可出现inv(16)'}],categories:[{id:'C1',label:'M2型'},{id:'C2',label:'M3型'},{id:'C3',label:'M4型'},{id:'C4',label:'预后良好'},{id:'C5',label:'预后不良'}],answer:{'A':'C2','B':'C1','C':'C5','D':'C3'},explanation:'t(15;17)→M3型(A)；t(8;21)→M2型(B)；t(16;16)/inv(16)→M4Eo型(D)；t(9;22)等→预后不良(C)。预后良好:A、B、D；预后不良:C'},
+  {id:'int_126',subject:'internal',system:'hematology',chapter:'白血病',type:'matching',title:'白血病特征性染色体异常与预后',description:'将下列染色体异常与白血病类型及预后进行匹配',options:[{id:'A',text:'t(15;17)(q22;q12)形成PML-RARA'},{id:'B',text:'t(8;21)(q22;q22)形成RUNX-RUNX1T(AML1-ETO)'},{id:'C',text:'t(9;22)(q34;q11)形成BCR-ABL、t(6;9)、11q23异常、-5/5q-、-7'},{id:'D',text:'t(16;16)(p13;q22)形成CBFB-MYH11。M4Eo型可出现inv(16)'}],categories:[{id:'C1',label:'M2型'},{id:'C2',label:'M3型'},{id:'C3',label:'M4型'},{id:'C4',label:'预后良好'},{id:'C5',label:'预后不良'}],answer:{'A':['C2','C4'],'B':['C1','C4'],'C':'C5','D':['C3','C4']},explanation:'t(15;17)→M3型(A)；t(8;21)→M2型(B)；t(16;16)/inv(16)→M4Eo型(D)；t(9;22)等→预后不良(C)。预后良好:A、B、D；预后不良:C'},
   {id:'int_127',subject:'internal',system:'hematology',chapter:'白血病',type:'matching',title:'急性白血病的治疗方案',description:'将下列治疗方案与急性白血病类型及并发症进行匹配',options:[{id:'A',text:'全反式维甲酸ATRA'},{id:'B',text:'紧急用血细胞分离机单采清除过高的白细胞(但M3型不推荐)'},{id:'C',text:'三氧化二砷ATO'},{id:'D',text:'24小时持续静脉补液，碱化尿液，化疗同时给予别嘌呤醇'},{id:'E',text:'不宜立即输红细胞纠正贫血'},{id:'F',text:'蒽环类'},{id:'G',text:'缓解后上述药物交替维持治疗'},{id:'H',text:'VP(长春新碱+泼尼松)'},{id:'I',text:'DA(柔红霉素+阿糖胞苷)'},{id:'J',text:'DVP'},{id:'K',text:'阿糖胞苷'},{id:'L',text:'泼尼松'},{id:'M',text:'HA'},{id:'N',text:'DVLP'},{id:'O',text:'左旋门冬酰胺酶'}],categories:[{id:'C1',label:'M3型治疗'},{id:'C2',label:'防治高尿酸血症肾病'},{id:'C3',label:'白细胞淤滞症治疗'},{id:'C4',label:'AML(除M3型)化疗'},{id:'C5',label:'ALL化疗'}],answer:{'A':'C1','B':'C3','C':'C1','D':'C2','E':'C3','F':'C1','G':'C1','H':'C5','I':'C4','J':'C5','K':'C4','L':'C5','M':'C4','N':'C5','O':'C5'},explanation:'M3型:ATRA(A)+砷剂(C)+蒽环(F)+交替维持(G)；高尿酸肾病:补液+别嘌醇(D)；白细胞淤滞:单采清除(B)、不宜立即输红(E)；AML(除M3):DA(I)、HA(M)、阿糖胞苷(K)；ALL:VP(H)、DVP(J)、DVLP(N)、左旋门冬(O)、泼尼松(L)'},
   {id:'int_128',subject:'internal',system:'hematology',chapter:'慢性髓系白血病',type:'matching',title:'CML(慢粒)的分期特征',description:'将下列临床特征与CML的分期进行匹配',options:[{id:'A',text:'逐渐出现贫血、出血'},{id:'B',text:'白细胞多>20×10⁹/L、可>100×10⁹/L，可有血小板增多'},{id:'C',text:'多数急粒变，也可淋巴细胞等类型急性变'},{id:'D',text:'骨髓增生明显活跃，以中性中晚幼和杆状核粒细胞为主，原始细胞<10%，嗜酸、嗜碱性粒细胞增多'},{id:'E',text:'脾持续或进行性肿大'},{id:'F',text:'巨脾。若左上腹明显压痛和摩擦音提示脾梗死'},{id:'G',text:'原来治疗有效的药物(如伊马替尼)无效'},{id:'H',text:'外周血或骨髓原始细胞>10%、外周血嗜碱性粒细胞>20%、血小板进行性减少或增加'},{id:'I',text:'Ph染色体:t(9;22)(q34;q11)形成BCR-ABL'},{id:'J',text:'NAP↑'},{id:'K',text:'NAP↓'},{id:'L',text:'Ph染色体阳性细胞中又出现其它染色体异常:如+8、双Ph染色体、i(17q)'},{id:'M',text:'外周血或骨髓原始细胞>20%、或髓外原始细胞浸润'},{id:'N',text:'慢淋没有巨脾、没有Ph染色体'}],categories:[{id:'C1',label:'慢性期'},{id:'C2',label:'加速期'},{id:'C3',label:'急变期/终末期'}],answer:{'A':'C2','B':'C1','C':'C3','D':'C1','E':'C2','F':'C1','G':'C2','H':'C2','I':'C1','J':'C3','K':'C1','L':'C2','M':'C3','N':'C1'},explanation:'慢性期:白细胞↑(B)、骨髓原始<10%(D)、巨脾(F)、Ph染色体(I)、NAP↓(K)；加速期:贫血出血(A)、脾进行性增大(E)、药物无效(G)、原始>10%(H)、新染色体异常(L)；急变期:急粒变(C)、原始>20%(M)、NAP↑(J)'},
   {id:'int_129',subject:'internal',system:'hematology',chapter:'白血病',type:'matching',title:'化疗药物的副作用',description:'将下列副作用与化疗药物进行匹配',options:[{id:'A',text:'骨髓和性腺抑制'},{id:'B',text:'肝功能损害'},{id:'C',text:'出血性膀胱炎'},{id:'D',text:'末梢神经炎'},{id:'E',text:'过敏反应'},{id:'F',text:'心脏毒性'},{id:'G',text:'便秘'},{id:'H',text:'胰腺炎'},{id:'I',text:'肾损害'},{id:'J',text:'脱发'},{id:'K',text:'小脑共济失调'},{id:'L',text:'粘膜炎'},{id:'M',text:'心肌损害'}],categories:[{id:'C1',label:'长春新碱VCR'},{id:'C2',label:'柔红霉素DNR'},{id:'C3',label:'左旋门冬酰胺酶L-ASP'},{id:'C4',label:'环磷酰胺CTX'},{id:'C5',label:'阿糖胞苷Ara-C'},{id:'C6',label:'甲氨蝶呤MTX'},{id:'C7',label:'高三尖杉酯碱HHT'}],answer:{'A':'C4','B':'C4','C':'C4','D':'C1','E':'C3','F':'C2','G':'C1','H':'C3','I':'C5','J':'C4','K':'C5','L':'C6','M':'C7'},explanation:'VCR:末梢神经炎(D)、便秘(G)；DNR:心脏毒性(F)；L-ASP:过敏(E)、胰腺炎(H)；CTX:骨髓/性腺抑制(A)、肝损(B)、出血性膀胱炎(C)、脱发(J)；Ara-C:肾损(I)、小脑共济失调(K)；MTX:粘膜炎(L)；HHT:心肌损害(M)'},
@@ -270,14 +270,14 @@ const SAMPLE_QUESTIONS = [
   {id:'int_181',subject:'internal',system:'cardiovascular',chapter:'高血压',type:'matching',title:'降压药物禁忌症综合匹配',description:'将下列药物与对应的适应症和禁忌症进行匹配',options:[{id:'A',text:'急性心衰'},{id:'B',text:'Cr>265'},{id:'C',text:'慢性心衰'},{id:'D',text:'NYHA IV级'},{id:'E',text:'LVEF<40%'},{id:'F',text:'变异性心绞痛'},{id:'G',text:'前列腺肥大'},{id:'H',text:'双肾动脉狭窄'},{id:'I',text:'雷诺病'},{id:'J',text:'心衰、高血压'},{id:'K',text:'冠心病'},{id:'L',text:'糖尿病、蛋白尿'},{id:'M',text:'甲亢'},{id:'N',text:'二度II型和三度房室传导阻滞'},{id:'O',text:'血管性水肿'},{id:'P',text:'快速型心律失常'},{id:'Q',text:'预激综合征伴房颤'},{id:'R',text:'哮喘'}],categories:[{id:'C1',label:'ACEI/ARB/ARNI用'},{id:'C2',label:'β-R拮抗剂用'},{id:'C3',label:'ACEI/ARB/ARNI不用'},{id:'C4',label:'β-R拮抗剂不用'},{id:'C5',label:'CCB用'}],answer:{'C':'C2','L':'C1','K':'C1','J':'C2','B':'C3','H':'C3','O':'C3','A':'C4','P':'C2','M':'C2','D':'C4','F':'C5','N':'C4','R':'C4','Q':'C4','G':'C5'},explanation:'ACEI/ARB用于心衰/糖尿病蛋白尿/冠心病，禁用于Cr>265/双肾动脉狭窄/血管性水肿/急性心衰；β阻滞剂用于心衰稳定期/快速心律失常，禁用于哮喘/房室阻滞/变异心绞痛；CCB用于变异性心绞痛。'},
   {id:'int_182',subject:'internal',system:'cardiovascular',chapter:'心脏物理检查',type:'matching',title:'心音产生机制匹配',description:'将下列心音描述与对应的心音(S1/S2/S3/S4)进行匹配',options:[{id:'A',text:'在心房收缩期末/等容收缩期初，标志心室收缩期开始'},{id:'B',text:'主动脉瓣、肺动脉瓣开始关闭'},{id:'C',text:'快速充盈期心房血液迅速进入心室'},{id:'D',text:'心房收缩期'},{id:'E',text:'在部分儿童、青年可听到S3'},{id:'F',text:'二尖瓣、三尖瓣开始关闭'},{id:'G',text:'在减慢射血期末/等容舒张期初，标志心室舒张期开始'},{id:'H',text:'S4为病理性心音，胸壁听不到S4'}],categories:[{id:'C1',label:'S1'},{id:'C2',label:'S2'},{id:'C3',label:'S3'},{id:'C4',label:'S4'}],answer:{'A':'C1','F':'C1','B':'C2','G':'C2','C':'C3','E':'C3','D':'C4','H':'C4'},explanation:'S1由房室瓣关闭产生标志收缩期开始；S2由半月瓣关闭产生标志舒张期开始；S3为快速充盈期；S4为心房收缩期。'},
   {id:'int_183',subject:'internal',system:'cardiovascular',chapter:'心脏物理检查',type:'matching',title:'S1强弱变化原因匹配',description:'将下列情况与S1增强或减弱进行匹配',options:[{id:'A',text:'房颤'},{id:'B',text:'二闭'},{id:'C',text:'房室分离如三度房室阻滞'},{id:'D',text:'主闭'},{id:'E',text:'PR间期延长'},{id:'F',text:'二狭'},{id:'G',text:'心衰'},{id:'H',text:'冠心病'},{id:'I',text:'二度I型房室阻滞'},{id:'J',text:'心肌病'},{id:'K',text:'甲亢'},{id:'L',text:'心肌炎'},{id:'M',text:'室早联律如三联律'},{id:'N',text:'甲减'}],categories:[{id:'C1',label:'S1增强'},{id:'C2',label:'S1减弱'},{id:'C3',label:'S1强弱不等'}],answer:{'F':'C1','K':'C1','A':'C3','C':'C3','M':'C3','B':'C2','D':'C2','E':'C2','G':'C2','H':'C2','I':'C2','J':'C2','L':'C2','N':'C2'},explanation:'S1增强：二狭、甲亢；S1减弱：二闭、主闭、PR延长、心衰等；S1强弱不等：房颤、三度房室阻滞、室早联律。'},
-  {id:'int_184',subject:'internal',system:'cardiovascular',chapter:'心脏物理检查',type:'matching',title:'S2分裂类型匹配',description:'将下列情况与对应的S2分裂类型进行匹配',options:[{id:'A',text:'肺动脉高压'},{id:'B',text:'房缺'},{id:'C',text:'肺狭'},{id:'D',text:'高血压'},{id:'E',text:'右束支阻滞'},{id:'F',text:'主狭'},{id:'G',text:'二闭'},{id:'H',text:'左束支阻滞'},{id:'I',text:'室缺'}],categories:[{id:'C1',label:'固定分裂(不受呼吸影响)'},{id:'C2',label:'通常分裂(吸气明显)'},{id:'C3',label:'反常/逆分裂(呼气明显)'}],answer:{'B':'C1','A':'C2','C':'C2','E':'C2','F':'C2','G':'C2','I':'C2','D':'C3','H':'C3'},explanation:'固定分裂见于房缺；通常分裂(吸气明显)见于肺动脉高压/右束支阻滞等；反常分裂(呼气明显)见于主狭/左束支阻滞/高血压。'},
+  {id:'int_184',subject:'internal',system:'cardiovascular',chapter:'心脏物理检查',type:'matching',title:'S2分裂类型匹配',description:'将下列情况与对应的S2分裂类型进行匹配',options:[{id:'A',text:'肺动脉高压'},{id:'B',text:'房缺'},{id:'C',text:'肺狭'},{id:'D',text:'高血压'},{id:'E',text:'右束支阻滞'},{id:'F',text:'主狭'},{id:'G',text:'二闭'},{id:'H',text:'左束支阻滞'},{id:'I',text:'室缺'}],categories:[{id:'C1',label:'固定分裂(不受呼吸影响)'},{id:'C2',label:'通常分裂(吸气明显)'},{id:'C3',label:'反常/逆分裂(呼气明显)'}],answer:{'B':'C1','A':'C2','C':'C2','E':'C2','G':'C2','I':'C2','D':'C3','F':'C3','H':'C3'},explanation:'固定分裂见于房缺；通常分裂(吸气明显)见于肺动脉高压/右束支阻滞等；反常分裂(呼气明显)见于主狭/左束支阻滞/高血压。'},
   {id:'int_185',subject:'internal',system:'cardiovascular',chapter:'心脏物理检查',type:'matching',title:'额外心音与疾病匹配',description:'将下列额外心音与对应的疾病进行匹配',options:[{id:'A',text:'开瓣音/二尖瓣开放拍击音'},{id:'B',text:'肿瘤扑落音'},{id:'C',text:'心底部收缩早期喀喇音/喷射音'},{id:'D',text:'心尖部奔马律'},{id:'E',text:'心尖部收缩中晚期喀喇音'},{id:'F',text:'胸骨左缘3-4肋间心包叩击音'},{id:'G',text:'心肌病尤其扩心病'},{id:'H',text:'二尖瓣脱垂(如急性心梗)'},{id:'I',text:'主狭'},{id:'J',text:'二狭且瓣膜弹性好'},{id:'K',text:'高血压'},{id:'L',text:'心肌病尤其肥厚型心肌病'},{id:'M',text:'缩窄性心包炎(主要)'},{id:'N',text:'冠心病'},{id:'O',text:'肺动脉高压'},{id:'P',text:'二闭'},{id:'Q',text:'心包积液'},{id:'R',text:'心房黏液瘤'}],categories:[{id:'C1',label:'心底部收缩早期喀喇音/喷射音'},{id:'C2',label:'心尖部收缩中晚期喀喇音'},{id:'C3',label:'开瓣音/二尖瓣开放拍击音'},{id:'C4',label:'心包叩击音'},{id:'C5',label:'肿瘤扑落音'},{id:'C6',label:'S3奔马律/舒张早期奔马律'},{id:'C7',label:'S4奔马律/舒张晚期奔马律'}],answer:{'G':'C1','I':'C1','O':'C1','H':'C2','P':'C2','J':'C3','M':'C4','R':'C5','K':'C6','L':'C6','N':'C6','F':'C4','A':'C3','B':'C5','D':'C6','E':'C2','C':'C1'},explanation:'收缩早期喀喇音见于主狭/肺动脉高压/扩心病；收缩中晚期喀喇音见于二尖瓣脱垂；开瓣音见于二狭；心包叩击音见于缩窄性心包炎；肿瘤扑落音见于心房黏液瘤。'},
   {id:'int_186',subject:'internal',system:'cardiovascular',chapter:'心脏瓣膜',type:'matching',title:'心脏瓣膜听诊区匹配',description:'将以下听诊部位与对应瓣膜匹配',options:[{id:'A',text:'肺动脉'},{id:'B',text:'主动脉瓣第二听诊区'},{id:'C',text:'三尖瓣'},{id:'D',text:'二尖瓣'},{id:'E',text:'室间隔'},{id:'F',text:'主动脉瓣第一听诊区'},{id:'G',text:'心脏裸区'}],categories:[{id:'C1',label:'心尖部(第5肋间左锁骨中线内侧0.5-1cm)'},{id:'C2',label:'胸骨左缘2肋间'},{id:'C3',label:'胸骨右缘2肋间'},{id:'C4',label:'胸骨左缘3-4肋间'},{id:'C5',label:'胸骨左缘4-5肋间'},{id:'C6',label:'主狭听诊部位'},{id:'C7',label:'主闭听诊部位'}],answer:{'A':'C2','B':['C4','C7'],'C':'C5','D':'C1','E':'C4','F':['C3','C6'],'G':'C4'},explanation:'心尖部(第5肋间左锁骨中线内侧0.5-1cm)：D。胸骨左缘2肋间：A。胸骨右缘2肋间：F。胸骨左缘3-4肋间：BEG。胸骨左缘4-5肋间：C。主狭听诊部位：F。主闭听诊部位：B。'},
   {id:'int_187',subject:'internal',system:'cardiovascular',chapter:'心脏瓣膜病',type:'matching',title:'主动脉瓣狭窄与肥厚型梗阻性心肌病鉴别',description:'将下列特征与对应的疾病进行匹配',options:[{id:'A',text:'青年多见'},{id:'B',text:'中老年多见(危险因素类似冠心病)'},{id:'C',text:'胸骨左缘3-4肋间收缩期杂音-不向颈部传导'},{id:'D',text:'胸骨右缘2肋间收缩期杂音，可向颈部传导'},{id:'E',text:'运动晕厥'},{id:'F',text:'用β-R拮抗剂、非二氢吡啶CCB'},{id:'G',text:'A2减弱'},{id:'H',text:'超声心动图主动脉瓣叶增厚、钙化'},{id:'I',text:'S4奔马律'},{id:'J',text:'收缩期二尖瓣前叶前移(SAM)致左室流出道梗阻'},{id:'K',text:'左室后壁和室间隔对称肥厚'},{id:'L',text:'收缩期杂音呈喷射样'},{id:'M',text:'蹲位卧位使杂音减弱'},{id:'N',text:'超声心动图为首选和金标准'},{id:'O',text:'超声心动图左室不对称肥厚(室间隔/后壁>1.3)'}],categories:[{id:'C1',label:'主动脉瓣狭窄'},{id:'C2',label:'肥厚型梗阻性心肌病'}],answer:{'B':'C1','D':'C1','G':'C1','H':'C1','K':'C1','A':'C2','C':'C2','E':'C2','F':'C2','I':'C2','J':'C2','L':'C2','M':'C2','N':'C2','O':'C2'},explanation:'主狭：中老年/胸骨右缘2肋间喷射样杂音向颈部传导/A2减弱/对称肥厚；肥厚型梗阻：青年/胸骨左缘3-4肋间杂音不向颈部传导/SAM征/不对称肥厚。'},
   {id:'int_188',subject:'internal',system:'cardiovascular',chapter:'心脏瓣膜病',type:'matching',title:'二尖瓣狭窄与Austin-Flint杂音鉴别',description:'将下列特征与对应的疾病进行匹配',options:[{id:'A',text:'病因风湿病等'},{id:'B',text:'杂音柔和，≤3/6级'},{id:'C',text:'常有心尖震颤'},{id:'D',text:'杂音出现时机：紧随开瓣音后'},{id:'E',text:'S1减弱'},{id:'F',text:'左室正常或缩小'},{id:'G',text:'靴形心'},{id:'H',text:'常有房颤'},{id:'I',text:'病因慢性严重主动脉瓣关闭不全'},{id:'J',text:'杂音粗糙，>3/6级'},{id:'K',text:'无心尖震颤'},{id:'L',text:'杂音出现时机紧随S3后'},{id:'M',text:'S1增强'},{id:'N',text:'左室增大、心尖抬举样搏动'},{id:'O',text:'梨形心'},{id:'P',text:'不常有房颤'}],categories:[{id:'C1',label:'器质性二尖瓣狭窄'},{id:'C2',label:'Austin-Flint杂音'}],answer:{'A':'C1','B':'C1','C':'C1','D':'C1','F':'C1','H':'C1','M':'C1','O':'C1','I':'C2','E':'C2','G':'C2','J':'C2','K':'C2','L':'C2','N':'C2','P':'C2'},explanation:'器质性二狭：风湿性/杂音紧随开瓣音后/S1增强/梨形心/常有房颤；Austin-Flint：严重主闭所致/杂音紧随S3后/S1减弱/靴形心/左室增大。'},
   {id:'int_189',subject:'internal',system:'cardiovascular',chapter:'心脏瓣膜病',type:'matching',title:'Graham-Steell与Austin-Flint杂音匹配',description:'将下列杂音特征与对应的杂音类型进行匹配',options:[{id:'A',text:'严重肺动脉高压致肺动脉扩张'},{id:'B',text:'心尖舒张期低调隆隆样'},{id:'C',text:'器质性病变主动脉瓣关闭不全'},{id:'D',text:'功能性病变相对性肺动脉瓣关闭不全'},{id:'E',text:'胸骨左缘2肋间舒张早期递减型，高调叹气或吹风样'},{id:'F',text:'功能性病变相对性二尖瓣狭窄'}],categories:[{id:'C1',label:'Graham-Steell杂音'},{id:'C2',label:'Austin-Flint杂音'}],answer:{'A':'C1','D':'C1','E':'C1','C':'C2','F':'C2','B':'C2'},explanation:'Graham-Steell杂音：严重肺动脉高压致相对性肺动脉瓣关闭不全，胸骨左缘2肋间舒张早期递减型叹气样；Austin-Flint杂音：严重主闭致相对性二尖瓣狭窄，心尖舒张期隆隆样。'},
   {id:'int_190',subject:'internal',system:'cardiovascular',chapter:'心脏瓣膜病',type:'matching',title:'主动脉瓣关闭不全病因分类',description:'将下列病因与对应的病变部位进行匹配',options:[{id:'A',text:'Marfan综合征'},{id:'B',text:'感染性心内膜炎'},{id:'C',text:'梅毒'},{id:'D',text:'风湿病'},{id:'E',text:'高血压'},{id:'F',text:'银屑病性关节炎'},{id:'G',text:'先天性畸形'},{id:'H',text:'退行性钙化'},{id:'I',text:'强直性脊柱炎'},{id:'J',text:'黏液样变性致脱垂'},{id:'K',text:'主动脉夹层'}],categories:[{id:'C1',label:'主动脉瓣本身病变'},{id:'C2',label:'主动脉根部扩张'}],answer:{'B':'C1','D':'C1','G':'C1','H':'C1','J':'C1','A':'C2','C':'C2','E':'C2','F':'C2','I':'C2','K':'C2'},explanation:'主动脉瓣本身病变：感染性心内膜炎/风湿病/先天性畸形/退行性钙化/黏液样变性；主动脉根部扩张：Marfan综合征/梅毒/高血压/强直性脊柱炎/主动脉夹层。'},
-  {id:'int_191',subject:'internal',system:'cardiovascular',chapter:'冠状动脉性心脏病',type:'matching',title:'冠心病分类匹配',description:'将下列冠心病类型归类为急性冠脉综合征或慢性冠脉综合征',options:[{id:'A',text:'不稳定型心绞痛(UA)'},{id:'B',text:'ST段抬高型心肌梗死(STEMI)'},{id:'C',text:'稳定型心绞痛'},{id:'D',text:'缺血性心肌病'},{id:'E',text:'非ST段抬高型心肌梗死(NSTEMI)'},{id:'F',text:'猝死'},{id:'G',text:'隐匿型/无痛状性冠心病'}],categories:[{id:'C1',label:'急性冠脉综合征(ACS)'},{id:'C2',label:'慢性冠脉综合征(CCS)'}],answer:{'A':'C1','B':'C1','E':'C1','C':'C2','D':'C2','F':'C2','G':'C2'},explanation:'ACS包括UA/NSTEMI/STEMI；CCS包括稳定型心绞痛/缺血性心肌病/隐匿型冠心病/猝死。'},
+  {id:'int_191',subject:'internal',system:'cardiovascular',chapter:'冠状动脉性心脏病',type:'matching',title:'冠心病分类匹配',description:'将下列冠心病类型归类为急性冠脉综合征或慢性冠脉综合征',options:[{id:'A',text:'不稳定型心绞痛(UA)'},{id:'B',text:'ST段抬高型心肌梗死(STEMI)'},{id:'C',text:'稳定型心绞痛'},{id:'D',text:'缺血性心肌病'},{id:'E',text:'非ST段抬高型心肌梗死(NSTEMI)'},{id:'F',text:'猝死'},{id:'G',text:'隐匿型/无痛状性冠心病'}],categories:[{id:'C1',label:'急性冠脉综合征(ACS)'},{id:'C2',label:'慢性冠脉综合征(CCS)'}],answer:{'A':'C1','B':'C1','E':'C1','C':'C2','D':'C2','F':'C1','G':'C2'},explanation:'ACS包括UA/NSTEMI/STEMI/猝死；CCS包括稳定型心绞痛/缺血性心肌病/隐匿型冠心病。'},
   {id:'int_192',subject:'internal',system:'cardiovascular',chapter:'冠状动脉性心脏病',type:'matching',title:'动脉粥样硬化斑块类型匹配',description:'将下列斑块特征与对应的斑块类型进行匹配',options:[{id:'A',text:'一般见于病变时间较长者'},{id:'B',text:'纤维帽薄、脂质多'},{id:'C',text:'纤维帽厚、脂质少'},{id:'D',text:'一般见于病变时间较短者'}],categories:[{id:'C1',label:'稳定型斑块'},{id:'C2',label:'不稳定型/易损型斑块'}],answer:{'A':'C1','C':'C1','B':'C2','D':'C2'},explanation:'稳定型斑块：病变时间长/纤维帽厚/脂质少；不稳定型斑块：病变时间短/纤维帽薄/脂质多。'},
   {id:'int_193',subject:'internal',system:'cardiovascular',chapter:'冠状动脉性心脏病',type:'matching',title:'不稳定型心绞痛分类匹配',description:'将下列特征与对应的不稳定型心绞痛类型进行匹配',options:[{id:'A',text:'具备静息型心绞痛的特征'},{id:'B',text:'休息时发作、持续时间多>20分钟'},{id:'C',text:'冠脉自发地严重痉挛致冠脉完全闭塞'},{id:'D',text:'在相对稳定的劳力性心绞痛基础上逐渐加重而来'},{id:'E',text:'首选CCB如硝苯地平'},{id:'F',text:'在首发症状1-2个月内，很轻的体力活动可诱发'},{id:'G',text:'心电图ST段抬高'},{id:'H',text:'疼痛加剧、持续时间变长、不易缓解'},{id:'I',text:'不宜单用β-R拮抗剂'}],categories:[{id:'C1',label:'初发型心绞痛'},{id:'C2',label:'静息型心绞痛'},{id:'C3',label:'恶化型心绞痛'},{id:'C4',label:'变异型心绞痛'}],answer:{'F':'C1','B':'C2','A':'C2','D':'C3','H':'C3','C':'C4','E':'C4','G':'C4','I':'C4'},explanation:'初发型：首发1-2月内轻度活动即可诱发；静息型：休息时发作>20分钟；恶化型：原有稳定型加重；变异型：冠脉痉挛/ST段抬高/首选CCB。'},
   {id:'int_194',subject:'internal',system:'cardiovascular',chapter:'冠状动脉性心脏病',type:'matching',title:'CCS心绞痛分级匹配',description:'将下列活动受限程度与对应的CCS分级进行匹配',options:[{id:'A',text:'一般体力活动轻度受限：步行>200m或登楼>1层时诱发'},{id:'B',text:'一般体力活动完全受限：轻微活动或休息时也可发作'},{id:'C',text:'一般体力活动(步行和登楼)不受限'},{id:'D',text:'一般体力活动明显受限：步行<200m或登楼1层时诱发'}],categories:[{id:'C1',label:'I级'},{id:'C2',label:'II级'},{id:'C3',label:'III级'},{id:'C4',label:'IV级'}],answer:{'C':'C1','A':'C2','D':'C3','B':'C4'},explanation:'CCS I级体力活动不受限；II级轻度受限(>200m)；III级明显受限(<200m)；IV级完全受限(休息时也发作)。'},
@@ -299,9 +299,9 @@ const SAMPLE_QUESTIONS = [
   {id:'int_210',subject:'internal',system:'cardiovascular',chapter:'心律失常',type:'matching',title:'早搏心电图特征匹配',description:'将下列心电图特征与对应的早搏类型进行匹配',options:[{id:'A',text:'可见逆行P\'波(Ⅱ、Ⅲ、aVF导联倒置)'},{id:'B',text:'提早出现房性P\'波，形态与窦性P波不同'},{id:'C',text:'宽大畸形的QRS波前无P波'},{id:'D',text:'提早出现QRS波、形态与正常QRS波多一致(除非发生室内差异性传导)'},{id:'E',text:'提早出现宽大畸形的QRS波(≥0.12s)'},{id:'F',text:'P\'波后也可无QRS波(房早未下传)'},{id:'G',text:'逆行P\'波可在QRS波之前(P\'R间期<0.12s)、可在QRS波之后(RP间期<0.2s)、可与QRS波重叠'},{id:'H',text:'ST-T波呈继发性改变(T波与QRS主波方向相反—T波倒置)'},{id:'I',text:'P\'R间期≥0.12s'},{id:'J',text:'完全性代偿间歇(早搏在内的PP间距=正常PP间距的2倍)'},{id:'K',text:'不完全性代偿间歇(早搏在内的PP间距<正常PP间距的2倍)'},{id:'L',text:'多不治疗'},{id:'M',text:'多见于器质性心脏病、低钾血症、强心苷中毒'},{id:'N',text:'尽管多见于器质性心脏病者、但多不治疗'}],categories:[{id:'C1',label:'房早'},{id:'C2',label:'交界早'},{id:'C3',label:'室早'}],answer:{'B':'C1','D':['C1','C2'],'F':'C1','I':'C1','K':'C1','L':'C1','A':'C2','G':'C2','J':['C2','C3'],'N':'C2','C':'C3','E':'C3','H':'C3','M':'C3'},explanation:'房早：BDFIKL(提早房性P波/P\'R≥0.12s/不完全代偿间歇/多不治疗)；交界早：ADGJN(逆行P\'波/QRS形态正常/P\'R<0.12s/完全代偿间歇)；室早：CEHJM(宽大畸形QRS/继发性ST-T改变/完全代偿间歇/多见器质性心脏病)。D(QRS形态正常)为房早和交界早共有，J(完全代偿间歇)为交界早和室早共有。'},
   {id:'int_211',subject:'internal',system:'cardiovascular',chapter:'心律失常',type:'matching',title:'阵发性室上速与室速鉴别',description:'将下列心电图特征与对应的心动过速类型进行匹配',options:[{id:'A',text:'突发突止(不必预防用药)'},{id:'B',text:'连续出现3个及其以上的宽大畸形QRS波'},{id:'C',text:'心率多150-200次/分、偶尔>250次/分、尤其儿童'},{id:'D',text:'特征：心室夺获、室性融合波'},{id:'E',text:'心律绝对规则(不同RR间距几乎完全均匀)'},{id:'F',text:'房室分离：P波与QRS波无关，心室率明显快于心房率，心室率多100-250次/分'},{id:'G',text:'可见逆行P波或无P波'},{id:'H',text:'QRS波振幅与波峰呈周期性变化，QT间期延长，明显U波，心室率多200-250次/分'},{id:'I',text:'QRS波形态多正常'},{id:'J',text:'连续发生3-10个起源于心室的QRS波，心动过速的开始与终止呈渐进性'},{id:'K',text:'最主要发生机制是房室结折返——房室结折返性心动过速'},{id:'L',text:'可见于急性心梗再灌注期间，多不治疗'},{id:'M',text:'多由房早触发'},{id:'N',text:'心电生理检查最佳——慢快型房室结折返'},{id:'O',text:'治疗：补镁。先天性长QT间期综合征用β-R拮抗剂'}],categories:[{id:'C1',label:'阵发性室上性心动过速'},{id:'C2',label:'室速'},{id:'C3',label:'尖端扭转型室速(多形性室速的特殊类型)'},{id:'C4',label:'加速性室性自主心律(缓慢型室速)'}],answer:{'A':'C1','C':'C1','E':'C1','G':'C1','I':'C1','K':'C1','M':'C1','N':'C1','B':'C2','D':'C2','F':'C2','H':'C3','O':'C3','J':'C4','L':'C4'},explanation:'室上速：突发突止/心率150-200/心律绝对规则/QRS正常/逆行P波或无P波/房室结折返/房早触发；室速：宽大畸形QRS≥3个/心室夺获/室性融合波/房室分离(心室率快于心房率)；尖端扭转型室速：QT延长/U波/振幅周期性变化/补镁；加速性室性自主心律：3-10个室性QRS/渐进性开始与终止/见于急性心梗再灌注/多不治疗。'},
   {id:'int_212',subject:'internal',system:'cardiovascular',chapter:'心律失常',type:'matching',title:'房颤与房扑心电图特征匹配',description:'将下列心电图特征与对应的心律失常进行匹配',options:[{id:'A',text:'P波消失、转而形成f波(比F波幅度小、频率快、形态不一致，V₁导联最明显)'},{id:'B',text:'P波消失、转而形成F波(规则的锯齿状扑动波，其间等电位线/基线消失)'},{id:'C',text:'心房率350-600次/分'},{id:'D',text:'心房率250-350次/分'},{id:'E',text:'心律绝对不规则(RR间距绝对不等)'},{id:'F',text:'QRS波形态多正常(除非发生室内差异性传导)'},{id:'G',text:'心室率、心律与下传情况有关:如心房率250-350次/分、遵循2:1传导时则心室率150次/分)'}],categories:[{id:'C1',label:'房颤'},{id:'C2',label:'房扑'}],answer:{'A':'C1','C':'C1','E':'C1','B':'C2','D':'C2','G':'C2','F':['C1','C2']},explanation:'房颤：f波(ACE)/心房率350-600/心律绝对不规则；房扑：F波锯齿状(BDG)/心房率250-350/心室率与下传比例有关；F(QRS波多正常)为两者共有。'},
-  {id:'int_213',subject:'internal',system:'cardiovascular',chapter:'心律失常',type:'matching',title:'房颤分类匹配',description:'将下列房颤特征与对应的房颤类型进行匹配',options:[{id:'A',text:'持续>1周，不能自行终止'},{id:'B',text:'持续>1年'},{id:'C',text:'不能终止或终止后24h内又复发'},{id:'D',text:'持续1周(常<48h)，能自行终止'},{id:'E',text:'有望转复'},{id:'F',text:'无望转复'}],categories:[{id:'C1',label:'阵发性房颤'},{id:'C2',label:'持续性房颤'},{id:'C3',label:'持久性房颤'},{id:'C4',label:'永久性房颤'}],answer:{'D':'C1','A':'C2','C':'C2','B':'C3','E':'C3','F':'C4'},explanation:'阵发性：<48h能自行终止；持续性：>1周不能自行终止/终止后24h内复发；持久性：>1年有望转复；永久性：无望转复。'},
-  {id:'int_214',subject:'internal',system:'cardiovascular',chapter:'心律失常',type:'matching',title:'房室传导阻滞特征匹配',description:'将下列心电图特征与对应的房室传导阻滞类型进行匹配',options:[{id:'A',text:'PR间期进行性延长，直到出现一次QRS波脱落'},{id:'B',text:'PR间期基本恒定，部分P波后无QRS波'},{id:'C',text:'QRS波不脱落，QRS波形态多正常'},{id:'D',text:'传导比例多为3:1或4:1'},{id:'E',text:'PR间期恒定延长>0.2s'},{id:'F',text:'可由强心苷中毒、高钾血症、急性下壁心梗、急性心肌炎引起'},{id:'G',text:'S1强度恒定减弱'},{id:'H',text:'S1强度基本恒定伴间歇性心搏脱落'},{id:'I',text:'阻滞部位多在希氏束-普肯耶系统，QRS波宽大畸形'},{id:'J',text:'S1强度逐渐减弱和心搏脱落'},{id:'K',text:'房室分离：PR间期不固定'},{id:'L',text:'RR间距逐渐缩短后出现心搏脱落'},{id:'M',text:'S1强度变化不定可呈大炮音'},{id:'N',text:'阻滞部位多在房室结，QRS波形态多正常'},{id:'O',text:'心房率快于心室率'},{id:'P',text:'传导比例多为3:2或5:4'},{id:'Q',text:'RR间距=PP间距+PR增量(PR增量递减)'}],categories:[{id:'C1',label:'一度房室阻滞'},{id:'C2',label:'二度I型房室阻滞'},{id:'C3',label:'二度II型房室阻滞'},{id:'C4',label:'三度房室阻滞/完全性房室阻滞'}],answer:{'C':'C1','E':'C1','G':'C1','A':'C2','J':'C2','L':'C2','N':'C2','P':'C2','Q':'C2','B':'C3','D':'C3','H':'C3','I':['C3','C4'],'F':'C4','K':'C4','M':'C4','O':'C4'},explanation:'一度：QRS不脱落/PR恒定延长>0.2s/S1恒定减弱；二度I型：PR进行性延长至QRS脱落/S1渐弱/RR渐缩短后脱落/阻滞在房室结QRS正常/传导比3:2或5:4/RR=PP+PR增量；二度II型：PR恒定/部分P波后无QRS/S1恒定伴间歇脱落/传导比3:1或4:1/阻滞在希氏束QRS宽大；三度：房室分离PR不固定/S1变化大炮音/心房率快于心室率/可由强心苷中毒等引起。I(阻滞在希氏束/QRS宽大)为二度II型和三度共有。'},
-  {id:'int_215',subject:'internal',system:'cardiovascular',chapter:'心律失常',type:'matching',title:'心律失常治疗药物匹配',description:'将下列治疗药物与对应的心律失常临床场景进行匹配',options:[{id:'A',text:'腺苷'},{id:'B',text:'β-R拮抗剂'},{id:'C',text:'非二氢吡啶CCB(维拉帕米、地尔硫卓)'},{id:'D',text:'胺碘酮'},{id:'E',text:'强心苷'},{id:'F',text:'迷走N'},{id:'G',text:'电复律'},{id:'H',text:'普罗帕酮'},{id:'I',text:'伊布利特'},{id:'J',text:'导管消融'},{id:'K',text:'某些升压药(去氧肾上腺素/间羟胺/甲氧明)'}],categories:[{id:'C1',label:'AVNRT(房室结折返性心动过速)'},{id:'C2',label:'预激综合征伴顺向型AVRT'},{id:'C3',label:'预激综合征伴房颤'},{id:'C4',label:'房颤'}],answer:{'F':['C1','C2'],'A':['C1','C2'],'C':['C1','C2','C4'],'J':['C1','C2','C4'],'K':'C1','G':['C3','C4'],'I':['C3','C4'],'B':'C4','D':'C4','E':'C4','H':'C4'},explanation:'AVNRT：迷走N→腺苷→CCB，升压药可替代迷走N，导管消融根治；预激伴顺向型AVRT：同AVNRT处理(迷走N→腺苷→CCB)，禁用强心苷，导管消融根治；预激伴房颤：首选电复律，伊布利特可用，禁用腺苷/β阻滞剂/CCB/胺碘酮/强心苷/迷走N(禁用A-F)；房颤：节律控制(导管消融/胺碘酮/电复律/普罗帕酮/伊布利特)，心室率控制(β阻滞剂首选/CCB次选，HFrEF时CCB禁用改用胺碘酮或强心苷)。'},
+  {id:'int_213',subject:'internal',system:'cardiovascular',chapter:'心律失常',type:'matching',title:'房颤分类匹配',description:'将下列房颤特征与对应的房颤类型进行匹配',options:[{id:'A',text:'持续>1周，不能自行终止'},{id:'B',text:'持续>1年'},{id:'C',text:'不能终止或终止后24h内又复发'},{id:'D',text:'持续≤1周（常≤48h），能自行终止'},{id:'E',text:'有望转复'},{id:'F',text:'无望转复'}],categories:[{id:'C1',label:'阵发性房颤'},{id:'C2',label:'持续性房颤'},{id:'C3',label:'持久性房颤'},{id:'C4',label:'永久性房颤'}],answer:{'D':'C1','A':'C2','C':['C2','C4'],'B':['C3','C4'],'E':['C3','C4']},explanation:'阵发性：≤1周(常≤48h)能自行终止；持续性：>1周不能自行终止/终止后24h内复发；持久性：>1年有望转复；永久性：持续>1年/不能终止或终止后24h内又复发/有望转复(BCE交叉归属)。'},
+  {id:'int_214',subject:'internal',system:'cardiovascular',chapter:'心律失常',type:'matching',title:'房室传导阻滞特征匹配',description:'将下列心电图特征与对应的房室传导阻滞类型进行匹配',options:[{id:'A',text:'PR间期进行性延长，直到出现一次QRS波脱落'},{id:'B',text:'PR间期基本恒定，部分P波后无QRS波'},{id:'C',text:'QRS波不脱落，QRS波形态多正常'},{id:'D',text:'传导比例多为3:1或4:1'},{id:'E',text:'PR间期恒定延长>0.2s'},{id:'F',text:'可由强心苷中毒、高钾血症、急性下壁心梗、急性心肌炎引起'},{id:'G',text:'S1强度恒定减弱'},{id:'H',text:'S1强度基本恒定伴间歇性心搏脱落'},{id:'I',text:'阻滞部位在房室结者QRS波形态多正常;阻滞部位在希氏束-浦肯野纤维者QRS波宽大畸形'},{id:'J',text:'S1强度逐渐减弱和心搏脱落'},{id:'K',text:'房室分离：PR间期不固定'},{id:'L',text:'RR间距逐渐缩短后出现心搏脱落'},{id:'M',text:'S1强度变化不定可呈大炮音'},{id:'O',text:'心房率快于心室率'},{id:'P',text:'传导比例多为3:2或5:4'},{id:'Q',text:'RR间距=PP间距+PR增量(PR增量递减)'}],categories:[{id:'C1',label:'一度房室阻滞'},{id:'C2',label:'二度I型房室阻滞'},{id:'C3',label:'二度II型房室阻滞'},{id:'C4',label:'三度房室阻滞/完全性房室阻滞'}],answer:{'C':'C1','E':'C1','G':'C1','A':'C2','J':'C2','L':'C2','P':'C2','Q':'C2','B':'C3','D':'C3','H':'C3','I':['C1','C2','C3','C4'],'F':'C4','K':'C4','M':'C4','O':'C4'},explanation:'一度：QRS不脱落/PR恒定延长>0.2s/S1恒定减弱/阻滞多在房室结QRS正常；二度I型：PR进行性延长至QRS脱落/S1渐弱/RR渐缩短后脱落/阻滞在房室结QRS正常/传导比3:2或5:4/RR=PP+PR增量；二度II型：PR恒定/部分P波后无QRS/S1恒定伴间歇脱落/传导比3:1或4:1/阻滞在希氏束QRS宽大；三度：房室分离PR不固定/S1变化大炮音/心房率快于心室率/可由强心苷中毒等引起。I为通则：房室结阻滞→QRS正常(一/二I/三度均可)，希氏束-浦肯野纤维阻滞→QRS宽大(二II/三度均可)，故I归属全部四类。'},
+  {id:'int_215',subject:'internal',system:'cardiovascular',chapter:'心律失常',type:'sub-matching',title:'心律失常治疗药物匹配',description:'将下列治疗药物与对应的心律失常临床场景进行匹配',options:[{id:'A',text:'腺苷'},{id:'B',text:'β-R拮抗剂'},{id:'C',text:'非二氢吡啶CCB(维拉帕米、地尔硫卓)'},{id:'D',text:'胺碘酮'},{id:'E',text:'强心苷'},{id:'F',text:'迷走N'},{id:'G',text:'电复律'},{id:'H',text:'普罗帕酮'},{id:'I',text:'伊布利特'},{id:'J',text:'导管消融'},{id:'K',text:'某些升压药(去氧肾上腺素/间羟胺/甲氧明)'}],subGroups:[{id:'G1',label:'AVNRT',fullLabel:'AVNRT（房室结折返性心动过速）',subQuestions:[{prompt:'先用',answer:['F']},{prompt:'无效药物首选',answer:['A']},{prompt:'药物次选',answer:['C']},{prompt:'有收缩性心衰',answer:['E']},{prompt:'其他药物可用',answer:['B','D','K']},{prompt:'伴血流动力学障碍',answer:['G']},{prompt:'已用强心苷禁止',answer:['G']},{prompt:'根治',answer:['J']}]},{id:'G2',label:'预激伴AVRT',fullLabel:'预激综合征伴顺向型AVRT',subQuestions:[{prompt:'先用',answer:['F']},{prompt:'无效药物首选',answer:['A']},{prompt:'次选',answer:['C']},{prompt:'禁用',answer:['E']},{prompt:'伴血流动力学障碍',answer:['G']},{prompt:'根治',answer:['J']}]},{id:'G3',label:'预激伴房颤',fullLabel:'预激综合征伴房颤',subQuestions:[{prompt:'首选',answer:['G']},{prompt:'无电复律条件',answer:['H','I']},{prompt:'禁用',answer:['A','B','C','D','E','F']},{prompt:'根治',answer:['J']}]},{id:'G4',label:'房颤',fullLabel:'房颤',subQuestions:[{prompt:'转复并维持窦性心律',answer:['J','D','G','H','I']},{prompt:'控制心室率 首选',answer:['B']},{prompt:'也可用',answer:['C']},{prompt:'收缩性心衰禁用',answer:['C']},{prompt:'伴收缩性心衰当心室率不达标或β-R拮抗剂有禁忌症',answer:['D','E']}]}],explanation:'AVNRT：迷走N→腺苷→CCB，升压药可替代迷走N，导管消融根治；预激伴顺向型AVRT：同AVNRT处理(迷走N→腺苷→CCB)，禁用强心苷，导管消融根治；预激伴房颤：首选电复律，伊布利特可用，禁用腺苷/β阻滞剂/CCB/胺碘酮/强心苷/迷走N(禁用A-F)；房颤：节律控制(导管消融/胺碘酮/电复律/普罗帕酮/伊布利特)，心室率控制(β阻滞剂首选/CCB次选，HFrEF时CCB禁用改用胺碘酮或强心苷)。'},
   {id:'int_216',subject:'internal',system:'cardiovascular',chapter:'心律失常',type:'matching',title:'抗快速型心律失常药分类匹配',description:'将下列药物机制与对应的抗心律失常药分类进行匹配',options:[{id:'A',text:'阻断β-R、拮抗交感效应'},{id:'B',text:'阻断钾通道、明显延长动作电位时程APD及有效不应期ERP'},{id:'C',text:'阻断快钠通道'},{id:'D',text:'阻断L型慢钙通道'},{id:'E',text:'几乎不减慢0期Vmax，缩短动作电位时程(缩短ERP<缩短APD)'},{id:'F',text:'显著减慢0期Vmax(显著减慢传导)，轻微延长动作电位时程'},{id:'G',text:'减慢0期Vmax，延长动作电位时程'},{id:'H',text:'普罗帕酮'},{id:'I',text:'胺碘酮'},{id:'J',text:'奎尼丁'},{id:'K',text:'伊布/多非利特'},{id:'L',text:'氟卡尼'},{id:'M',text:'索他洛尔'},{id:'N',text:'丙吡胺'},{id:'O',text:'美托洛尔'},{id:'P',text:'决奈达隆'},{id:'Q',text:'利多卡因'},{id:'R',text:'比索洛尔'},{id:'S',text:'维拉帕米'},{id:'T',text:'苯妥英钠'},{id:'U',text:'美西律'},{id:'V',text:'恩卡尼'},{id:'W',text:'普鲁卡因胺'},{id:'X',text:'地尔硫卓'},{id:'Y',text:'卡维地洛'}],categories:[{id:'C1',label:'I类-阻断快钠通道'},{id:'C2',label:'II类-β-R拮抗剂'},{id:'C3',label:'III类-阻断钾通道'},{id:'C4',label:'IV类-阻断慢钙通道'}],answer:{'C':'C1','G':'C1','J':'C1','N':'C1','W':'C1','E':'C1','Q':'C1','T':'C1','U':'C1','F':'C1','H':'C1','L':'C1','V':'C1','A':'C2','O':'C2','R':'C2','Y':'C2','B':'C3','I':'C3','K':'C3','M':'C3','P':'C3','D':'C4','S':'C4','X':'C4'},explanation:'I类阻断快钠通道：IA(奎尼丁/丙吡胺/普鲁卡因胺，减慢Vmax延长APD)、IB(利多卡因/苯妥英钠/美西律，不减慢Vmax缩短APD)、IC(普罗帕酮/氟卡尼/恩卡尼，显著减慢Vmax)；II类β阻滞剂(美托洛尔/比索洛尔/卡维地洛)；III类阻断钾通道(胺碘酮/索他洛尔/决奈达隆/伊布利特)；IV类阻断钙通道(维拉帕米/地尔硫卓)。'},
   {id:'int_217',subject:'internal',system:'cardiovascular',chapter:'心律失常',type:'matching',title:'起搏器代码匹配',description:'将下列起搏器代码特征与对应的起搏器类型进行匹配',options:[{id:'A',text:'感知的是自身心房信号'},{id:'B',text:'自身信号被感知后抑制或触发起搏器发放一次脉冲'},{id:'C',text:'起搏的是心房和心室'},{id:'D',text:'自身信号被感知后抑制起搏器发放一次脉冲'},{id:'E',text:'起搏的是心房'},{id:'F',text:'感知的是自身心室信号'},{id:'G',text:'起搏的是心室'},{id:'H',text:'感知的是自身心房和心室信号'},{id:'I',text:'窦房结功能正常'},{id:'J',text:'病态窦房结综合征'},{id:'K',text:'严重房室阻滞'},{id:'L',text:'房室传导功能正常'},{id:'M',text:'慢房颤'}],categories:[{id:'C1',label:'VDD'},{id:'C2',label:'DDD'},{id:'C3',label:'AAI'},{id:'C4',label:'VVI'}],answer:{'A':'C3','B':['C1','C2'],'C':'C2','D':['C3','C4'],'E':'C3','F':'C4','G':['C1','C4'],'H':['C1','C2'],'I':'C1','J':['C2','C3'],'K':['C1','C2'],'L':'C3','M':'C4'},explanation:'VDD：起搏心室/感知心房和心室/双反应，适合窦房结功能正常+严重房室阻滞；DDD：起搏感知心房和心室/双反应，适合病窦综合征+严重房室阻滞；AAI：起搏感知心房/抑制反应，适合病窦综合征+房室传导正常；VVI：起搏感知心室/抑制反应，适合慢房颤。B(双反应)为VDD和DDD共有，D(抑制反应)为AAI和VVI共有，G(起搏心室)为VDD和VVI共有，H(感知心房和心室)为VDD和DDD共有，J(病窦综合征)为DDD和AAI共有，K(严重房室阻滞)为VDD和DDD共有。'},
   {id:'int_218',subject:'internal',system:'cardiovascular',chapter:'心脏物理检查',type:'matching',title:'心尖部杂音的疾病匹配',description:'将下列疾病与对应的心尖部杂音类型进行匹配',options:[{id:'A',text:'风湿病、感染性心内膜炎、心梗等致二闭'},{id:'B',text:'器质性主狭'},{id:'C',text:'限心症'},{id:'D',text:'风湿性二狭'},{id:'E',text:'左心衰'},{id:'F',text:'左心房粘液瘤'},{id:'G',text:'严重主闭'},{id:'I',text:'扩心病'},{id:'J',text:'慢性严重主闭：Austin-Flint杂音'},{id:'K',text:'心肌炎'},{id:'L',text:'严重二闭'},{id:'M',text:'严重贫血'},{id:'O',text:'高血压'},{id:'Q',text:'肥心病'},{id:'R',text:'甲亢'},{id:'S',text:'主狭'}],categories:[{id:'C1',label:'心尖舒张期杂音'},{id:'C2',label:'心尖收缩期杂音'},{id:'C3',label:'胸骨右缘2肋间收缩期杂音'}],answer:{'D':'C1','J':'C1','M':'C1','F':'C1','A':'C2','C':'C2','E':'C2','K':'C2','L':'C2','O':'C2','Q':'C2','R':'C2','S':'C2','B':'C3'},explanation:'心尖舒张期杂音见于二狭/Austin-Flint/严重贫血/左房粘液瘤；心尖收缩期杂音见于二闭/心衰/心肌炎/肥心/甲亢/主狭等；胸骨右缘2肋间收缩期杂音为主狭。'},
@@ -662,10 +662,21 @@ function saveQuizDraft(){
   // 先把当前题目的作答状态存入 draftProgress
   const qId = currentQuestions[currentQuestionIndex]?.id;
   if(qId){
-    draftProgress[qId] = {
-      placements: { ...quizState.placements },
-      answered: quizState.answered
-    };
+    if(currentQuestions[currentQuestionIndex] && currentQuestions[currentQuestionIndex].type === 'sub-matching'){
+      draftProgress[qId] = {
+        subPlacements: { ...(quizState.subPlacements||{}) },
+        subAnswered: { ...(quizState.subAnswered||{}) },
+        activeTab: quizState.activeTab || 0,
+        answered: quizState.answered || false,
+        correct: quizState.subCorrect || false
+      };
+    } else {
+      draftProgress[qId] = {
+        placements: { ...quizState.placements },
+        answered: quizState.answered,
+        correct: quizState.correct || false
+      };
+    }
   }
   const draft = {
     subject: currentSubject,
@@ -797,12 +808,23 @@ async function renderQuestion(){
   const wrongCount = qRecords.filter(r=>!r.correct).length;
   const totalCount = qRecords.length;
 
+  // sub-matching 题型单独渲染
+  if(q.type === 'sub-matching'){
+    return renderSubMatching(q, el, {correctCount, wrongCount, totalCount, wasAnswered, progress});
+  }
+
   el.innerHTML = `
     <div class="quiz-player show">
       <div class="quiz-area">
         <div class="quiz-header">
           <div class="quiz-title">${escapeHtml(q.title)}</div>
-          <div class="quiz-progress">第 <strong>${currentQuestionIndex+1}</strong> / ${currentQuestions.length} 题 · 已答 <strong style="color:var(--green)">${getAnsweredCount()}</strong> 题</div>
+          <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
+            <div class="quiz-progress">第 <strong>${currentQuestionIndex+1}</strong> / ${currentQuestions.length} 题 · 已答 <strong style="color:var(--green)">${getAnsweredCount()}</strong> 题</div>
+            <button class="quiz-card-toggle" onclick="toggleQuizCard()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+              题卡
+            </button>
+          </div>
         </div>
         <div class="progress-bar-wrap"><div class="progress-fill" style="width:${progress}%"></div></div>
         ${wasAnswered?'<div class="quiz-resume-hint"><span class="qrh-icon">🔒</span><span class="qrh-text">本题已提交，答案已锁定（只读查看）</span></div>':''}
@@ -840,9 +862,24 @@ async function renderQuestion(){
         </div>
         <div id="completionHint" style="text-align:center;font-size:.74rem;color:var(--yellow);margin-top:.4rem;${(currentQuestionIndex>=currentQuestions.length-1 && !allQuestionsAnswered())?'':'display:none;'}">还有 ${currentQuestions.length-getAnsweredCount()} 题未作答，全部完成后可点击"完成"</div>
         <div class="answer-reveal" id="answerReveal"></div>
+        <div class="quiz-card-overlay" id="quizCardOverlay">
+          <div class="qc-overlay-header">
+            <div class="qc-overlay-title">题卡 · ${escapeHtml(currentChapterName||'')}（共${currentQuestions.length}题）</div>
+            <button class="qc-overlay-close" onclick="toggleQuizCard()">✕</button>
+          </div>
+          <div class="qc-grid" id="qcGrid"></div>
+          <div class="qc-legend">
+            <div class="qc-legend-item"><span class="qc-legend-box correct"></span> 做对</div>
+            <div class="qc-legend-item"><span class="qc-legend-box wrong"></span> 做错</div>
+            <div class="qc-legend-item"><span class="qc-legend-box unanswered"></span> 未做</div>
+            <div class="qc-legend-item" style="margin-left:auto;color:var(--accent)">当前题</div>
+          </div>
+        </div>
       </div>
     </div>`;
   updateMatchingUI();
+  // 初始化题卡
+  initQuizCard();
   // 如果该题已提交过，自动显示答案揭示（锁定只读）
   if(wasAnswered){
     renderAnswerReveal(q);
@@ -1187,11 +1224,502 @@ function zoomNoteImage(thumb){
   overlay.classList.add('show');
 }
 
+/* ==========================================================
+ * sub-matching 题型：Tab切换 + 选项池固定 + 每小题提交
+ * ========================================================== */
+
+async function renderSubMatching(q, el, info){
+  const {correctCount, wrongCount, totalCount, wasAnswered, progress} = info;
+  
+  // 恢复 sub-matching 状态
+  const saved = draftProgress[q.id];
+  if(saved && saved.subPlacements){
+    quizState.subPlacements = {...saved.subPlacements};
+    quizState.subAnswered = {...saved.subAnswered};
+    quizState.activeTab = saved.activeTab || 0;
+    quizState.subCorrect = saved.correct || false;
+  } else {
+    quizState.subPlacements = {};
+    quizState.subAnswered = {};
+    quizState.activeTab = 0;
+    quizState.subCorrect = false;
+  }
+  quizState.selectedOption = null;
+  
+  // 打乱选项顺序
+  if(shuffleOptionsEnabled && q.options && q.options.length>1){
+    q._displayOptions = [...q.options];
+    for(let i=q._displayOptions.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [q._displayOptions[i],q._displayOptions[j]] = [q._displayOptions[j],q._displayOptions[i]];
+    }
+  } else {
+    q._displayOptions = q.options;
+  }
+  
+  const allSubAnswered = checkAllSubAnswered(q);
+  if(allSubAnswered && !quizState.answered){
+    quizState.answered = true;
+    quizState.subCorrect = checkAllSubCorrect(q);
+    saveQuizDraft();
+  }
+  
+  el.innerHTML = `
+    <div class="quiz-player show">
+      <div class="quiz-area">
+        <div class="quiz-header">
+          <div class="quiz-title">${escapeHtml(q.title)}</div>
+          <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
+            <div class="quiz-progress">第 <strong>${currentQuestionIndex+1}</strong> / ${currentQuestions.length} 题 · 已答 <strong style="color:var(--green)">${getAnsweredCount()}</strong> 题</div>
+            <button class="quiz-card-toggle" onclick="toggleQuizCard()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+              题卡
+            </button>
+          </div>
+        </div>
+        <div class="progress-bar-wrap"><div class="progress-fill" style="width:${progress}%"></div></div>
+        ${quizState.answered?'<div class="quiz-resume-hint"><span class="qrh-icon">🔒</span><span class="qrh-text">本题已全部提交，答案已锁定（只读查看）</span></div>':''}
+        <div style="display:flex;gap:.5rem;margin-bottom:.6rem;flex-wrap:wrap">
+          <span style="background:var(--green-bg);color:var(--green);padding:.15rem .6rem;border-radius:6px;font-size:.72rem;font-weight:600">✅ 正确 ${correctCount}次</span>
+          <span style="background:var(--red-bg);color:var(--red);padding:.15rem .6rem;border-radius:6px;font-size:.72rem;font-weight:600">❌ 错误 ${wrongCount}次</span>
+          <span style="background:var(--yellow-bg);color:var(--yellow);padding:.15rem .6rem;border-radius:6px;font-size:.72rem;font-weight:600">📋 共做 ${totalCount}次</span>
+        </div>
+        <div style="font-size:.85rem;color:var(--muted);margin-bottom:1rem">${escapeHtml(q.description)}</div>
+        <div class="sm-layout">
+          <div class="sm-option-pool">
+            <div class="pool-title">📋 选项池（固定不变，所有Tab共享）</div>
+            <div class="pool-items" id="optionPool"></div>
+          </div>
+          <div class="sm-tab-bar" id="smTabBar"></div>
+          <div class="sm-content" id="smContent"></div>
+          <div class="sm-tab-nav">
+            <button class="sm-tab-nav-btn" id="smPrevTab" onclick="prevSubTab()">← 上一Tab</button>
+            <span class="sm-tab-progress" id="smTabProgress"></span>
+            <button class="sm-tab-nav-btn primary" id="smNextTab" onclick="nextSubTab()">下一Tab →</button>
+          </div>
+        </div>
+        <div class="action-bar">
+          <button class="btn btn-outline" id="prevBtn" onclick="prevQuestion()" ${currentQuestionIndex===0?'disabled style="opacity:.4"':''}>← 上一题</button>
+          <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()" ${(currentQuestionIndex>=currentQuestions.length-1 && !allQuestionsAnswered())?'disabled style="opacity:.4"':''}>${currentQuestionIndex>=currentQuestions.length-1?'完成 ✓':'下一题 →'}</button>
+          <button class="btn btn-outline" onclick="openNoteModal('${q.id}')">📝 添加解析</button>
+          <button class="btn btn-outline" id="favBtn" onclick="toggleFavorite()">${favoritedIds.has(q.id)?'⭐ 取消收藏':'☆ 收藏'}</button>
+          <button class="btn btn-outline" onclick="backToSubjects()">退出</button>
+        </div>
+        <div id="completionHint" style="text-align:center;font-size:.74rem;color:var(--yellow);margin-top:.4rem;${(currentQuestionIndex>=currentQuestions.length-1 && !allQuestionsAnswered())?'':'display:none;'}">还有 ${currentQuestions.length-getAnsweredCount()} 题未作答，全部完成后可点击"完成"</div>
+        <div class="answer-reveal" id="answerReveal"></div>
+        <div class="quiz-card-overlay" id="quizCardOverlay">
+          <div class="qc-overlay-header">
+            <div class="qc-overlay-title">题卡 · ${escapeHtml(currentChapterName||'')}（共${currentQuestions.length}题）</div>
+            <button class="qc-overlay-close" onclick="toggleQuizCard()">✕</button>
+          </div>
+          <div class="qc-grid" id="qcGrid"></div>
+          <div class="qc-legend">
+            <div class="qc-legend-item"><span class="qc-legend-box correct"></span> 做对</div>
+            <div class="qc-legend-item"><span class="qc-legend-box wrong"></span> 做错</div>
+            <div class="qc-legend-item"><span class="qc-legend-box unanswered"></span> 未做</div>
+            <div class="qc-legend-item" style="margin-left:auto;color:var(--accent)">当前题</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  
+  updateSubMatchingUI(q);
+  initQuizCard();
+  
+  // 如果全部已提交，显示总体答案揭示
+  if(quizState.answered){
+    renderSubMatchingReveal(q);
+  }
+}
+
+function updateSubMatchingUI(q){
+  // 选项池
+  const pool = document.getElementById('optionPool');
+  if(pool){
+    const displayOpts = q._displayOptions || q.options;
+    pool.innerHTML = displayOpts.map(opt=>{
+      let cls = 'option-item';
+      if(quizState.selectedOption===opt.id) cls += ' selected';
+      return `<div class="${cls}" data-opt="${opt.id}" onclick="selectSubOption('${opt.id}')">
+        <span class="opt-letter">${opt.id}</span><span>${escapeHtml(opt.text)}</span>
+      </div>`;
+    }).join('');
+  }
+  
+  // Tab栏
+  const tabBar = document.getElementById('smTabBar');
+  if(tabBar){
+    tabBar.innerHTML = q.subGroups.map((g, i)=>{
+      let cls = 'sm-tab-btn' + (i === quizState.activeTab ? ' active' : '');
+      const answeredCount = g.subQuestions.filter((_, si) => quizState.subAnswered[`${g.id}_${si}`]).length;
+      const allDone = answeredCount === g.subQuestions.length;
+      let checkHtml = '';
+      if(allDone){
+        const allCorrect = g.subQuestions.every((sq, si) => isSubCorrect(q, g.id, si));
+        checkHtml = `<span class="sm-tab-check${allCorrect?'':' partial'}">${allCorrect?'✓':'!'}</span>`;
+      }
+      return `<button class="${cls}" onclick="switchSubTab(${i})">${escapeHtml(g.label)}${checkHtml}</button>`;
+    }).join('');
+  }
+  
+  // 当前Tab内容
+  const content = document.getElementById('smContent');
+  if(content){
+    const g = q.subGroups[quizState.activeTab];
+    if(!g) return;
+    let html = `<div class="sm-group-title">${escapeHtml(g.fullLabel)}</div><div class="sm-sub-list">`;
+    g.subQuestions.forEach((sq, si)=>{
+      const key = `${g.id}_${si}`;
+      const isAnswered = quizState.subAnswered[key];
+      const placements = quizState.subPlacements[key] || [];
+      const isCorrect = isAnswered && isSubCorrect(q, g.id, si);
+      
+      html += `<div class="sm-sub-item${isAnswered?' locked':''}${quizState.selectedOption?' has-selected':''}">`;
+      html += `<span class="sm-sub-num">${si+1}</span>`;
+      html += `<span class="sm-sub-prompt">${escapeHtml(sq.prompt)}</span>`;
+      html += `<div class="sm-sub-slots">`;
+      
+      if(isAnswered){
+        // 已提交：显示对错
+        const correctAns = sq.answer;
+        if(placements.length === 0){
+          html += `<span class="sm-empty-slot">未作答</span>`;
+        }
+        placements.forEach(p=>{
+          const ok = correctAns.includes(p);
+          html += `<span class="sm-slot ${ok?'correct':'wrong'}"><span class="slot-letter">${p}</span></span>`;
+        });
+        // 显示遗漏的正确答案
+        correctAns.forEach(ca=>{
+          if(!placements.includes(ca)){
+            html += `<span class="sm-slot missed"><span class="slot-letter">${ca}</span></span>`;
+          }
+        });
+      } else {
+        // 未提交：显示已放置的选项
+        placements.forEach(p=>{
+          const opt = q.options.find(o=>o.id===p);
+          html += `<span class="sm-slot" onclick="removeFromSubSlot('${g.id}',${si},'${p}')"><span class="slot-letter">${p}</span><span class="slot-remove">✕</span></span>`;
+        });
+        if(quizState.selectedOption){
+          html += `<span class="sm-empty-slot" onclick="placeInSubSlot('${g.id}',${si})">点击放入</span>`;
+        } else {
+          html += `<span class="sm-empty-slot">选选项后放入</span>`;
+        }
+      }
+      
+      html += `</div>`;
+      
+      // 提交按钮
+      if(!isAnswered){
+        const canSubmit = placements.length > 0;
+        html += `<button class="sm-submit-btn" ${canSubmit?'':'disabled'} onclick="submitSubAnswer('${g.id}',${si})">提交</button>`;
+      } else {
+        html += `<span class="sm-submit-btn done">${isCorrect?'✓':'✗'}</span>`;
+      }
+      
+      // 答案揭示
+      if(isAnswered){
+        const correctAns = sq.answer;
+        const userSet = new Set(placements);
+        const isAllCorrect = correctAns.length === placements.length && correctAns.every(a=>userSet.has(a));
+        const missed = correctAns.filter(a=>!userSet.has(a));
+        const wrong = placements.filter(p=>!correctAns.includes(p));
+        let revealHtml = '';
+        if(isAllCorrect){
+          revealHtml = `<div class="sm-reveal ok">✓ 正确！答案：${correctAns.join(', ')}</div>`;
+        } else {
+          let parts = [];
+          if(wrong.length) parts.push(`错误：${wrong.join(', ')}`);
+          if(missed.length) parts.push(`遗漏：${missed.join(', ')}`);
+          revealHtml = `<div class="sm-reveal no">✗ ${parts.join(' · ')}｜正确答案：${correctAns.join(', ')}</div>`;
+        }
+        html += revealHtml;
+      }
+      
+      html += `</div>`;
+    });
+    html += '</div>';
+    content.innerHTML = html;
+  }
+  
+  // Tab导航按钮状态
+  const prevTab = document.getElementById('smPrevTab');
+  const nextTab = document.getElementById('smNextTab');
+  const tabProgress = document.getElementById('smTabProgress');
+  if(prevTab) prevTab.disabled = quizState.activeTab === 0;
+  if(nextTab){
+    nextTab.textContent = quizState.activeTab === q.subGroups.length - 1 ? '最后Tab' : '下一Tab →';
+  }
+  if(tabProgress){
+    const answeredCount = q.subGroups.reduce((acc, g)=>{
+      return acc + g.subQuestions.filter((_, si)=>quizState.subAnswered[`${g.id}_${si}`]).length;
+    }, 0);
+    const totalSub = q.subGroups.reduce((acc, g)=>acc + g.subQuestions.length, 0);
+    tabProgress.textContent = `Tab ${quizState.activeTab + 1}/${q.subGroups.length} · 已提交 ${answeredCount}/${totalSub}`;
+  }
+  
+  // 更新操作栏的完成按钮状态
+  updateQuizProgress();
+}
+
+function selectSubOption(optId){
+  if(quizState.answered) return;
+  if(quizState.selectedOption === optId){
+    quizState.selectedOption = null;
+  } else {
+    quizState.selectedOption = optId;
+  }
+  const q = currentQuestions[currentQuestionIndex];
+  updateSubMatchingUI(q);
+}
+
+function placeInSubSlot(groupId, subIdx){
+  if(quizState.answered) return;
+  if(!quizState.selectedOption) return;
+  const q = currentQuestions[currentQuestionIndex];
+  const key = `${groupId}_${subIdx}`;
+  if(!quizState.subPlacements[key]) quizState.subPlacements[key] = [];
+  if(!quizState.subPlacements[key].includes(quizState.selectedOption)){
+    quizState.subPlacements[key].push(quizState.selectedOption);
+  }
+  quizState.selectedOption = null;
+  updateSubMatchingUI(q);
+  saveQuizDraft();
+}
+
+function removeFromSubSlot(groupId, subIdx, optId){
+  if(quizState.answered) return;
+  const q = currentQuestions[currentQuestionIndex];
+  const key = `${groupId}_${subIdx}`;
+  if(quizState.subAnswered[key]) return; // 已提交的不能修改
+  quizState.subPlacements[key] = (quizState.subPlacements[key]||[]).filter(o=>o!==optId);
+  if(quizState.subPlacements[key].length === 0) delete quizState.subPlacements[key];
+  updateSubMatchingUI(q);
+  saveQuizDraft();
+}
+
+function switchSubTab(idx){
+  const q = currentQuestions[currentQuestionIndex];
+  quizState.activeTab = idx;
+  updateSubMatchingUI(q);
+  saveQuizDraft();
+}
+
+function prevSubTab(){
+  const q = currentQuestions[currentQuestionIndex];
+  if(quizState.activeTab > 0){
+    quizState.activeTab--;
+    updateSubMatchingUI(q);
+    saveQuizDraft();
+  }
+}
+
+function nextSubTab(){
+  const q = currentQuestions[currentQuestionIndex];
+  if(quizState.activeTab < q.subGroups.length - 1){
+    quizState.activeTab++;
+    updateSubMatchingUI(q);
+    saveQuizDraft();
+  }
+}
+
+function isSubCorrect(q, groupId, subIdx){
+  const key = `${groupId}_${subIdx}`;
+  const placements = quizState.subPlacements[key] || [];
+  const g = q.subGroups.find(g=>g.id===groupId);
+  if(!g) return false;
+  const sq = g.subQuestions[subIdx];
+  if(!sq) return false;
+  const correctAns = sq.answer;
+  return correctAns.length === placements.length && correctAns.every(a=>placements.includes(a));
+}
+
+async function submitSubAnswer(groupId, subIdx){
+  const q = currentQuestions[currentQuestionIndex];
+  if(!q || q.type !== 'sub-matching') return;
+  const key = `${groupId}_${subIdx}`;
+  if(quizState.subAnswered[key]) return;
+  
+  quizState.subAnswered[key] = true;
+  saveQuizDraft();
+  updateSubMatchingUI(q);
+  
+  // 检查是否全部子题都已提交
+  if(checkAllSubAnswered(q)){
+    quizState.answered = true;
+    quizState.subCorrect = checkAllSubCorrect(q);
+    saveQuizDraft();
+    
+    // 记录到 IndexedDB
+    const totalSub = q.subGroups.reduce((acc, g)=>acc + g.subQuestions.length, 0);
+    let correctSub = 0;
+    q.subGroups.forEach(g=>{
+      g.subQuestions.forEach((sq, si)=>{
+        if(isSubCorrect(q, g.id, si)) correctSub++;
+      });
+    });
+    const score = Math.round(correctSub / totalSub * 100);
+    await recordAnswer(q, quizState.subCorrect, score);
+    
+    if(quizState.subCorrect){
+      await dbDelete('wrongQuestions', `wq_${currentUserId}_${q.id}`);
+    } else {
+      await addToWrongQuestions(q);
+    }
+    await updateWrongBadge();
+    await updateUserStreak();
+    
+    // 渲染总体答案揭示
+    renderSubMatchingReveal(q);
+    updateQuizProgress();
+    
+    // 自动同步
+    if(autoSyncEnabled){
+      try{ await syncToCloudSilent(); }catch(e){ console.warn('自动同步失败',e); }
+    }
+  }
+}
+
+function checkAllSubAnswered(q){
+  if(!q.subGroups) return false;
+  return q.subGroups.every(g=>{
+    return g.subQuestions.every((_, si)=>{
+      return quizState.subAnswered[`${g.id}_${si}`];
+    });
+  });
+}
+
+function checkAllSubCorrect(q){
+  if(!q.subGroups) return false;
+  return q.subGroups.every(g=>{
+    return g.subQuestions.every((_, si)=>{
+      return isSubCorrect(q, g.id, si);
+    });
+  });
+}
+
+function renderSubMatchingReveal(q){
+  let correctSub = 0, wrongSub = 0, totalSub = 0;
+  q.subGroups.forEach(g=>{
+    g.subQuestions.forEach((sq, si)=>{
+      totalSub++;
+      if(isSubCorrect(q, g.id, si)) correctSub++;
+      else wrongSub++;
+    });
+  });
+  const score = Math.round(correctSub / totalSub * 100);
+  const isCorrect = wrongSub === 0;
+  
+  const reveal = document.getElementById('answerReveal');
+  if(!reveal) return;
+  
+  let groupCards = q.subGroups.map((g, gi)=>{
+    const subRows = g.subQuestions.map((sq, si)=>{
+      const key = `${g.id}_${si}`;
+      const placements = quizState.subPlacements[key] || [];
+      const correctAns = sq.answer;
+      const ok = isSubCorrect(q, g.id, si);
+      const missed = correctAns.filter(a=>!placements.includes(a));
+      const wrong = placements.filter(p=>!correctAns.includes(p));
+      let tag = '';
+      if(ok){
+        tag = '<span class="ar-opt-tag" style="background:var(--green-bg);color:var(--green);padding:1px 6px;border-radius:4px;font-size:.7rem">✓ 正确</span>';
+      } else {
+        let parts = [];
+        if(wrong.length) parts.push(`错：${wrong.join(',')}`);
+        if(missed.length) parts.push(`漏：${missed.join(',')}`);
+        tag = `<span class="ar-opt-tag" style="background:var(--red-bg);color:var(--red);padding:1px 6px;border-radius:4px;font-size:.7rem">✗ ${parts.join(' ')}</span>`;
+      }
+      return `<div class="ar-opt-row">
+        <span class="ar-opt-letter ${ok?'right':'wrong'}">${si+1}</span>
+        <span class="ar-opt-text">${escapeHtml(sq.prompt)} → 你的答案：${placements.length?placements.join(', '):'未作答'} ｜ 正确：${correctAns.join(', ')}</span>
+        ${tag}
+      </div>`;
+    }).join('');
+    const groupCorrect = g.subQuestions.every((_, si)=>isSubCorrect(q, g.id, si));
+    return `<div class="ar-card">
+      <div class="ar-card-header ${groupCorrect?'ok':'no'}">
+        <span class="ar-card-num">${gi+1}</span>
+        <span>${escapeHtml(g.fullLabel)}</span>
+        <span class="ar-card-status">${groupCorrect?'✓ 全对':'✗ 有错误'}</span>
+      </div>
+      <div class="ar-card-body">${subRows}</div>
+    </div>`;
+  }).join('');
+  
+  // 查询用户解析
+  let userNoteHtml = '';
+  
+  reveal.innerHTML = `
+    <div class="ar-banner ${isCorrect?'pass':'fail'}">
+      <div class="arb-score ${isCorrect?'pass':'fail'}">${score}</div>
+      <div class="arb-divider"></div>
+      <div class="arb-stats">
+        <div class="arb-stat"><span class="arb-dot ok"></span><span style="color:var(--green);font-weight:700">${correctSub}</span><span style="color:var(--muted)">正确</span></div>
+        <div class="arb-stat"><span class="arb-dot no"></span><span style="color:var(--red);font-weight:700">${wrongSub}</span><span style="color:var(--muted)">错误</span></div>
+      </div>
+      <div class="arb-emoji">${isCorrect?'🎉':'💪'}</div>
+    </div>
+    <div class="ar-grid">${groupCards}</div>
+    <div class="ar-note"><strong>💡 解析：</strong>${escapeHtml(q.explanation)}</div>`;
+  reveal.classList.add('show');
+}
+
+/* ==========================================================
+ * 题卡导航功能
+ * ========================================================== */
+
+function toggleQuizCard(){
+  const overlay = document.getElementById('quizCardOverlay');
+  if(!overlay) return;
+  overlay.classList.toggle('open');
+  if(overlay.classList.contains('open')){
+    renderQuizCardGrid();
+  }
+}
+
+function getQuestionCardStatus(qId){
+  const saved = draftProgress[qId];
+  if(!saved || !saved.answered) return 'unanswered';
+  if(saved.correct) return 'correct';
+  // 对于 sub-matching，检查 subCorrect
+  if(saved.correct !== undefined) return saved.correct ? 'correct' : 'wrong';
+  return 'wrong';
+}
+
+function renderQuizCardGrid(){
+  const grid = document.getElementById('qcGrid');
+  if(!grid) return;
+  grid.innerHTML = currentQuestions.map((q, i)=>{
+    const status = getQuestionCardStatus(q.id);
+    const isCurrent = i === currentQuestionIndex;
+    const title = q.title || '';
+    return `<div class="qc-cell ${status}${isCurrent?' current':''}" onclick="jumpToQuestion(${i})">
+      <span class="qc-cell-num">${i+1}</span>
+      <span class="qc-cell-title">${escapeHtml(title)}</span>
+    </div>`;
+  }).join('');
+}
+
+function jumpToQuestion(idx){
+  if(idx < 0 || idx >= currentQuestions.length) return;
+  saveQuizDraft();
+  currentQuestionIndex = idx;
+  renderQuestion();
+}
+
+function initQuizCard(){
+  const overlay = document.getElementById('quizCardOverlay');
+  if(overlay && overlay.classList.contains('open')){
+    renderQuizCardGrid();
+  }
+}
+
 async function submitAnswer(){
   const q = currentQuestions[currentQuestionIndex];
   if(!q) return;
   quizState.answered = true;
-  saveQuizDraft();
 
   const total = q.options.length;
   let correctCount=0, wrongCount=0, missedCount=0;
@@ -1206,6 +1734,8 @@ async function submitAnswer(){
   });
   const score = Math.round(correctCount/total*100);
   const isCorrect = wrongCount===0 && missedCount===0;
+  quizState.correct = isCorrect;
+  saveQuizDraft();
 
   // 渲染答案揭示
   await renderAnswerReveal(q);
