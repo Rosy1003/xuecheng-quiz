@@ -1115,13 +1115,51 @@ function zoomNoteImage(thumb){
     overlay = document.createElement('div');
     overlay.id = 'noteZoomOverlay';
     overlay.className = 'note-zoom-overlay';
-    overlay.innerHTML = '<button class="note-zoom-close">✕</button><img>';
+    overlay.innerHTML = '<button class="note-zoom-close">✕</button><img><div class="note-zoom-hint">点击空白关闭 · 双击放大</div>';
+    document.body.appendChild(overlay);
+
+    const zoomImg = overlay.querySelector('img');
+    let zoomed = false;
+
+    // 关闭
     overlay.addEventListener('click', function(e){
       if(e.target===overlay || e.target.classList.contains('note-zoom-close')){
         overlay.classList.remove('show');
+        zoomImg.classList.remove('zoomed');
+        zoomed = false;
       }
     });
-    document.body.appendChild(overlay);
+
+    // 双击放大/缩小
+    zoomImg.addEventListener('dblclick', function(){
+      zoomed = !zoomed;
+      zoomImg.classList.toggle('zoomed', zoomed);
+      const hint = overlay.querySelector('.note-zoom-hint');
+      if(hint) hint.textContent = zoomed ? '已放大 · 可拖动查看 · 再次双击缩小' : '点击空白关闭 · 双击放大';
+    });
+
+    // 触摸双击（移动端）
+    let lastTap = 0;
+    zoomImg.addEventListener('touchend', function(e){
+      const now = Date.now();
+      if(now - lastTap < 350){
+        e.preventDefault();
+        zoomed = !zoomed;
+        zoomImg.classList.toggle('zoomed', zoomed);
+        const hint = overlay.querySelector('.note-zoom-hint');
+        if(hint) hint.textContent = zoomed ? '已放大 · 可拖动查看 · 再次双击缩小' : '点击空白关闭 · 双击放大';
+      }
+      lastTap = now;
+    });
+
+    // ESC 关闭
+    document.addEventListener('keydown', function(e){
+      if(e.key==='Escape' && overlay.classList.contains('show')){
+        overlay.classList.remove('show');
+        zoomImg.classList.remove('zoomed');
+        zoomed = false;
+      }
+    });
   }
   overlay.querySelector('img').src = src;
   overlay.classList.add('show');
@@ -1163,9 +1201,9 @@ async function submitAnswer(){
   await updateWrongBadge();
   await updateUserStreak();
 
-  // 自动同步
+  // 自动同步（静默，每题提交后不弹窗）
   if(autoSyncEnabled){
-    try{ await syncToCloud(); }catch(e){ console.warn('自动同步失败',e); }
+    try{ await syncToCloudSilent(); }catch(e){ console.warn('自动同步失败',e); }
   }
 }
 
@@ -1223,6 +1261,11 @@ function showCompletion(){
   clearQuizDraft();
   currentQuestions = [];
   currentQuestionIndex = 0;
+
+  // 章节完成后自动上传
+  if(autoSyncEnabled){
+    syncToCloudSilent(); // 非阻塞，不影响页面渲染
+  }
 
   const el = document.getElementById('quizContent');
   const statsHtml = qStats.map(s=>`
@@ -2012,6 +2055,8 @@ async function saveNote(){
   closeNoteModal();
   // 如果当前在解析页则刷新
   if(document.getElementById('panel-notes').classList.contains('active')) renderNotes();
+  // 保存解析后自动上传
+  if(autoSyncEnabled) syncToCloudSilent();
 }
 
 async function editNote(noteId){
@@ -2034,6 +2079,8 @@ async function editNote(noteId){
     closeNoteModal();
     document.querySelector('.btn-save').onclick = saveNote;
     renderNotes();
+    // 编辑解析后自动上传
+    if(autoSyncEnabled) syncToCloudSilent();
   };
 }
 
@@ -2118,7 +2165,7 @@ async function renderSettings(){
       </div>
     </div>
     <div class="setting-row">
-      <div class="setting-label">同步状态（当前用户：${escapeHtml(currentUserName)}）<div class="sl-desc">Gist ID: ${escapeHtml(gistIdDisplay)}</div></div>
+      <div class="setting-label">同步状态（当前用户：${escapeHtml(currentUserName)}）<div class="sl-desc">Gist ID: ${escapeHtml(gistIdDisplay)} · 设备：${escapeHtml(getDeviceLabel())}</div></div>
       <div class="setting-control" style="font-size:.78rem;color:${userGistId?'var(--green)':'var(--muted)'}">${syncStatus}</div>
     </div>
     <div class="setting-row">
@@ -2136,13 +2183,14 @@ async function renderSettings(){
       </div>
     </div>
     <div class="setting-row">
-      <div class="setting-label">自动同步<div class="sl-desc">每次刷题后自动上传</div></div>
+      <div class="setting-label">自动同步<div class="sl-desc">每次刷题提交答案、完成章节、保存解析后自动上传（按设备独立存储）</div></div>
       <div class="setting-control">
-        <div class="toggle ${autoSyncEnabled?'on':''}" onclick="toggleAutoSync()"></div>
+        <div class="toggle ${autoSyncEnabled?'on':''}" data-toggle="autoSync" onclick="toggleAutoSync()"></div>
       </div>
     </div>
     <div style="font-size:.72rem;color:var(--muted);margin-top:.6rem;line-height:1.6">
-      💡 获取 Token：GitHub → Settings → Developer settings → Personal access tokens → 勾选 <strong>gist</strong> 权限。数据以私有 Gist 存储，仅你自己可访问。
+      💡 获取 Token：GitHub → Settings → Developer settings → Personal access tokens → 勾选 <strong>gist</strong> 权限。数据以私有 Gist 存储，仅你自己可访问。<br>
+      📱 每个设备独立上传文件，下载时会自动合并所有设备的数据。切换设备前先点「下载」拉取最新数据。
     </div>
   </div>`;
 
@@ -2217,9 +2265,32 @@ function saveManualGistId(){
   renderSettings();
 }
 
-/* 获取当前用户的 Gist 文件名 */
+/* 获取当前设备的唯一ID（每个设备独立，存储在localStorage） */
+function getDeviceId(){
+  let id = localStorage.getItem('xuecheng_device_id');
+  if(!id){
+    id = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2,8);
+    localStorage.setItem('xuecheng_device_id', id);
+  }
+  return id;
+}
+
+/* 获取设备显示名称 */
+function getDeviceLabel(){
+  const ua = navigator.userAgent;
+  const isIPad = /iPad/i.test(ua);
+  const isIPhone = /iPhone/i.test(ua);
+  const isAndroid = /Android/i.test(ua);
+  const isMac = /Macintosh|Mac OS/i.test(ua) && !isIPad;
+  const isWin = /Windows/i.test(ua);
+  const platform = isIPad ? 'iPad' : isIPhone ? 'iPhone' : isAndroid ? 'Android' : isMac ? 'Mac' : isWin ? 'Windows' : '设备';
+  return platform;
+}
+
+/* 获取当前用户+设备的 Gist 文件名（每用户每设备独立文件） */
 function getUserGistFileName(userId){
-  return `user_${userId}_backup.json`;
+  const devId = getDeviceId();
+  return `user_${userId}_${devId}_backup.json`;
 }
 
 /* 获取当前用户的 Gist ID（每个用户独立） */
@@ -2232,15 +2303,17 @@ function setUserGistId(userId, gistId){
   localStorage.setItem(`xuecheng_gist_id_user_${userId}`, gistId);
 }
 
-/* 上传：只上传当前用户的做题数据（不含题目库） */
+/* 上传：只上传当前用户+当前设备的数据（不含题目库） */
 async function syncToCloud(){
   const token = localStorage.getItem('xuecheng_gist_token');
   if(!token) throw new Error('请先输入并保存 GitHub Token');
   
-  // 只上传当前用户的数据，不含题目库（题目库通过题库管理单独同步）
+  // 上传当前用户+当前设备的数据
   const data = {
     userId: currentUserId,
     userName: currentUserName,
+    deviceId: getDeviceId(),
+    deviceLabel: getDeviceLabel(),
     users: await dbGetAll('users'),
     records: (await dbGetAll('records')).filter(r=>r.userId===currentUserId),
     wrongQuestions: (await dbGetAll('wrongQuestions')).filter(w=>w.userId===currentUserId),
@@ -2298,7 +2371,7 @@ async function syncToCloud(){
   }
 }
 
-/* 下载：只下载当前用户的数据并合并（不覆盖其他用户） */
+/* 下载：下载当前用户所有设备的数据并合并（不覆盖其他用户） */
 async function syncFromCloud(){
   const token = localStorage.getItem('xuecheng_gist_token');
   if(!token) throw new Error('请先输入并保存 GitHub Token');
@@ -2315,30 +2388,51 @@ async function syncFromCloud(){
   }
   
   const gist = await res.json();
-  const fileName = getUserGistFileName(currentUserId);
-  const file = gist.files && gist.files[fileName];
-  if(!file || !file.content) throw new Error('云端未找到当前用户的数据');
   
-  const data = JSON.parse(file.content);
+  // 遍历 Gist 中所有属于当前用户的文件（每个设备一个文件）
+  const userPrefix = `user_${currentUserId}_`;
+  const deviceFiles = Object.keys(gist.files || {}).filter(name => name.startsWith(userPrefix) && name.endsWith('_backup.json'));
   
-  // 恢复用户列表（防止本地数据丢失后用户消失）
-  if(data.users && Array.isArray(data.users)){
-    const localUsers = await dbGetAll('users');
-    for(const u of data.users){
-      if(u && u.id && !localUsers.some(lu=>lu.id===u.id)){
-        await dbAdd('users', u);
-      }
+  if(deviceFiles.length === 0){
+    // 兼容旧格式文件名（无deviceId）
+    const oldFile = gist.files && gist.files[`user_${currentUserId}_backup.json`];
+    if(oldFile && oldFile.content){
+      deviceFiles.push(`user_${currentUserId}_backup.json`);
     }
   }
   
-  // 只写入当前用户的数据（按 userId 过滤，防止误覆盖其他用户）
-  for(const store of ['records','wrongQuestions','favorites','notes']){
-    if(data[store] && Array.isArray(data[store])){
-      for(const item of data[store]){
-        if(item && item.id){
-          // 确保数据归属当前用户
-          item.userId = currentUserId;
-          await dbAdd(store, item);
+  if(deviceFiles.length === 0) throw new Error('云端未找到当前用户的数据');
+  
+  let mergedCount = 0;
+  let deviceList = [];
+  const currentDevId = getDeviceId();
+  
+  for(const fileName of deviceFiles){
+    const file = gist.files[fileName];
+    if(!file || !file.content) continue;
+    
+    const data = JSON.parse(file.content);
+    if(data.deviceLabel) deviceList.push(data.deviceLabel + (data.deviceId === currentDevId ? '（本机）' : ''));
+    
+    // 恢复用户列表
+    if(data.users && Array.isArray(data.users)){
+      const localUsers = await dbGetAll('users');
+      for(const u of data.users){
+        if(u && u.id && !localUsers.some(lu=>lu.id===u.id)){
+          await dbAdd('users', u);
+        }
+      }
+    }
+    
+    // 合并数据（put 操作，后写入的会覆盖同ID记录）
+    for(const store of ['records','wrongQuestions','favorites','notes']){
+      if(data[store] && Array.isArray(data[store])){
+        for(const item of data[store]){
+          if(item && item.id){
+            item.userId = currentUserId;
+            await dbAdd(store, item);
+            mergedCount++;
+          }
         }
       }
     }
@@ -2347,7 +2441,7 @@ async function syncFromCloud(){
   await updateWrongBadge();
   await updateUserStreak();
   renderSettings();
-  alert(`✅ 已下载「${currentUserName}」的云端数据\n（其他用户的数据不受影响）`);
+  alert(`✅ 已合并「${currentUserName}」的云端数据\n来源设备：${deviceList.join('、')}\n合并记录：${mergedCount} 条`);
 }
 
 async function quickSync(){
@@ -2368,8 +2462,46 @@ async function quickSync(){
 function toggleAutoSync(){
   autoSyncEnabled = !autoSyncEnabled;
   saveUserSetting('autoSync', autoSyncEnabled);
-  const t = document.querySelector('.home-card .toggle');
+  const t = document.querySelector('[data-toggle="autoSync"]');
   if(t) t.classList.toggle('on', autoSyncEnabled);
+  if(autoSyncEnabled){
+    showSyncToast('☁️ 自动同步已开启', 'success');
+  } else {
+    showSyncToast('☁️ 自动同步已关闭');
+  }
+}
+
+/* 显示同步状态提示（非弹窗，底部toast） */
+function showSyncToast(msg, type){
+  let toast = document.getElementById('syncToast');
+  if(!toast){
+    toast = document.createElement('div');
+    toast.id = 'syncToast';
+    toast.className = 'sync-toast';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.className = 'sync-toast' + (type ? ' '+type : '');
+  toast.style.display = 'flex';
+  setTimeout(()=>{
+    toast.style.opacity = '0';
+    toast.style.transition = 'opacity .3s';
+    setTimeout(()=>{ toast.style.display = 'none'; toast.style.opacity = ''; toast.style.transition = ''; }, 300);
+  }, 2500);
+}
+
+/* 静默同步上传（不弹alert，失败时显示toast） */
+async function syncToCloudSilent(){
+  const token = localStorage.getItem('xuecheng_gist_token');
+  if(!token) return; // 无token时静默跳过
+  const gistId = getUserGistId(currentUserId);
+  if(!gistId) return; // 未关联Gist时静默跳过
+  try{
+    await syncToCloud();
+    showSyncToast('☁️ 已自动同步（' + getDeviceLabel() + '）', 'success');
+  }catch(e){
+    showSyncToast('⚠️ 同步失败：' + e.message, 'error');
+  }
 }
 
 function toggleShuffleOptions(){
@@ -2747,18 +2879,24 @@ async function init(){
           });
           if(res.ok){
             const gist = await res.json();
-            const fileName = getUserGistFileName(lastUserId);
-            const file = gist.files && gist.files[fileName];
-            if(file && file.content){
-              const cloudData = JSON.parse(file.content);
-              // 恢复用户列表
-              if(cloudData.users && Array.isArray(cloudData.users)){
-                for(const u of cloudData.users){
-                  if(u && u.id) await dbAdd('users', u);
+            // 兼容新旧文件名格式：查找属于该用户的任何设备文件
+            const userPrefix = `user_${lastUserId}_`;
+            const deviceFiles = Object.keys(gist.files || {}).filter(name =>
+              (name.startsWith(userPrefix) && name.endsWith('_backup.json')) ||
+              name === `user_${lastUserId}_backup.json`
+            );
+            for(const fileName of deviceFiles){
+              const file = gist.files[fileName];
+              if(file && file.content){
+                const cloudData = JSON.parse(file.content);
+                if(cloudData.users && Array.isArray(cloudData.users)){
+                  for(const u of cloudData.users){
+                    if(u && u.id) await dbAdd('users', u);
+                  }
                 }
-                users = await dbGetAll('users');
               }
             }
+            users = await dbGetAll('users');
           }
         }catch(e){
           console.log('云端恢复用户失败，创建默认用户', e);
@@ -2794,6 +2932,21 @@ async function init(){
 
   // 渲染首页
   renderHome();
+
+  // 启动时自动从云端拉取其他设备数据（静默，不阻塞页面）
+  if(autoSyncEnabled){
+    const token = localStorage.getItem('xuecheng_gist_token');
+    const gistId = getUserGistId(currentUserId);
+    if(token && gistId){
+      try{
+        await syncFromCloud();
+        showSyncToast('☁️ 已从云端同步最新数据', 'success');
+        renderHome();
+      }catch(e){
+        console.warn('启动同步失败', e);
+      }
+    }
+  }
 
   // 事件监听：点击遮罩关闭弹窗
   const modal = document.getElementById('noteModal');
