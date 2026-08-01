@@ -406,7 +406,9 @@ let favoritedIds = new Set();
 let wrongFilterSubject = 'all';
 let noteFilterSubject = 'all';
 let noteFilterSystem = 'all';
+let noteFilterAuthor = 'all';
 let autoSyncEnabled = false;
+let sharedNotesAutoSyncEnabled = false;
 let shuffleOptionsEnabled = false;
 let darkModeEnabled = false;
 let fontScalePos = 50; // 0=小(13px), 50=中(15px), 100=大(18px)
@@ -1053,13 +1055,24 @@ async function renderAnswerReveal(q){
     </div>`;
   }).join('');
 
-  // 查询用户添加的解析
+  // 查询所有用户的解析（共享模式）
   let userNoteHtml = '';
   const allNotes = await dbGetAll('notes');
-  const qNotes = allNotes.filter(n=>n.userId===currentUserId && n.questionId===q.id);
+  const qNotes = allNotes.filter(n=>n.questionId===q.id);
   if(qNotes.length > 0){
     qNotes.sort((a,b)=>new Date(b.createdDate)-new Date(a.createdDate));
+    // 统计作者
+    const authors = {};
+    qNotes.forEach(n=>{
+      const name = n.userName || ('用户'+n.userId);
+      if(!authors[name]) authors[name] = { count:0, userId:n.userId };
+      authors[name].count++;
+    });
+    const authorCount = Object.keys(authors).length;
     const notesHtml = qNotes.map(n=>{
+      const name = n.userName || ('用户'+n.userId);
+      const color = userColor(n.userId);
+      const isMe = n.userId === currentUserId;
       let imgs = '';
       if(n.images && n.images.length>0){
         imgs = '<div class="ar-usernote-imgs">' + n.images.map((src,i)=>
@@ -1067,15 +1080,21 @@ async function renderAnswerReveal(q){
         ).join('') + '</div>';
       }
       return `<div class="ar-usernote-item">
+        <div class="ar-usernote-author" style="display:flex;align-items:center;gap:.4rem;margin-bottom:.3rem">
+          <span class="author-tag" style="background:${isMe?'var(--accent-bg)':'rgba(0,0,0,0.05)'};color:${color}">
+            <span class="author-dot" style="width:7px;height:7px;border-radius:50%;display:inline-block;background:${color}"></span>
+            ${escapeHtml(name)}${isMe?' · 我':''}
+          </span>
+          <span style="font-size:.65rem;color:var(--muted)">${formatDate(n.createdDate)}</span>
+        </div>
         ${n.text ? `<div class="ar-usernote-text">${escapeHtml(n.text)}</div>` : ''}
         ${imgs}
-        <div class="ar-usernote-date">📅 ${formatDate(n.createdDate)}</div>
       </div>`;
     }).join('');
     userNoteHtml = `<div class="ar-usernote">
       <div class="ar-usernote-header">
         <div class="ar-usernote-icon">📝</div>
-        <div class="ar-usernote-title">我的解析（${qNotes.length}条）</div>
+        <div class="ar-usernote-title">用户解析（${qNotes.length}条 · ${authorCount}人）</div>
       </div>
       ${notesHtml}
     </div>`;
@@ -1875,16 +1894,38 @@ async function removeFavorite(questionId){
  * ========================================================== */
 async function renderNotes(){
   const el = document.getElementById('notesContent');
-  let notes = (await dbGetAll('notes')).filter(n=>n.userId===currentUserId);
+  // 共享模式：显示所有用户的解析
+  let notes = await dbGetAll('notes');
+
+  // 统计作者
+  const authorMap = {};
+  notes.forEach(n=>{
+    const name = n.userName || ('用户'+n.userId);
+    if(!authorMap[name]) authorMap[name] = { count:0, userId:n.userId };
+    authorMap[name].count++;
+  });
+  const authorList = Object.entries(authorMap).sort((a,b)=>b[1].count-a[1].count);
 
   let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">
-    <h3 style="font-size:1rem">📋 我的解析（共 ${notes.length} 条）</h3>
+    <h3 style="font-size:1rem">📋 共享解析（共 ${notes.length} 条 · ${authorList.length} 位同学）</h3>
     <div style="display:flex;gap:.5rem">
       <button class="btn btn-outline" style="font-size:.78rem;padding:.4rem .8rem" onclick="exportNotes()">📥 导出</button>
       <button class="btn btn-outline" style="font-size:.78rem;padding:.4rem .8rem" onclick="document.getElementById('noteImportInput').click()">📤 导入</button>
       <input type="file" id="noteImportInput" accept=".json" style="display:none" onchange="importNotes(event)">
     </div>
   </div>`;
+
+  // 作者筛选栏
+  html += '<div class="filter-bar"><span style="font-size:.68rem;color:var(--muted);font-weight:700;align-self:center;margin-right:.3rem">作者</span>';
+  html += `<button class="filter-pill ${noteFilterAuthor==='all'?'active':''}" onclick="setNoteFilter('author','all')">全部</button>`;
+  html += `<button class="filter-pill ${noteFilterAuthor==='me'?'active':''}" onclick="setNoteFilter('author','me')">我的</button>`;
+  authorList.forEach(([name, info])=>{
+    const color = userColor(info.userId);
+    const key = 'u'+info.userId;
+    const isMe = info.userId === currentUserId;
+    html += `<button class="filter-pill ${noteFilterAuthor===key?'active':''}" onclick="setNoteFilter('author','${key}')" style="${noteFilterAuthor===key?'border-color:'+color+';background:'+color+';color:#fff':'border-color:'+color}">● ${escapeHtml(name)} (${info.count})</button>`;
+  });
+  html += '</div>';
 
   // 科目筛选栏
   html += '<div class="filter-bar"><span style="font-size:.68rem;color:var(--muted);font-weight:700;align-self:center;margin-right:.3rem">科目</span>';
@@ -1918,6 +1959,12 @@ async function renderNotes(){
 
   // 筛选
   let filtered = notes;
+  if(noteFilterAuthor === 'me'){
+    filtered = filtered.filter(n=>n.userId===currentUserId);
+  } else if(noteFilterAuthor !== 'all'){
+    const filterUserId = parseInt(noteFilterAuthor.replace('u',''));
+    filtered = filtered.filter(n=>n.userId===filterUserId);
+  }
   if(noteFilterSubject !== 'all'){
     filtered = filtered.filter(n=>n.subject === noteFilterSubject);
   }
@@ -1927,7 +1974,7 @@ async function renderNotes(){
   }
 
   if(filtered.length === 0){
-    html += '<div class="empty-state"><div class="es-icon">📋</div><p>还没有添加解析笔记，刷题时点击"添加解析"即可记录</p></div>';
+    html += '<div class="empty-state"><div class="es-icon">📋</div><p>暂无解析笔记，刷题时点击"添加解析"即可记录</p></div>';
   } else {
     // 按科目分组
     const bySubject = {};
@@ -1972,22 +2019,31 @@ async function renderNotes(){
           <div class="note-sub-notes">`;
 
         sysNotes.forEach(n=>{
+          const authorName = n.userName || ('用户'+n.userId);
+          const color = userColor(n.userId);
+          const isMe = n.userId === currentUserId;
           let imgs = '';
           if(n.images && n.images.length>0){
             imgs = '<div class="nc-images">'+n.images.map(src=>`<div class="nc-thumb" onclick="zoomNoteImage(this)" data-src="${escapeHtml(src)}"><img src="${escapeHtml(src)}" style="width:100%;height:100%;object-fit:cover"><span class="nc-thumb-zoom">🔍</span></div>`).join('')+'</div>';
           }
+          const actionsHtml = isMe
+            ? `<div class="nc-actions"><button class="btn-sm" onclick="editNote('${n.id}')">编辑</button><button class="btn-sm" onclick="deleteNote('${n.id}')">删除</button></div>`
+            : `<div style="font-size:.65rem;color:var(--muted);font-style:italic;margin-top:.3rem">🔒 其他同学的解析（只读）</div>`;
           html += `<div class="note-card">
             <div class="nc-header">
               <span class="nc-title">${escapeHtml(n.title)}</span>
               <span style="font-size:.72rem;color:var(--muted)">${escapeHtml(n.chapter||'')}</span>
             </div>
+            <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.3rem">
+              <span class="author-tag" style="background:${isMe?'var(--accent-bg)':'rgba(0,0,0,0.05)'};color:${color};font-size:.68rem;padding:1px 6px;border-radius:999px;font-weight:600">
+                <span style="width:6px;height:6px;border-radius:50%;display:inline-block;background:${color};margin-right:3px"></span>
+                ${escapeHtml(authorName)}${isMe?' (我)':''}
+              </span>
+            </div>
             ${n.text?`<div style="font-size:.85rem;line-height:1.7;white-space:pre-wrap">${escapeHtml(n.text)}</div>`:''}
             ${imgs}
             <div style="font-size:.72rem;color:var(--muted);margin-top:.4rem">📅 ${formatDate(n.createdDate)}</div>
-            <div class="nc-actions">
-              <button class="btn-sm" onclick="editNote('${n.id}')">编辑</button>
-              <button class="btn-sm" onclick="deleteNote('${n.id}')">删除</button>
-            </div>
+            ${actionsHtml}
           </div>`;
         });
 
@@ -2004,6 +2060,8 @@ function setNoteFilter(type, val){
   if(type === 'subject'){
     noteFilterSubject = val;
     noteFilterSystem = 'all';
+  } else if(type === 'author'){
+    noteFilterAuthor = val;
   } else {
     noteFilterSystem = val;
   }
@@ -2047,7 +2105,7 @@ async function saveNote(){
   const q = allQuestions.find(q=>q.id===currentNoteTarget);
   const id = `note_${currentUserId}_${currentNoteTarget}_${Date.now()}`;
   await dbAdd('notes', {
-    id, userId:currentUserId, questionId:currentNoteTarget,
+    id, userId:currentUserId, userName:currentUserName, questionId:currentNoteTarget,
     subject:q?q.subject:'', system:q?q.system:'', chapter:q?q.chapter:'',
     title:q?q.title:currentNoteTarget,
     text, images:currentNoteImages, createdDate:new Date().toISOString()
@@ -2057,6 +2115,7 @@ async function saveNote(){
   if(document.getElementById('panel-notes').classList.contains('active')) renderNotes();
   // 保存解析后自动上传
   if(autoSyncEnabled) syncToCloudSilent();
+  if(sharedNotesAutoSyncEnabled) syncSharedNotesSilent();
 }
 
 async function editNote(noteId){
@@ -2081,6 +2140,7 @@ async function editNote(noteId){
     renderNotes();
     // 编辑解析后自动上传
     if(autoSyncEnabled) syncToCloudSilent();
+    if(sharedNotesAutoSyncEnabled) syncSharedNotesSilent();
   };
 }
 
@@ -2088,6 +2148,9 @@ async function deleteNote(noteId){
   if(!confirm('确定删除该解析？')) return;
   await dbDelete('notes', noteId);
   renderNotes();
+  // 删除解析后自动同步
+  if(autoSyncEnabled) syncToCloudSilent();
+  if(sharedNotesAutoSyncEnabled) syncSharedNotesSilent();
 }
 
 /* ==========================================================
@@ -2191,6 +2254,29 @@ async function renderSettings(){
     <div style="font-size:.72rem;color:var(--muted);margin-top:.6rem;line-height:1.6">
       💡 获取 Token：GitHub → Settings → Developer settings → Personal access tokens → 勾选 <strong>gist</strong> 权限。数据以私有 Gist 存储，仅你自己可访问。<br>
       📱 每个设备独立上传文件，下载时会自动合并所有设备的数据。切换设备前先点「下载」拉取最新数据。
+    </div>
+  </div>`;
+
+  // 共享解析同步
+  html += `<div class="home-card" style="margin-bottom:1.2rem">
+    <div class="card-title">📝 共享解析同步</div>
+    <div class="setting-row">
+      <div class="setting-label">一键同步解析<div class="sl-desc">上传你的解析到云端共享池，同时下载其他同学的解析</div></div>
+      <div class="setting-control">
+        <button class="btn btn-primary" style="font-size:.78rem;padding:.4rem .8rem" id="syncSharedNotesBtn" onclick="handleSyncSharedNotes()">🔄 一键同步</button>
+      </div>
+    </div>
+    <div class="setting-row">
+      <div class="setting-label">解析自动同步<div class="sl-desc">保存/编辑解析后自动上传到共享池（独立于上方云同步开关）</div></div>
+      <div class="setting-control">
+        <div class="toggle ${sharedNotesAutoSyncEnabled?'on':''}" data-toggle="sharedNotesAutoSync" onclick="toggleSharedNotesAutoSync()"></div>
+      </div>
+    </div>
+    <div style="font-size:.72rem;color:var(--muted);margin-top:.6rem;line-height:1.6">
+      📝 你的解析会上传到云端共享池，其他同学同步后可以看到<br>
+      👁️ 其他同学的解析为只读，不能编辑或删除<br>
+      🔄 每次同步自动合并本地+云端数据，按ID去重，不会丢失<br>
+      📱 应用启动时自动检查并下载新的共享解析
     </div>
   </div>`;
 
@@ -2562,6 +2648,158 @@ async function checkQuestionBankUpdate(){
   }
 }
 
+/* ==========================================================
+ * 3.15 共享解析云同步（多用户多设备）
+ * ========================================================== */
+const SHARED_NOTES_FILENAME = 'shared_notes.json';
+const SHARED_NOTES_VERSION_KEY = 'shared_notes_version';
+
+/* 一键同步共享解析：上传本地解析 + 下载云端全量解析并合并 */
+async function syncSharedNotes(){
+  const token = localStorage.getItem('xuecheng_gist_token');
+  if(!token) throw new Error('请先在云同步设置中配置 GitHub Token');
+  const gistId = getUserGistId(currentUserId);
+  if(!gistId) throw new Error('请先在云同步中上传一次用户数据以创建 Gist');
+
+  // 收集本地所有解析
+  const localNotes = await dbGetAll('notes');
+
+  // 下载云端现有数据
+  const res = await fetch(`https://api.github.com/gists/${gistId}`, {
+    headers:{ 'Authorization':`token ${token}`, 'Accept':'application/vnd.github.v3+json' }
+  });
+  if(!res.ok) throw new Error(`下载失败: HTTP ${res.status}`);
+
+  const gist = await res.json();
+  const cloudFile = gist.files && gist.files[SHARED_NOTES_FILENAME];
+  let cloudNotes = [];
+  let cloudVersion = '';
+  if(cloudFile && cloudFile.content){
+    const cloudData = JSON.parse(cloudFile.content);
+    cloudNotes = cloudData.notes || [];
+    cloudVersion = cloudData.version || '';
+  }
+
+  // 合并：本地 + 云端，按 ID 去重（后写入覆盖）
+  const noteMap = new Map();
+  // 先放入云端数据
+  cloudNotes.forEach(n=>{ if(n && n.id) noteMap.set(n.id, n); });
+  // 再用本地数据覆盖（保证本地最新版本上传）
+  localNotes.forEach(n=>{ if(n && n.id) noteMap.set(n.id, n); });
+
+  const mergedNotes = Array.from(noteMap.values());
+  const newVersion = new Date().toISOString();
+
+  // 统计
+  const beforeCount = cloudNotes.length;
+  const afterCount = mergedNotes.length;
+  const newFromLocal = localNotes.filter(n => !cloudNotes.some(c => c.id === n.id)).length;
+  const newFromCloud = cloudNotes.filter(n => !localNotes.some(l => l.id === n.id)).length;
+
+  // 上传合并后的全量数据
+  const uploadData = {
+    version: newVersion,
+    totalCount: mergedNotes.length,
+    notes: mergedNotes
+  };
+  const content = JSON.stringify(uploadData, null, 2);
+
+  const uploadRes = await fetch(`https://api.github.com/gists/${gistId}`, {
+    method:'PATCH',
+    headers:{
+      'Authorization':`token ${token}`,
+      'Content-Type':'application/json',
+      'Accept':'application/vnd.github.v3+json'
+    },
+    body: JSON.stringify({
+      description:'学成选择题 · 共享解析',
+      files:{ [SHARED_NOTES_FILENAME]:{ content } }
+    })
+  });
+  if(!uploadRes.ok){
+    const err = await uploadRes.json().catch(()=>({}));
+    throw new Error(err.message||`上传失败: HTTP ${uploadRes.status}`);
+  }
+
+  // 将云端其他用户的解析写入本地 IndexedDB
+  let downloadedCount = 0;
+  for(const n of cloudNotes){
+    if(n && n.id && !localNotes.some(l => l.id === n.id)){
+      await dbAdd('notes', n);
+      downloadedCount++;
+    }
+  }
+
+  // 更新本地版本号
+  localStorage.setItem(SHARED_NOTES_VERSION_KEY, newVersion);
+
+  return {
+    uploaded: localNotes.length,
+    newFromLocal,
+    newFromCloud,
+    totalMerged: mergedNotes.length
+  };
+}
+
+/* 启动时静默检查共享解析更新 */
+async function checkSharedNotesUpdate(){
+  const token = localStorage.getItem('xuecheng_gist_token');
+  if(!token) return;
+  const gistId = getUserGistId(currentUserId);
+  if(!gistId) return;
+
+  try{
+    const res = await fetch(`https://api.github.com/gists/${gistId}`, {
+      headers:{ 'Authorization':`token ${token}`, 'Accept':'application/vnd.github.v3+json' }
+    });
+    if(!res.ok) return;
+
+    const gist = await res.json();
+    const file = gist.files && gist.files[SHARED_NOTES_FILENAME];
+    if(!file || !file.content) return;
+
+    const cloudData = JSON.parse(file.content);
+    const cloudVersion = cloudData.version || '';
+    const localVersion = localStorage.getItem(SHARED_NOTES_VERSION_KEY) || '';
+
+    if(cloudVersion === localVersion) return;
+
+    // 有更新，下载并合并（仅下载本地不存在的解析，避免覆盖本地编辑）
+    const cloudNotes = cloudData.notes || [];
+    const localNotes = await dbGetAll('notes');
+    const localIds = new Set(localNotes.map(n=>n.id));
+    let newCount = 0;
+    for(const n of cloudNotes){
+      if(n && n.id && !localIds.has(n.id)){
+        await dbAdd('notes', n);
+        newCount++;
+      }
+    }
+
+    localStorage.setItem(SHARED_NOTES_VERSION_KEY, cloudVersion);
+
+    if(newCount > 0){
+      showSyncToast(`📝 获取了 ${newCount} 条其他同学的解析`, 'success');
+    }
+  }catch(e){
+    console.warn('共享解析更新检查失败', e);
+  }
+}
+
+/* 静默同步共享解析（不弹alert，失败时显示toast） */
+async function syncSharedNotesSilent(){
+  const token = localStorage.getItem('xuecheng_gist_token');
+  if(!token) return;
+  const gistId = getUserGistId(currentUserId);
+  if(!gistId) return;
+  try{
+    const stats = await syncSharedNotes();
+    showSyncToast(`📝 共享解析已同步（↑${stats.uploaded} ↓${stats.newFromCloud}新）`, 'success');
+  }catch(e){
+    console.warn('共享解析同步失败', e);
+  }
+}
+
 async function quickSync(){
   const token = localStorage.getItem('xuecheng_gist_token');
   if(!token){
@@ -2571,7 +2809,13 @@ async function quickSync(){
   }
   try{
     await syncToCloud();
-    alert('☁️ 同步上传成功！');
+    // 同时同步共享解析
+    try{
+      const stats = await syncSharedNotes();
+      alert(`☁️ 同步成功！\n\n个人数据已上传\n共享解析：上传 ${stats.uploaded} 条，下载 ${stats.newFromCloud} 条新解析`);
+    }catch(e2){
+      alert('☁️ 个人数据同步成功！\n共享解析同步失败：'+e2.message);
+    }
   }catch(e){
     alert('同步失败：'+e.message);
   }
@@ -2586,6 +2830,35 @@ function toggleAutoSync(){
     showSyncToast('☁️ 自动同步已开启', 'success');
   } else {
     showSyncToast('☁️ 自动同步已关闭');
+  }
+}
+
+function toggleSharedNotesAutoSync(){
+  sharedNotesAutoSyncEnabled = !sharedNotesAutoSyncEnabled;
+  saveUserSetting('sharedNotesAutoSync', sharedNotesAutoSyncEnabled);
+  const t = document.querySelector('[data-toggle="sharedNotesAutoSync"]');
+  if(t) t.classList.toggle('on', sharedNotesAutoSyncEnabled);
+  if(sharedNotesAutoSyncEnabled){
+    showSyncToast('📝 共享解析自动同步已开启', 'success');
+  } else {
+    showSyncToast('📝 共享解析自动同步已关闭');
+  }
+}
+
+async function handleSyncSharedNotes(){
+  const btn = document.getElementById('syncSharedNotesBtn');
+  if(btn){ btn.disabled = true; btn.textContent = '⏳ 同步中...'; }
+  try{
+    const stats = await syncSharedNotes();
+    alert(`✅ 共享解析同步完成\n\n上传：${stats.uploaded} 条（新增 ${stats.newFromLocal} 条到云端）\n下载：${stats.newFromCloud} 条其他同学的解析\n合并后云端共 ${stats.totalMerged} 条`);
+    // 如果当前在解析页则刷新
+    if(document.getElementById('panel-notes') && document.getElementById('panel-notes').classList.contains('active')){
+      renderNotes();
+    }
+  }catch(e){
+    alert('同步失败: '+e.message);
+  }finally{
+    if(btn){ btn.disabled = false; btn.textContent = '🔄 一键同步'; }
   }
 }
 
@@ -2830,6 +3103,7 @@ async function loadUserSettings(){
   if(settings){
     if(settings.mode) currentMode = settings.mode;
     if(typeof settings.autoSync === 'boolean') autoSyncEnabled = settings.autoSync;
+    if(typeof settings.sharedNotesAutoSync === 'boolean') sharedNotesAutoSyncEnabled = settings.sharedNotesAutoSync;
     if(typeof settings.shuffleOptions === 'boolean') shuffleOptionsEnabled = settings.shuffleOptions;
     if(typeof settings.darkMode === 'boolean') darkModeEnabled = settings.darkMode;
     if(typeof settings.fontScale === 'number') fontScalePos = settings.fontScale;
@@ -3068,6 +3342,9 @@ async function init(){
       }
     }
   }
+
+  // 启动时静默检查共享解析更新（不依赖autoSync开关，独立运行）
+  checkSharedNotesUpdate();
 
   // 事件监听：点击遮罩关闭弹窗
   const modal = document.getElementById('noteModal');
