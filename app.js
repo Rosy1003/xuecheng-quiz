@@ -1676,6 +1676,7 @@ function toggleQuizCard(){
   overlay.classList.toggle('open');
   if(overlay.classList.contains('open')){
     renderQuizCardGrid();
+    window.scrollTo({top:0, behavior:'smooth'});
   }
 }
 
