@@ -2217,6 +2217,13 @@ async function renderSettings(){
   </div>`;
 
   // 题库管理
+  const qbVersion = getLocalQuestionBankVersion();
+  const qbVersionDisplay = qbVersion ? qbVersion.slice(0,19).replace('T',' ') : '从未同步';
+  const qbCount = allQuestions.filter(q=>{
+    // 统计与硬编码版本不同的题目（即有修正的）
+    const sample = SAMPLE_QUESTIONS.find(s=>s.id===q.id);
+    return !sample || JSON.stringify(sample)!==JSON.stringify(q);
+  }).length;
   html += `<div class="home-card">
     <div class="card-title">📚 题库管理</div>
     <div class="setting-row">
@@ -2228,10 +2235,15 @@ async function renderSettings(){
       <div class="setting-control"><button class="btn btn-outline" style="font-size:.78rem;padding:.4rem .8rem" onclick="document.getElementById('questionImportInput').click()">选择文件</button>
       <input type="file" id="questionImportInput" accept=".json" style="display:none" onchange="importQuestions(event)"></div>
     </div>
+    <div class="setting-row">
+      <div class="setting-label">☁️ 推送题库勘误到所有设备<div class="sl-desc">将本地修正的题目上传到云端，其他设备打开应用时自动获取更新</div></div>
+      <div class="setting-control"><button class="btn btn-primary" style="font-size:.78rem;padding:.4rem .8rem" onclick="uploadQuestionBankUpdate().then(()=>renderSettings()).catch(e=>alert('上传失败: '+e.message))">⬆️ 推送更新</button></div>
+    </div>
     <div style="font-size:.72rem;color:var(--muted);margin-top:.6rem;line-height:1.6">
       ✓ 导入题库只会更新题目内容，不会覆盖你的做题进度、错题本、收藏和笔记。<br>
       ✓ 导出的文件可以分享给其他用户，他们导入后即可获得最新题目。<br>
-      JSON 格式为题目数组，每题包含 id、subject、system、chapter、type、title、description、options、categories、answer、explanation 字段。
+      📱 勘误后点「推送更新」，所有设备下次打开自动获取修正题目（按ID覆盖旧版本）。<br>
+      <span style="color:${qbVersion?'var(--green)':'var(--muted)'}">📌 当前版本：${qbVersionDisplay} · 本地修正：${qbCount} 道</span>
     </div>
   </div>`;
 
@@ -2442,6 +2454,112 @@ async function syncFromCloud(){
   await updateUserStreak();
   renderSettings();
   alert(`✅ 已合并「${currentUserName}」的云端数据\n来源设备：${deviceList.join('、')}\n合并记录：${mergedCount} 条`);
+}
+
+/* ==========================================================
+ * 3.14 题库云同步（勘误补丁推送/拉取）
+ * ========================================================== */
+const QB_GIST_FILENAME = 'question_bank.json';
+const QB_VERSION_KEY = 'question_bank_version';
+
+/* 获取本地题库版本 */
+function getLocalQuestionBankVersion(){
+  return localStorage.getItem(QB_VERSION_KEY) || '';
+}
+
+/* 上传题库更新（上传所有题目：硬编码+IndexedDB合并后的最新版） */
+async function uploadQuestionBankUpdate(){
+  const token = localStorage.getItem('xuecheng_gist_token');
+  if(!token) throw new Error('请先在云同步设置中配置 GitHub Token');
+  const gistId = getUserGistId(currentUserId);
+  if(!gistId) throw new Error('请先在云同步中上传一次用户数据以创建 Gist');
+
+  // 上传合并后的完整题库（硬编码SAMPLE_QUESTIONS + IndexedDB导入题，后者优先）
+  // 这样勘误修改过的题目（无论是在源码中还是IndexedDB中）都会被推送
+  await reloadQuestions();
+  const allQs = allQuestions;
+  if(allQs.length === 0){
+    throw new Error('本地没有题目，无需上传');
+  }
+
+  const version = new Date().toISOString();
+  const data = {
+    version,
+    uploadedBy: getDeviceLabel(),
+    totalCount: allQs.length,
+    questions: allQs
+  };
+  const content = JSON.stringify(data, null, 2);
+
+  // 上传到已有 Gist 的 question_bank.json 文件
+  const res = await fetch(`https://api.github.com/gists/${gistId}`, {
+    method:'PATCH',
+    headers:{
+      'Authorization':`token ${token}`,
+      'Content-Type':'application/json',
+      'Accept':'application/vnd.github.v3+json'
+    },
+    body: JSON.stringify({
+      description:'学成选择题 · 题库勘误补丁',
+      files:{ [QB_GIST_FILENAME]:{ content } }
+    })
+  });
+  if(!res.ok){
+    const err = await res.json().catch(()=>({}));
+    throw new Error(err.message||`HTTP ${res.status}`);
+  }
+
+  // 更新本地版本号
+  localStorage.setItem(QB_VERSION_KEY, version);
+  alert(`✅ 题库更新已上传\n题目总数：${allQs.length} 道\n版本：${version.slice(0,19).replace('T',' ')}\n\n其他设备下次打开应用时自动获取`);
+}
+
+/* 启动时检查题库是否有更新（静默） */
+async function checkQuestionBankUpdate(){
+  const token = localStorage.getItem('xuecheng_gist_token');
+  if(!token) return;
+  const gistId = getUserGistId(currentUserId);
+  if(!gistId) return;
+
+  try{
+    const res = await fetch(`https://api.github.com/gists/${gistId}`, {
+      headers:{ 'Authorization':`token ${token}`, 'Accept':'application/vnd.github.v3+json' }
+    });
+    if(!res.ok) return;
+
+    const gist = await res.json();
+    const file = gist.files && gist.files[QB_GIST_FILENAME];
+    if(!file || !file.content) return;
+
+    const cloudData = JSON.parse(file.content);
+    const cloudVersion = cloudData.version || '';
+    const localVersion = getLocalQuestionBankVersion();
+
+    // 版本相同则跳过
+    if(cloudVersion === localVersion) return;
+
+    // 有新版本，下载并合并
+    const questions = cloudData.questions || [];
+    let updatedCount = 0;
+    for(const q of questions){
+      if(q && q.id){
+        await dbAdd('questions', q);
+        updatedCount++;
+      }
+    }
+
+    // 更新本地版本号
+    localStorage.setItem(QB_VERSION_KEY, cloudVersion);
+
+    // 重新加载题目
+    await reloadQuestions();
+
+    if(updatedCount > 0){
+      showSyncToast(`📚 题库已更新 ${updatedCount} 道题目`, 'success');
+    }
+  }catch(e){
+    console.warn('题库更新检查失败', e);
+  }
 }
 
 async function quickSync(){
@@ -2925,6 +3043,9 @@ async function init(){
 
   // 加载用户设置
   await loadUserSettings();
+
+  // 检查题库是否有云端更新（勘误补丁，静默，不依赖autoSync开关）
+  checkQuestionBankUpdate();
 
   // 更新界面
   await updateUserDisplay();
