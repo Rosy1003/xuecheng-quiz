@@ -1262,8 +1262,60 @@ body{font-family:var(--font);color:var(--ink);background:var(--bg);line-height:1
 }
 @keyframes stSlideUp{from{opacity:0;transform:translate(-50%,1rem)}to{opacity:1;transform:translate(-50%,0)}}
 .sync-toast.success{background:var(--green)}
-.sync-toast.error{background:var(--red)}
-</style>
+  .sync-toast.error{background:var(--red)}
+
+  /* ====== 章节导航栏（同系统切换） ====== */
+  .ch-nav-bar{
+    display:flex;align-items:center;gap:8px;
+    padding:8px 0;margin:0 0 12px;
+    border-top:1px solid var(--rule);
+    border-bottom:1px solid var(--rule);
+    overflow-x:auto;flex-shrink:0;
+  }
+  .ch-nav-label{
+    font-size:.72rem;color:var(--muted);
+    white-space:nowrap;flex-shrink:0;
+    font-weight:500;
+  }
+  .ch-nav-chips{
+    display:flex;gap:4px;flex:1;
+    overflow-x:auto;padding:2px 0;
+  }
+  .ch-chip{
+    display:flex;align-items:center;gap:3px;
+    padding:3px 10px;border-radius:999px;
+    font-size:.7rem;white-space:nowrap;cursor:pointer;
+    border:1px solid var(--rule);
+    background:transparent;color:var(--muted);
+    transition:all .2s;flex-shrink:0;
+    user-select:none;font-family:var(--font);
+  }
+  .ch-chip:hover{
+    border-color:var(--accent);color:var(--ink);
+    background:var(--bg2);
+  }
+  .ch-chip.active{
+    background:var(--accent);color:#fff;border-color:var(--accent);
+    font-weight:600;
+  }
+  .ch-chip.done{
+    background:var(--green-bg);color:var(--green);border-color:transparent;
+  }
+  .ch-chip .chip-check{font-size:9px}
+  .ch-nav-btn{
+    padding:3px 10px;border-radius:var(--radius-sm);
+    border:1px solid var(--rule);
+    background:var(--surface);font-size:.7rem;
+    color:var(--muted);cursor:pointer;white-space:nowrap;
+    flex-shrink:0;font-family:var(--font);transition:all .2s;
+  }
+  .ch-nav-btn:hover{
+    border-color:var(--accent);color:var(--ink);
+  }
+  .ch-nav-btn:disabled{
+    opacity:.4;cursor:not-allowed;
+  }
+  </style>
 </head>
 <body>
 <div class="app-shell">

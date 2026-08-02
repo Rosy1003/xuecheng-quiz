@@ -639,11 +639,11 @@ function enterSubject(subject){
       const sys = sysData[sysKey];
       const sysQuestions = allQuestions.filter(q=>q.subject===subject && q.system===sysKey);
       html += `<div class="system-group">
-        <div class="system-header open" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('show')">
+        <div class="system-header" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('show')">
           <span class="sh-name">${sys.name}（${sysQuestions.length}题）</span>
           <span class="sh-toggle">▾</span>
         </div>
-        <div class="system-chapters show">`;
+        <div class="system-chapters">`;
       sys.chapters.forEach(ch=>{
         const chQuestions = allQuestions.filter(q=>q.subject===subject && q.system===sysKey && q.chapter===ch.name);
         const count = chQuestions.length;
@@ -661,6 +661,54 @@ function enterSubject(subject){
   }
 
   el.innerHTML = html;
+}
+
+function getCurrentSystemChapters(){
+  if(!currentSubject || !currentSystem) return [];
+  const sysData = getSystems()[currentSubject] || {};
+  const sys = sysData[currentSystem];
+  if(!sys || !sys.chapters) return [];
+  return sys.chapters;
+}
+
+/* 生成同系统章节导航 HTML（用于刷题页面顶部） */
+function getChapterNavHtml(){
+  const chapters = getCurrentSystemChapters();
+  if(chapters.length <= 1) return '';
+  const currentChIdx = chapters.findIndex(c => c.name === currentChapterName);
+  const prevCh = currentChIdx > 0 ? chapters[currentChIdx-1] : null;
+  const nextCh = currentChIdx < chapters.length-1 ? chapters[currentChIdx+1] : null;
+  let html = '<div class="ch-nav-bar">';
+  html += '<span class="ch-nav-label">章节：</span>';
+  html += '<div class="ch-nav-chips">';
+  chapters.forEach((ch, idx)=>{
+    const isCurrent = idx === currentChIdx;
+    const isPrev = idx < currentChIdx;
+    html += `<span class="ch-chip${isCurrent?' active':''}${isPrev?' done':''}" onclick="switchChapter('${escapeHtml(ch.name)}')">${isPrev?'<span class="chip-check">✓</span>':''}${escapeHtml(ch.name)}</span>`;
+  });
+  html += '</div>';
+  html += `<button class="ch-nav-btn" onclick="switchChapter('${escapeHtml(prevCh?prevCh.name:'')}')" ${prevCh?'':'disabled'}>← 上一章</button>`;
+  html += `<button class="ch-nav-btn" onclick="switchChapter('${escapeHtml(nextCh?nextCh.name:'')}')" ${nextCh?'':'disabled'}>下一章 →</button>`;
+  html += '</div>';
+  return html;
+}
+
+function switchChapter(chapterName){
+  if(!currentSubject || !currentSystem || !chapterName) return;
+  const sysData = getSystems()[currentSubject] || {};
+  const sys = sysData[currentSystem];
+  if(!sys || !sys.chapters) return;
+  const ch = sys.chapters.find(c => c.name === chapterName);
+  if(!ch) return;
+  const chQuestions = allQuestions.filter(q => q.subject===currentSubject && q.system===currentSystem && q.chapter===chapterName);
+  if(chQuestions.length===0){
+    // 使用精确匹配后仍无结果，尝试用系统+科目匹配
+    const qs = allQuestions.filter(q => q.subject===currentSubject && q.system===currentSystem && q.chapter===chapterName);
+    if(qs.length===0) return;
+  }
+  // 保存当前进度
+  saveQuizDraft();
+  startQuiz(currentSubject, currentSystem, ch.id, chapterName);
 }
 
 function backToSubjects(){
@@ -845,6 +893,7 @@ async function renderQuestion(){
           </div>
         </div>
         <div class="progress-bar-wrap"><div class="progress-fill" style="width:${progress}%"></div></div>
+        ${getChapterNavHtml()}
         ${wasAnswered?'<div class="quiz-resume-hint"><span class="qrh-icon">🔒</span><span class="qrh-text">本题已提交，答案已锁定（只读查看）</span></div>':''}
         <div style="display:flex;gap:.5rem;margin-bottom:.6rem;flex-wrap:wrap">
           <span style="background:var(--green-bg);color:var(--green);padding:.15rem .6rem;border-radius:6px;font-size:.72rem;font-weight:600">✅ 正确 ${correctCount}次</span>
@@ -1296,6 +1345,7 @@ async function renderSubMatching(q, el, info){
           </div>
         </div>
         <div class="progress-bar-wrap"><div class="progress-fill" style="width:${progress}%"></div></div>
+        ${getChapterNavHtml()}
         ${quizState.answered?'<div class="quiz-resume-hint"><span class="qrh-icon">🔒</span><span class="qrh-text">本题已全部提交，答案已锁定（只读查看）</span></div>':''}
         <div style="display:flex;gap:.5rem;margin-bottom:.6rem;flex-wrap:wrap">
           <span style="background:var(--green-bg);color:var(--green);padding:.15rem .6rem;border-radius:6px;font-size:.72rem;font-weight:600">✅ 正确 ${correctCount}次</span>
@@ -1847,6 +1897,26 @@ function showCompletion(){
       <span class="cs-q-icon">${s.correct?'✅':'❌'}</span>
     </div>`).join('');
 
+  // 构建同系统章节导航
+  const chapters = getCurrentSystemChapters();
+  const currentChIdx = chapters.findIndex(c => c.name === chapterName);
+  let navHtml = '';
+  if(chapters.length > 1){
+    const prevCh = currentChIdx > 0 ? chapters[currentChIdx-1] : null;
+    const nextCh = currentChIdx < chapters.length-1 ? chapters[currentChIdx+1] : null;
+    navHtml = `<div class="ch-nav-bar">
+      <button class="ch-nav-btn" onclick="switchChapter('${escapeHtml(prevCh?prevCh.name:'')}')" ${prevCh?'':'disabled'}>← 上一章</button>
+      <div class="ch-nav-chips">`;
+    chapters.forEach((ch, idx)=>{
+      const isCurrent = idx === currentChIdx;
+      const isPrev = idx < currentChIdx;
+      navHtml += `<span class="ch-chip${isCurrent?' active':''}${isPrev?' done':''}" onclick="switchChapter('${escapeHtml(ch.name)}')">${escapeHtml(ch.name)}</span>`;
+    });
+    navHtml += `</div>
+      <button class="ch-nav-btn" onclick="switchChapter('${escapeHtml(nextCh?nextCh.name:'')}')" ${nextCh?'':'disabled'}>下一章 →</button>
+    </div>`;
+  }
+
   el.innerHTML = `
     <div class="quiz-player show">
       <div class="home-card" style="padding:2rem 1.5rem">
@@ -1855,6 +1925,7 @@ function showCompletion(){
           <h2 style="font-size:1.4rem;margin-bottom:.3rem">本章刷题完成！</h2>
           <p style="color:var(--muted);font-size:.82rem">${escapeHtml(chapterName||'')} · 共 ${qStats.length} 题</p>
         </div>
+        ${navHtml}
         <div class="cs-stats-banner">
           <div class="cs-stat-item">
             <div class="cs-stat-value" style="color:var(--blue)">${avgScore}</div>
