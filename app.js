@@ -3387,7 +3387,8 @@ async function fetchGistFileContent(file, token){
       }
       // raw_url 也失败，且文件被截断
       if(file.truncated){
-        throw new Error('文件过大（超过1MB）被截断，且 raw_url 获取失败');
+        console.warn('文件过大被截断，且 raw_url 获取失败，跳过此文件');
+        return null;
       }
       return null;
     }
@@ -3680,6 +3681,68 @@ async function checkQuestionBankUpdate(){
  * ========================================================== */
 const SHARED_NOTES_FILENAME = 'shared_notes.json';
 const SHARED_NOTES_VERSION_KEY = 'shared_notes_version';
+const SHARED_NOTES_CHUNK_PREFIX = 'shared_notes_';
+const SHARED_NOTES_CHUNK_MAX_BYTES = 800000; // 800KB 安全阈值（Gist API 截断限制为 1MB）
+
+/* 计算 UTF-8 编码后的字节长度 */
+function getUtf8ByteLength(str){
+  try{ return new TextEncoder().encode(str).length; }
+  catch(e){ return str.length * 3; } // 降级估算（中文字符最多3字节）
+}
+
+/* 将解析数组按字节大小分块，每块不超过 maxBytes */
+function splitNotesIntoChunks(notes, maxBytes){
+  const chunks = [];
+  let currentChunk = [];
+  let currentSize = 0;
+  for(const note of notes){
+    const noteSize = getUtf8ByteLength(JSON.stringify(note));
+    // 单条解析本身超限时，仍放入独立分块（无法再分割）
+    if(currentSize + noteSize > maxBytes && currentChunk.length > 0){
+      chunks.push(currentChunk);
+      currentChunk = [];
+      currentSize = 0;
+    }
+    currentChunk.push(note);
+    currentSize += noteSize;
+  }
+  if(currentChunk.length > 0) chunks.push(currentChunk);
+  return chunks;
+}
+
+/* 从 Gist 下载共享解析（自动处理分块格式）
+ * 返回 { notes: [], version: '' } 或 null
+ */
+async function downloadSharedNotesFromGist(gist, token){
+  const mainFile = gist.files && gist.files[SHARED_NOTES_FILENAME];
+  if(!mainFile) return null;
+
+  const mainContent = await fetchGistFileContent(mainFile, token);
+  if(!mainContent) return null;
+
+  const mainData = safeJsonParse(mainContent, '共享解析');
+
+  // 非分块格式：直接返回
+  if(!mainData.chunked){
+    return { notes: mainData.notes || [], version: mainData.version || '' };
+  }
+
+  // 分块格式：读取所有分块并合并
+  const chunkCount = mainData.chunkCount || 0;
+  const allNotes = [];
+  for(let i = 1; i <= chunkCount; i++){
+    const chunkFileName = `${SHARED_NOTES_CHUNK_PREFIX}${i}.json`;
+    const chunkFile = gist.files && gist.files[chunkFileName];
+    if(!chunkFile) continue;
+    const chunkContent = await fetchGistFileContent(chunkFile, token);
+    if(!chunkContent) continue;
+    const chunkData = safeJsonParse(chunkContent, `共享解析分块${i}`);
+    if(chunkData.notes && Array.isArray(chunkData.notes)){
+      allNotes.push(...chunkData.notes);
+    }
+  }
+  return { notes: allNotes, version: mainData.version || '' };
+}
 
 /* 一键同步共享解析：上传本地解析 + 下载云端全量解析并合并 */
 async function syncSharedNotes(){
@@ -3698,16 +3761,14 @@ async function syncSharedNotes(){
   if(!res.ok) throw new Error(`下载失败: HTTP ${res.status}`);
 
   const gist = await res.json();
-  const cloudFile = gist.files && gist.files[SHARED_NOTES_FILENAME];
+  
+  // 下载云端解析（自动处理分块格式）
   let cloudNotes = [];
   let cloudVersion = '';
-  if(cloudFile){
-    const cloudContent = await fetchGistFileContent(cloudFile, token);
-    if(cloudContent){
-      const cloudData = safeJsonParse(cloudContent, '共享解析');
-      cloudNotes = cloudData.notes || [];
-      cloudVersion = cloudData.version || '';
-    }
+  const cloudResult = await downloadSharedNotesFromGist(gist, token);
+  if(cloudResult){
+    cloudNotes = cloudResult.notes;
+    cloudVersion = cloudResult.version;
   }
 
   // 合并：本地 + 云端，按 ID 去重，按 lastModified 时间戳判断新旧
@@ -3739,13 +3800,43 @@ async function syncSharedNotes(){
   const newFromLocal = localNotes.filter(n => !cloudNotes.some(c => c.id === n.id)).length;
   const newFromCloud = cloudNotes.filter(n => !localNotes.some(l => l.id === n.id)).length;
 
-  // 上传合并后的全量数据
-  const uploadData = {
-    version: newVersion,
-    totalCount: mergedNotes.length,
-    notes: mergedNotes
-  };
-  const content = JSON.stringify(uploadData);
+  // 上传合并后的全量数据（自动分块：超过 800KB 则拆分为多个文件）
+  const filesPayload = {};
+  const mergedContent = JSON.stringify({ version: newVersion, totalCount: mergedNotes.length, notes: mergedNotes });
+  const mergedBytes = getUtf8ByteLength(mergedContent);
+
+  if(mergedBytes <= SHARED_NOTES_CHUNK_MAX_BYTES){
+    // 非分块模式：单个文件
+    filesPayload[SHARED_NOTES_FILENAME] = { content: mergedContent };
+    // 清理可能存在的旧分块文件
+    for(let i = 1; i <= 20; i++){
+      const chunkName = `${SHARED_NOTES_CHUNK_PREFIX}${i}.json`;
+      if(gist.files && gist.files[chunkName]){
+        filesPayload[chunkName] = null; // null = 删除该文件
+      }
+    }
+  } else {
+    // 分块模式：拆分为多个文件
+    const chunks = splitNotesIntoChunks(mergedNotes, SHARED_NOTES_CHUNK_MAX_BYTES);
+    // 主文件存元数据
+    filesPayload[SHARED_NOTES_FILENAME] = {
+      content: JSON.stringify({ version: newVersion, chunked: true, chunkCount: chunks.length, totalNotes: mergedNotes.length })
+    };
+    // 各分块文件
+    chunks.forEach((chunkNotes, i) => {
+      const chunkName = `${SHARED_NOTES_CHUNK_PREFIX}${i + 1}.json`;
+      filesPayload[chunkName] = {
+        content: JSON.stringify({ chunkIndex: i + 1, notes: chunkNotes })
+      };
+    });
+    // 清理多余的旧分块文件
+    for(let i = chunks.length + 1; i <= 20; i++){
+      const chunkName = `${SHARED_NOTES_CHUNK_PREFIX}${i}.json`;
+      if(gist.files && gist.files[chunkName]){
+        filesPayload[chunkName] = null;
+      }
+    }
+  }
 
   const uploadRes = await fetch(`https://api.github.com/gists/${gistId}`, {
     method:'PATCH',
@@ -3756,7 +3847,7 @@ async function syncSharedNotes(){
     },
     body: JSON.stringify({
       description:'学成选择题 · 共享解析',
-      files:{ [SHARED_NOTES_FILENAME]:{ content } }
+      files: filesPayload
     })
   });
   if(!uploadRes.ok){
@@ -3798,20 +3889,18 @@ async function checkSharedNotesUpdate(){
     if(!res.ok) return;
 
     const gist = await res.json();
-    const file = gist.files && gist.files[SHARED_NOTES_FILENAME];
-    if(!file) return;
 
-    const content = await fetchGistFileContent(file, token);
-    if(!content) return;
+    // 下载云端解析（自动处理分块格式）
+    const cloudResult = await downloadSharedNotesFromGist(gist, token);
+    if(!cloudResult) return;
 
-    const cloudData = safeJsonParse(content, '共享解析');
-    const cloudVersion = cloudData.version || '';
+    const cloudVersion = cloudResult.version || '';
     const localVersion = localStorage.getItem(SHARED_NOTES_VERSION_KEY) || '';
 
     if(cloudVersion === localVersion) return;
 
     // 有更新，下载并合并（仅下载本地不存在的解析，避免覆盖本地编辑）
-    const cloudNotes = cloudData.notes || [];
+    const cloudNotes = cloudResult.notes || [];
     const localNotes = await dbGetAll('notes');
     const localIds = new Set(localNotes.map(n=>n.id));
     let newCount = 0;
