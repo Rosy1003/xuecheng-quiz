@@ -553,6 +553,51 @@ const DB_NAME = 'xuecheng_quiz_db';
 const DB_VERSION = 1;
 const STORES = ['records','wrongQuestions','favorites','notes','users','questions','settings'];
 
+/* ==========================================================
+ * COS 图片存储配置（通过 SCF 函数获取预签名 URL 上传）
+ * ========================================================== */
+const COS_SCF_URL = 'https://1464830022-67qevvihbz.ap-guangzhou.tencentscf.com';
+const COS_BASE_URL = 'https://xuecheng-quiz-1464830022.cos.ap-guangzhou.myqcloud.com';
+
+/* 获取 COS 预签名上传 URL（由 SCF 函数生成） */
+async function getCosPresignedUrl(){
+  const res = await fetch(COS_SCF_URL);
+  if(!res.ok) throw new Error('获取上传链接失败: '+res.status);
+  const data = await res.json();
+  if(!data.url) throw new Error('上传链接为空');
+  return { url:data.url, key:data.key };
+}
+
+/* 将 base64 dataUrl 转为 Blob */
+function dataUrlToBlob(dataUrl){
+  const base64Data = dataUrl.split(',')[1];
+  const mime = dataUrl.match(/:(.*?);/)[1];
+  const byteChars = atob(base64Data);
+  const byteArrays = [];
+  for(let i=0;i<byteChars.length;i+=512){
+    const slice = byteChars.slice(i, i+512);
+    const byteNumbers = new Array(slice.length);
+    for(let j=0;j<slice.length;j++){
+      byteNumbers[j] = slice.charCodeAt(j);
+    }
+    byteArrays.push(new Uint8Array(byteNumbers));
+  }
+  return new Blob(byteArrays, { type:mime });
+}
+
+/* 上传图片到 COS，返回公开访问 URL */
+async function uploadImageToCos(dataUrl){
+  const blob = dataUrlToBlob(dataUrl);
+  const { url, key } = await getCosPresignedUrl();
+  const res = await fetch(url, {
+    method:'PUT',
+    body:blob,
+    headers:{ 'Content-Type':blob.type }
+  });
+  if(!res.ok) throw new Error('上传失败: '+res.status);
+  return COS_BASE_URL + '/' + key;
+}
+
 function initDB(){
   return new Promise((resolve,reject)=>{
     const req = indexedDB.open(DB_NAME, DB_VERSION);
@@ -3008,12 +3053,26 @@ function closeNoteModal(){
 
 function previewNoteImages(event){
   const files = Array.from(event.target.files);
+  const preview = document.getElementById('noteImagePreview');
   files.forEach(file=>{
-    compressImage(file, 1200, 0.7).then(compressedDataUrl=>{
-      currentNoteImages.push(compressedDataUrl);
+    compressImage(file, 1200, 0.7).then(async compressedDataUrl=>{
+      // 先用压缩后的 base64 显示预览（半透明 = 上传中）
       const img = document.createElement('img');
       img.src = compressedDataUrl;
-      document.getElementById('noteImagePreview').appendChild(img);
+      img.style.opacity = '0.4';
+      img.style.transition = 'opacity 0.3s';
+      preview.appendChild(img);
+      try{
+        // 上传到 COS，存储公开访问 URL
+        const cosUrl = await uploadImageToCos(compressedDataUrl);
+        img.src = cosUrl;
+        img.style.opacity = '1';
+        currentNoteImages.push(cosUrl);
+      }catch(err){
+        console.error('COS 上传失败，回退到 base64:', err);
+        img.style.opacity = '1';
+        currentNoteImages.push(compressedDataUrl);
+      }
     });
   });
 }
