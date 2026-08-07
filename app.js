@@ -525,6 +525,8 @@ let quizState = { selectedOption:null, placements:{}, answered:false };
 let allQuestions = [];
 let currentChapterName = null;
 let draftProgress = {}; // 按题目存储进度: { questionId: { placements:{...}, answered:false } }
+let jumpStack = []; // 跨科目跳转栈: [{ subject, system, chapterName, questions:[ids], index, draftProgress, scrollY }]
+let isJumpMode = false; // 是否处于跳转做题模式
 let currentNoteTarget = null;
 let currentNoteImages = [];
 let favoritedIds = new Set();
@@ -534,6 +536,9 @@ let noteFilterSystem = 'all';
 let noteFilterAuthor = 'all';
 let autoSyncEnabled = false;
 let sharedNotesAutoSyncEnabled = false;
+let isSyncing = false;          // 同步锁，防止并发竞态
+let pendingSyncTimer = null;    // 防抖定时器
+let pendingSharedSyncTimer = null; // 共享解析防抖定时器
 let shuffleOptionsEnabled = false;
 let darkModeEnabled = false;
 let fontScalePos = 50; // 0=小(13px), 50=中(15px), 100=大(18px)
@@ -816,6 +821,14 @@ function switchChapter(chapterName){
 }
 
 function backToSubjects(){
+  // 如果在跳转模式，先返回原题
+  if(isJumpMode && jumpStack.length>0){
+    returnToOriginalQuestion();
+    return;
+  }
+  // 清除跳转状态
+  isJumpMode = false;
+  jumpStack = [];
   // 退出前先保存草稿（此时 currentSubject 等变量还未清空）
   saveQuizDraft();
   currentSubject = null;
@@ -825,6 +838,7 @@ function backToSubjects(){
 
 /* === 刷题草稿/进度 持久化（按题目存储） === */
 function getDraftKey(){ return `xuecheng_draft_${currentUserId}`; }
+function getJumpDraftKey(){ return `xuecheng_jump_draft_${currentUserId}`; }
 
 /* 保存当前题目进度到 draftProgress，再写入 localStorage */
 function saveQuizDraft(){
@@ -857,7 +871,9 @@ function saveQuizDraft(){
     progress: { ...draftProgress },
     timestamp: Date.now()
   };
-  localStorage.setItem(getDraftKey(), JSON.stringify(draft));
+  // 跳转模式下写入独立的 jump draft key，不污染原会话
+  const key = isJumpMode ? getJumpDraftKey() : getDraftKey();
+  localStorage.setItem(key, JSON.stringify(draft));
 }
 
 function loadQuizDraft(){
@@ -888,6 +904,172 @@ function resumeQuiz(){
   currentChapterName = draft.chapterName;
   draftProgress = draft.progress || {};
   renderQuestion();
+}
+
+/* ==========================================================
+ * 跨科目题目关联（按疾病名映射）
+ * ========================================================== */
+
+/* 疾病名归一化映射表：不同科目对同一疾病的不同叫法 → 统一 key */
+const DISEASE_NORMALIZE_MAP = {
+  '消化性溃疡':'消化性溃疡','胃溃疡':'消化性溃疡','十二指肠溃疡':'消化性溃疡','胃十二指肠溃疡':'消化性溃疡',
+  '消化性溃疡并发症':'消化性溃疡','消化性溃疡手术':'消化性溃疡','消化性溃疡术后并发症':'消化性溃疡','消化性溃疡特殊类型':'消化性溃疡',
+  '消化性溃疡与肠道疾病':'消化性溃疡','消化性溃疡病':'消化性溃疡',
+  '肝硬化':'肝硬化','肝硬化并发症':'肝硬化',
+  '慢性胃炎':'慢性胃炎','胃炎':'慢性胃炎',
+  '大肠癌':'大肠癌','结肠癌':'大肠癌','直肠癌':'大肠癌','结直肠癌':'大肠癌','结直肠肛管疾病':'大肠癌',
+  '肺炎':'肺炎',
+  '肺气肿':'肺气肿',
+  '慢性支气管炎':'慢支肺气肿','慢性支气管炎与肺气肿':'慢支肺气肿',
+  '高血压':'高血压','原发性高血压':'高血压',
+  '冠心病':'冠心病','冠状动脉性心脏病':'冠心病','冠状动脉粥样硬化':'冠心病','动脉粥样硬化':'动脉粥样硬化',
+  '心肌疾病':'心肌病','心肌病':'心肌病',
+  '风湿病':'风湿病','风湿性心脏病':'风湿病','风湿热':'风湿病',
+  '感染性心内膜炎':'感染性心内膜炎',
+  '甲状腺疾病':'甲状腺疾病','甲状腺':'甲状腺疾病','甲状腺功能亢进':'甲状腺疾病','甲状腺功能亢进症':'甲状腺疾病',
+  '甲亢':'甲状腺疾病','甲状腺功能减退':'甲状腺疾病','甲状腺功能检查':'甲状腺疾病','甲状腺炎':'甲状腺疾病','甲状腺癌':'甲状腺疾病',
+  '乳腺疾病':'乳腺疾病','乳腺癌':'乳腺疾病','乳腺':'乳腺疾病','乳房疾病':'乳腺疾病',
+  '胃癌':'胃癌','胃肿瘤':'胃癌',
+  '肝癌':'肝癌','肝脏疾病':'肝癌','原发性肝癌':'肝癌','肝脓肿':'肝癌','肝脏解剖':'肝癌',
+  '胰腺炎':'胰腺炎','胰腺疾病':'胰腺炎','急性胰腺炎':'胰腺炎',
+  '肠梗阻':'肠梗阻',
+  '阑尾炎':'阑尾炎','急性阑尾炎':'阑尾炎',
+  '疝':'疝','腹外疝':'疝',
+  '胆道疾病':'胆道疾病','胆石症':'胆道疾病','胆结石':'胆道疾病','胆囊炎':'胆道疾病','胆系疾病':'胆道疾病',
+  '尿路结石':'尿路结石','泌尿系统结石':'尿路结石','泌尿系结石':'尿路结石','肾结石':'尿路结石',
+  '下肢静脉疾病':'下肢静脉疾病','下肢深静脉血栓':'下肢静脉疾病','深静脉血栓':'下肢静脉疾病','周围血管疾病':'下肢静脉疾病',
+  '腹部损伤':'腹部损伤','腹部创伤':'腹部损伤',
+  '肾脏疾病':'肾脏疾病','肾炎':'肾脏疾病','肾病':'肾脏疾病','泌尿系统疾病':'肾脏疾病','泌尿系统感染和肿瘤':'肾脏疾病',
+  '血液系统':'血液系统疾病','贫血':'血液系统疾病','白血病':'血液系统疾病','血液系统疾病':'血液系统疾病',
+  '消化系统肿瘤':'消化系统肿瘤','消化系统恶性肿瘤':'消化系统肿瘤',
+  '肺结核':'肺结核','结核病':'肺结核',
+};
+
+/* 获取题目的知识关联点（标准化疾病名数组） */
+function getKnowledgePoints(q){
+  if(!q) return [];
+  // 优先使用 knowledgePoint 字段（如果存在）
+  if(q.knowledgePoint && Array.isArray(q.knowledgePoint) && q.knowledgePoint.length>0){
+    return q.knowledgePoint.map(kp=>DISEASE_NORMALIZE_MAP[kp]||kp);
+  }
+  // 回退到 chapter 字段
+  const chapter = q.chapter || '';
+  const normalized = DISEASE_NORMALIZE_MAP[chapter];
+  return normalized ? [normalized] : [];
+}
+
+/* 获取与当前题目关联的其他题目（跨科目，同一知识关联点） */
+function getRelatedQuestions(qId){
+  const q = allQuestions.find(x=>x.id===qId);
+  if(!q) return [];
+  const kps = getKnowledgePoints(q);
+  if(kps.length===0) return [];
+  const related = allQuestions.filter(x=>{
+    if(x.id===qId) return false;
+    if(x.subject===q.subject) return false; // 仅跨科目
+    const xKps = getKnowledgePoints(x);
+    return kps.some(kp=>xKps.includes(kp));
+  });
+  return related;
+}
+
+/* 获取科目显示名称 */
+function getSubjectDisplayName(subjKey){
+  const subj = SUBJECTS[subjKey];
+  return subj ? subj.name : subjKey;
+}
+
+/* 生成关联题目模块 HTML */
+function getRelatedQuestionsHtml(qId){
+  const related = getRelatedQuestions(qId);
+  if(related.length===0) return '';
+  let html = '<div class="related-questions-module">';
+  html += '<div class="rq-header" onclick="toggleRelatedQuestions()">';
+  html += '<span class="rq-icon">🔗</span>';
+  html += '<span class="rq-title">跨科目关联题目</span>';
+  html += `<span class="rq-count">${related.length}</span>`;
+  html += '<span class="rq-toggle">展开 ▾</span>';
+  html += '</div>';
+  html += '<div class="rq-list" id="relatedQuestionsList" style="display:none">';
+  related.forEach(rq=>{
+    const subjName = getSubjectDisplayName(rq.subject);
+    html += `<div class="rq-item" onclick="jumpToRelatedQuestion('${rq.id}')">`;
+    html += `<div class="rq-item-left">`;
+    html += `<span class="rq-subject-badge subj-${rq.subject}">${escapeHtml(subjName)}</span>`;
+    html += `<span class="rq-item-title">${escapeHtml(rq.title)}</span>`;
+    html += `</div>`;
+    html += `<span class="rq-item-chapter">${escapeHtml(rq.chapter||'')}</span>`;
+    html += `</div>`;
+  });
+  html += '</div>';
+  html += '</div>';
+  return html;
+}
+
+/* 展开/折叠关联题目模块 */
+let _relatedExpanded = false;
+function toggleRelatedQuestions(){
+  _relatedExpanded = !_relatedExpanded;
+  const list = document.getElementById('relatedQuestionsList');
+  const toggle = document.querySelector('.rq-toggle');
+  if(list) list.style.display = _relatedExpanded ? 'block' : 'none';
+  if(toggle) toggle.textContent = _relatedExpanded ? '收起 ▴' : '展开 ▾';
+}
+
+/* 跳转到关联题目（静默跳转，保存当前会话状态） */
+async function jumpToRelatedQuestion(targetQId){
+  const q = currentQuestions[currentQuestionIndex];
+  if(!q) return;
+  // 保存当前会话快照到跳转栈
+  saveQuizDraft();
+  jumpStack.push({
+    subject: currentSubject,
+    system: currentSystem,
+    chapterName: currentChapterName,
+    questionIds: currentQuestions.map(x=>x.id),
+    currentIndex: currentQuestionIndex,
+    draftProgress: JSON.parse(JSON.stringify(draftProgress)),
+    scrollY: window.scrollY
+  });
+  // 切换到目标题目（单题模式，不改变原会话）
+  isJumpMode = true;
+  const targetQ = allQuestions.find(x=>x.id===targetQId);
+  if(!targetQ){ isJumpMode = false; jumpStack.pop(); return; }
+  currentSubject = targetQ.subject;
+  currentSystem = targetQ.system;
+  currentChapterName = targetQ.chapter;
+  currentQuestions = [targetQ];
+  currentQuestionIndex = 0;
+  // 跳转模式下使用独立的临时草稿（不污染原会话）
+  const savedJump = localStorage.getItem(getJumpDraftKey());
+  let jumpProgress = {};
+  if(savedJump){
+    try{ jumpProgress = JSON.parse(savedJump).progress||{}; }catch(e){}
+  }
+  draftProgress = jumpProgress;
+  renderQuestion();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* 返回跳转前的原题 */
+async function returnToOriginalQuestion(){
+  if(jumpStack.length===0) return;
+  // saveQuizDraft 会自动写入 jump draft key（因为 isJumpMode=true）
+  saveQuizDraft();
+  // 恢复原会话
+  const snapshot = jumpStack.pop();
+  isJumpMode = jumpStack.length > 0;
+  currentSubject = snapshot.subject;
+  currentSystem = snapshot.system;
+  currentChapterName = snapshot.chapterName;
+  const qs = allQuestions.filter(q=>snapshot.questionIds.includes(q.id));
+  const ordered = snapshot.questionIds.map(id=>qs.find(q=>q.id===id)).filter(Boolean);
+  currentQuestions = ordered;
+  currentQuestionIndex = Math.min(snapshot.currentIndex, ordered.length-1);
+  draftProgress = snapshot.draftProgress;
+  renderQuestion();
+  // 恢复滚动位置
+  setTimeout(()=>{ window.scrollTo({top:snapshot.scrollY||0,behavior:'smooth'}); },100);
 }
 
 async function startQuiz(subject, system, chapterId, chapterName){
@@ -982,6 +1164,7 @@ async function renderQuestion(){
   if(q.type === 'sub-matching'){
     return renderSubMatching(q, el, {correctCount, wrongCount, totalCount, wasAnswered, progress});
   }
+  _relatedExpanded = false;
 
   el.innerHTML = `
     <div class="quiz-player show">
@@ -997,7 +1180,8 @@ async function renderQuestion(){
           </div>
         </div>
         <div class="progress-bar-wrap"><div class="progress-fill" style="width:${progress}%"></div></div>
-        ${getChapterNavHtml()}
+        ${isJumpMode?'<div class="jump-mode-banner"><span class="jm-icon">🔗</span><span class="jm-text">跨科目跳转做题中</span></div>':''}
+        ${isJumpMode?'':getChapterNavHtml()}
         ${wasAnswered?'<div class="quiz-resume-hint"><span class="qrh-icon">🔒</span><span class="qrh-text">本题已提交，答案已锁定（只读查看）</span></div>':''}
         <div style="display:flex;gap:.5rem;margin-bottom:.6rem;flex-wrap:wrap">
           <span style="background:var(--green-bg);color:var(--green);padding:.15rem .6rem;border-radius:6px;font-size:.72rem;font-weight:600">✅ 正确 ${correctCount}次</span>
@@ -1024,15 +1208,17 @@ async function renderQuestion(){
           </div>
         </div>
         <div class="action-bar">
+          ${isJumpMode?'<button class="btn btn-primary jump-return-btn" onclick="returnToOriginalQuestion()">↩ 返回原题</button>':''}
           <button class="btn btn-outline" id="prevBtn" onclick="prevQuestion()" ${currentQuestionIndex===0?'disabled style="opacity:.4"':''}>← 上一题</button>
           <button class="btn btn-primary" id="submitBtn" onclick="submitAnswer()" ${wasAnswered?'disabled style="opacity:.4"':''}>提交答案</button>
           <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()" ${(currentQuestionIndex>=currentQuestions.length-1 && !allQuestionsAnswered())?'disabled style="opacity:.4"':''}>${currentQuestionIndex>=currentQuestions.length-1?'完成 ✓':'下一题 →'}</button>
           <button class="btn btn-outline" onclick="openNoteModal('${q.id}')">📝 添加解析</button>
           <button class="btn btn-outline" id="favBtn" onclick="toggleFavorite()">${favoritedIds.has(q.id)?'⭐ 取消收藏':'☆ 收藏'}</button>
-          <button class="btn btn-outline" onclick="backToSubjects()">退出</button>
+          ${isJumpMode?'':'<button class="btn btn-outline" onclick="backToSubjects()">退出</button>'}
         </div>
         <div id="completionHint" style="text-align:center;font-size:.74rem;color:var(--yellow);margin-top:.4rem;${(currentQuestionIndex>=currentQuestions.length-1 && !allQuestionsAnswered())?'':'display:none;'}">还有 ${currentQuestions.length-getAnsweredCount()} 题未作答，全部完成后可点击"完成"</div>
         <div class="answer-reveal" id="answerReveal"></div>
+        ${getRelatedQuestionsHtml(q.id)}
         <div class="quiz-card-overlay" id="quizCardOverlay">
           <div class="qc-overlay-header">
             <div class="qc-overlay-title">题卡 · ${escapeHtml(currentChapterName||'')}（共${currentQuestions.length}题）</div>
@@ -1434,6 +1620,7 @@ async function renderSubMatching(q, el, info){
     quizState.subCorrect = checkAllSubCorrect(q);
     saveQuizDraft();
   }
+  _relatedExpanded = false;
   
   el.innerHTML = `
     <div class="quiz-player show">
@@ -1449,7 +1636,8 @@ async function renderSubMatching(q, el, info){
           </div>
         </div>
         <div class="progress-bar-wrap"><div class="progress-fill" style="width:${progress}%"></div></div>
-        ${getChapterNavHtml()}
+        ${isJumpMode?'<div class="jump-mode-banner"><span class="jm-icon">🔗</span><span class="jm-text">跨科目跳转做题中</span></div>':''}
+        ${isJumpMode?'':getChapterNavHtml()}
         ${quizState.answered?'<div class="quiz-resume-hint"><span class="qrh-icon">🔒</span><span class="qrh-text">本题已全部提交，答案已锁定（只读查看）</span></div>':''}
         <div style="display:flex;gap:.5rem;margin-bottom:.6rem;flex-wrap:wrap">
           <span style="background:var(--green-bg);color:var(--green);padding:.15rem .6rem;border-radius:6px;font-size:.72rem;font-weight:600">✅ 正确 ${correctCount}次</span>
@@ -1471,14 +1659,16 @@ async function renderSubMatching(q, el, info){
           </div>
         </div>
         <div class="action-bar">
+          ${isJumpMode?'<button class="btn btn-primary jump-return-btn" onclick="returnToOriginalQuestion()">↩ 返回原题</button>':''}
           <button class="btn btn-outline" id="prevBtn" onclick="prevQuestion()" ${currentQuestionIndex===0?'disabled style="opacity:.4"':''}>← 上一题</button>
           <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()" ${(currentQuestionIndex>=currentQuestions.length-1 && !allQuestionsAnswered())?'disabled style="opacity:.4"':''}>${currentQuestionIndex>=currentQuestions.length-1?'完成 ✓':'下一题 →'}</button>
           <button class="btn btn-outline" onclick="openNoteModal('${q.id}')">📝 添加解析</button>
           <button class="btn btn-outline" id="favBtn" onclick="toggleFavorite()">${favoritedIds.has(q.id)?'⭐ 取消收藏':'☆ 收藏'}</button>
-          <button class="btn btn-outline" onclick="backToSubjects()">退出</button>
+          ${isJumpMode?'':'<button class="btn btn-outline" onclick="backToSubjects()">退出</button>'}
         </div>
         <div id="completionHint" style="text-align:center;font-size:.74rem;color:var(--yellow);margin-top:.4rem;${(currentQuestionIndex>=currentQuestions.length-1 && !allQuestionsAnswered())?'':'display:none;'}">还有 ${currentQuestions.length-getAnsweredCount()} 题未作答，全部完成后可点击"完成"</div>
         <div class="answer-reveal" id="answerReveal"></div>
+        ${getRelatedQuestionsHtml(q.id)}
         <div class="quiz-card-overlay" id="quizCardOverlay">
           <div class="qc-overlay-header">
             <div class="qc-overlay-title">题卡 · ${escapeHtml(currentChapterName||'')}（共${currentQuestions.length}题）</div>
@@ -1746,9 +1936,9 @@ async function submitSubAnswer(groupId, subIdx){
     renderSubMatchingReveal(q);
     updateQuizProgress();
     
-    // 自动同步
+    // 自动同步（防抖，5秒后执行）
     if(autoSyncEnabled){
-      try{ await syncToCloudSilent(); }catch(e){ console.warn('自动同步失败',e); }
+      syncToCloudDebounced();
     }
   }
 }
@@ -1926,13 +2116,15 @@ async function submitAnswer(){
   await updateWrongBadge();
   await updateUserStreak();
 
-  // 自动同步（静默，每题提交后不弹窗）
+  // 自动同步（防抖，5秒后执行）
   if(autoSyncEnabled){
-    try{ await syncToCloudSilent(); }catch(e){ console.warn('自动同步失败',e); }
+    syncToCloudDebounced();
   }
 }
 
 function prevQuestion(){
+  // 跳转模式下只有一题，禁用上一题
+  if(isJumpMode) return;
   if(currentQuestionIndex > 0){
     saveQuizDraft();
     currentQuestionIndex--;
@@ -1941,6 +2133,11 @@ function prevQuestion(){
 }
 
 function nextQuestion(){
+  // 跳转模式下点击"完成"→自动返回原题
+  if(isJumpMode){
+    returnToOriginalQuestion();
+    return;
+  }
   saveQuizDraft();
   currentQuestionIndex++;
   if(currentQuestionIndex >= currentQuestions.length){
@@ -1987,9 +2184,9 @@ function showCompletion(){
   currentQuestions = [];
   currentQuestionIndex = 0;
 
-  // 章节完成后自动上传
+  // 章节完成后自动上传（防抖，5秒后执行）
   if(autoSyncEnabled){
-    syncToCloudSilent(); // 非阻塞，不影响页面渲染
+    syncToCloudDebounced();
   }
 
   const el = document.getElementById('quizContent');
@@ -2812,12 +3009,41 @@ function closeNoteModal(){
 function previewNoteImages(event){
   const files = Array.from(event.target.files);
   files.forEach(file=>{
+    compressImage(file, 1200, 0.7).then(compressedDataUrl=>{
+      currentNoteImages.push(compressedDataUrl);
+      const img = document.createElement('img');
+      img.src = compressedDataUrl;
+      document.getElementById('noteImagePreview').appendChild(img);
+    });
+  });
+}
+
+/* 图片压缩：将图片缩放并压缩为 JPEG，确保 base64 不超过约 200KB */
+function compressImage(file, maxDim, quality){
+  return new Promise((resolve)=>{
     const reader = new FileReader();
     reader.onload = (e)=>{
-      currentNoteImages.push(e.target.result);
-      const img = document.createElement('img');
+      const img = new Image();
+      img.onload = ()=>{
+        let w = img.width, h = img.height;
+        if(w > maxDim || h > maxDim){
+          if(w > h){ h = Math.round(h * maxDim / w); w = maxDim; }
+          else { w = Math.round(w * maxDim / h); h = maxDim; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        let q = quality;
+        let result = canvas.toDataURL('image/jpeg', q);
+        // 如果仍然超过 200KB，逐步降低质量
+        while(result.length > 200 * 1024 && q > 0.1){
+          q -= 0.1;
+          result = canvas.toDataURL('image/jpeg', q);
+        }
+        resolve(result);
+      };
       img.src = e.target.result;
-      document.getElementById('noteImagePreview').appendChild(img);
     };
     reader.readAsDataURL(file);
   });
@@ -2835,14 +3061,14 @@ async function saveNote(){
     id, userId:currentUserId, userName:currentUserName, questionId:currentNoteTarget,
     subject:q?q.subject:'', system:q?q.system:'', chapter:q?q.chapter:'',
     title:q?q.title:currentNoteTarget,
-    text, images:currentNoteImages, createdDate:new Date().toISOString()
+    text, images:currentNoteImages, createdDate:new Date().toISOString(), lastModified:new Date().toISOString()
   });
   closeNoteModal();
   // 如果当前在解析页则刷新
   if(document.getElementById('panel-notes').classList.contains('active')) renderNotes();
-  // 保存解析后自动上传
-  if(autoSyncEnabled) syncToCloudSilent();
-  if(sharedNotesAutoSyncEnabled) syncSharedNotesSilent();
+  // 保存解析后自动上传（防抖）
+  if(autoSyncEnabled) syncToCloudDebounced();
+  if(sharedNotesAutoSyncEnabled) syncSharedNotesDebounced();
 }
 
 async function editNote(noteId){
@@ -2861,13 +3087,14 @@ async function editNote(noteId){
     const newText = document.getElementById('noteText').value.trim();
     note.text = newText;
     note.images = currentNoteImages;
+    note.lastModified = new Date().toISOString();
     await dbAdd('notes', note);
     closeNoteModal();
     document.querySelector('.btn-save').onclick = saveNote;
     renderNotes();
-    // 编辑解析后自动上传
-    if(autoSyncEnabled) syncToCloudSilent();
-    if(sharedNotesAutoSyncEnabled) syncSharedNotesSilent();
+    // 编辑解析后自动上传（防抖）
+    if(autoSyncEnabled) syncToCloudDebounced();
+    if(sharedNotesAutoSyncEnabled) syncSharedNotesDebounced();
   };
 }
 
@@ -2875,9 +3102,9 @@ async function deleteNote(noteId){
   if(!confirm('确定删除该解析？')) return;
   await dbDelete('notes', noteId);
   renderNotes();
-  // 删除解析后自动同步
-  if(autoSyncEnabled) syncToCloudSilent();
-  if(sharedNotesAutoSyncEnabled) syncSharedNotesSilent();
+  // 删除解析后自动同步（防抖）
+  if(autoSyncEnabled) syncToCloudDebounced();
+  if(sharedNotesAutoSyncEnabled) syncSharedNotesDebounced();
 }
 
 /* ==========================================================
@@ -3407,12 +3634,25 @@ async function syncSharedNotes(){
     cloudVersion = cloudData.version || '';
   }
 
-  // 合并：本地 + 云端，按 ID 去重（后写入覆盖）
+  // 合并：本地 + 云端，按 ID 去重，按 lastModified 时间戳判断新旧
   const noteMap = new Map();
   // 先放入云端数据
   cloudNotes.forEach(n=>{ if(n && n.id) noteMap.set(n.id, n); });
-  // 再用本地数据覆盖（保证本地最新版本上传）
-  localNotes.forEach(n=>{ if(n && n.id) noteMap.set(n.id, n); });
+  // 用本地数据覆盖：仅当本地版本更新时才覆盖
+  localNotes.forEach(n=>{
+    if(!n || !n.id) return;
+    const existing = noteMap.get(n.id);
+    if(!existing){
+      noteMap.set(n.id, n);
+    } else {
+      // 比较 lastModified 时间戳，本地更新则覆盖
+      const localTime = n.lastModified || n.createdDate || '';
+      const cloudTime = existing.lastModified || existing.createdDate || '';
+      if(localTime >= cloudTime){
+        noteMap.set(n.id, n);
+      }
+    }
+  });
 
   const mergedNotes = Array.from(noteMap.values());
   const newVersion = new Date().toISOString();
@@ -3608,18 +3848,46 @@ function showSyncToast(msg, type){
   }, 2500);
 }
 
-/* 静默同步上传（不弹alert，失败时显示toast） */
+/* 静默同步上传（带同步锁，防止并发竞态；失败时显示toast） */
 async function syncToCloudSilent(){
   const token = localStorage.getItem('xuecheng_gist_token');
-  if(!token) return; // 无token时静默跳过
+  if(!token){
+    if(autoSyncEnabled) showSyncToast('⚠️ 自动同步未生效：未配置 GitHub Token', 'error');
+    return;
+  }
   const gistId = getUserGistId(currentUserId);
-  if(!gistId) return; // 未关联Gist时静默跳过
+  if(!gistId){
+    if(autoSyncEnabled) showSyncToast('⚠️ 自动同步未生效：未关联 Gist ID', 'error');
+    return;
+  }
+  if(isSyncing) return; // 同步锁：已有同步在进行中，跳过
+  isSyncing = true;
   try{
     await syncToCloud();
     showSyncToast('☁️ 已自动同步（' + getDeviceLabel() + '）', 'success');
   }catch(e){
     showSyncToast('⚠️ 同步失败：' + e.message, 'error');
+  }finally{
+    isSyncing = false;
   }
+}
+
+/* 防抖版同步上传：延迟5秒执行，期间多次调用只执行一次 */
+function syncToCloudDebounced(){
+  if(pendingSyncTimer) clearTimeout(pendingSyncTimer);
+  pendingSyncTimer = setTimeout(()=>{
+    pendingSyncTimer = null;
+    syncToCloudSilent();
+  }, 5000);
+}
+
+/* 防抖版共享解析同步：延迟5秒执行，期间多次调用只执行一次 */
+function syncSharedNotesDebounced(){
+  if(pendingSharedSyncTimer) clearTimeout(pendingSharedSyncTimer);
+  pendingSharedSyncTimer = setTimeout(()=>{
+    pendingSharedSyncTimer = null;
+    syncSharedNotesSilent();
+  }, 5000);
 }
 
 function toggleShuffleOptions(){
