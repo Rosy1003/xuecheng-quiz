@@ -1098,16 +1098,33 @@ body{font-family:var(--font);color:var(--ink);background:var(--bg);line-height:1
 .ar-card-num{display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,0.6);font-size:.65rem;font-weight:800}
 .ar-card-status{margin-left:auto;font-size:.85rem}
 .ar-card-body{padding:.4rem .7rem;background:var(--surface-solid)}
-.ar-opt-row{display:flex;align-items:flex-start;gap:.4rem;padding:.3rem 0;font-size:.75rem;border-bottom:1px solid var(--rule)}
+.ar-opt-row{display:flex;align-items:flex-start;gap:.4rem;padding:.45rem .6rem;font-size:.75rem;border-bottom:1px solid var(--rule)}
 .ar-opt-row:last-child{border-bottom:none}
-.ar-opt-letter{display:flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:4px;flex-shrink:0;font-size:.6rem;font-weight:700;color:#fff}
+.ar-opt-row.correct{background:var(--green-bg);border-left:4px solid var(--green)}
+.ar-opt-row.wrong{background:var(--red-bg);border-left:4px solid var(--red)}
+.ar-opt-row.missed{background:var(--yellow-bg);border-left:4px solid var(--yellow)}
+.ar-opt-letter{display:flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:4px;flex-shrink:0;font-size:.62rem;font-weight:700;color:#fff}
 .ar-opt-letter.right{background:var(--green)}
 .ar-opt-letter.wrong{background:var(--red)}
 .ar-opt-letter.miss{background:var(--yellow)}
-.ar-opt-text{flex:1;line-height:1.4}
-.ar-opt-tag{font-size:.58rem;padding:1px 5px;border-radius:3px;font-weight:600;flex-shrink:0;white-space:nowrap}
-.ar-opt-tag.your{background:var(--red-bg);color:var(--red)}
-.ar-opt-tag.missed{background:var(--yellow-bg);color:var(--yellow)}
+.ar-opt-body{flex:1;min-width:0}
+.ar-opt-text{font-size:.78rem;line-height:1.4;color:var(--ink)}
+.ar-opt-sub{font-size:.65rem;color:var(--muted);margin-top:.15rem}
+.ar-opt-sub .strike{text-decoration:line-through;color:var(--red)}
+.ar-opt-note{display:flex;flex-direction:column;align-items:flex-end;gap:.2rem;flex-shrink:0;max-width:50%}
+.ar-opt-status{font-size:.6rem;padding:2px 7px;border-radius:999px;font-weight:600;white-space:nowrap}
+.ar-opt-status.correct{background:var(--green-bg);color:var(--green)}
+.ar-opt-status.wrong{background:var(--red-bg);color:var(--red)}
+.ar-opt-status.missed{background:var(--yellow-bg);color:var(--yellow)}
+.ar-opt-correct{font-size:.6rem;color:var(--muted);text-align:right;line-height:1.5}
+.ar-opt-correct .arrow{font-weight:700}
+.ar-opt-correct .arrow.g{color:var(--green)}
+.ar-opt-correct .arrow.r{color:var(--red)}
+.ar-opt-correct .arrow.y{color:var(--yellow)}
+.ar-opt-correct .target{color:var(--ink);font-weight:600;padding:1px 4px;border-radius:3px}
+.ar-opt-correct .target.g{background:var(--green-bg)}
+.ar-opt-correct .target.r{background:var(--red-bg)}
+.ar-opt-correct .target.y{background:var(--yellow-bg)}
 
 .ar-note{background:var(--accent-bg);border-radius:var(--radius-sm);padding:.6rem .7rem;font-size:.75rem;color:var(--ink);line-height:1.6;border-left:3px solid var(--accent)}
 .ar-note strong{color:var(--accent)}
@@ -1314,6 +1331,144 @@ body{font-family:var(--font);color:var(--ink);background:var(--bg);line-height:1
   }
   .ch-nav-btn:disabled{
     opacity:.4;cursor:not-allowed;
+  }
+
+  /* === 跨科目关联题目模块（home-card 分组设计） === */
+  .related-questions-module{
+    margin-top:1rem;
+  }
+  .rq-section-header{
+    display:flex;align-items:center;gap:.4rem;padding:.5rem .2rem;
+    font-size:.85rem;font-weight:700;color:var(--ink);
+  }
+  .rq-section-count{
+    font-size:.68rem;font-weight:600;color:var(--accent);
+    background:var(--accent-bg);padding:2px 8px;border-radius:999px;
+  }
+  .rq-section-hint{
+    margin-left:auto;font-size:.65rem;color:var(--muted);font-weight:400;
+  }
+  /* 科目 home-card */
+  .rq-card{
+    background:var(--surface);backdrop-filter:blur(10px);
+    border:1px solid var(--rule);border-radius:var(--radius);
+    margin-bottom:.6rem;overflow:hidden;
+    transition:box-shadow .2s,transform .2s;
+  }
+  .rq-card:hover{ box-shadow:var(--shadow-hover); }
+  .rq-card-header{
+    display:flex;align-items:center;gap:.4rem;
+    padding:.6rem .8rem;cursor:pointer;user-select:none;
+    transition:background .15s;
+  }
+  .rq-card-header:hover{ background:var(--accent-bg); }
+  .rq-sub-icon{ font-size:.95rem;flex-shrink:0; }
+  .rq-sub-name{ font-size:.82rem;font-weight:600;color:var(--ink);flex:1; }
+  .rq-sub-tag{
+    font-size:.6rem;font-weight:600;padding:2px 7px;border-radius:999px;
+    white-space:nowrap;flex-shrink:0;
+  }
+  .rq-sub-tag.subj-pathology{ background:#f0edf2;color:#9B8AA4; }
+  .rq-sub-tag.subj-internal{ background:#edf0f4;color:#7a95b0; }
+  .rq-sub-tag.subj-surgery{ background:#e4efe4;color:#7d9e7d; }
+  .rq-sub-tag.subj-physiology{ background:#f0ecf4;color:#a08eb0; }
+  .rq-sub-tag.subj-biochem{ background:#f2e8e8;color:#b87a7a; }
+  .rq-sub-count{ font-size:.68rem;color:var(--muted);white-space:nowrap; }
+  .rq-toggle{
+    font-size:10px;color:var(--muted);transition:transform .2s;flex-shrink:0;
+  }
+  .rq-card.collapsed .rq-toggle{ transform:rotate(-90deg); }
+  /* 卡片主体 */
+  .rq-card-body{
+    border-top:1px solid var(--rule);
+    transition:max-height .3s ease,opacity .2s,padding .2s;
+    max-height:800px;opacity:1;overflow:hidden;
+  }
+  .rq-card.collapsed .rq-card-body{
+    max-height:0;opacity:0;padding:0;border-top:none;
+  }
+  /* 题目条目 */
+  .rq-item{
+    display:flex;align-items:center;gap:.45rem;
+    padding:.5rem .8rem;cursor:pointer;transition:background .12s;
+    border-bottom:1px solid rgba(216,210,200,0.4);
+  }
+  .rq-item:last-child{ border-bottom:none; }
+  .rq-item:hover{ background:var(--accent-bg); }
+  .rq-item-dot{
+    width:6px;height:6px;border-radius:50%;flex-shrink:0;
+  }
+  .rq-item-dot.subj-pathology{ background:#9B8AA4; }
+  .rq-item-dot.subj-internal{ background:#7a95b0; }
+  .rq-item-dot.subj-surgery{ background:#7d9e7d; }
+  .rq-item-dot.subj-physiology{ background:#a08eb0; }
+  .rq-item-dot.subj-biochem{ background:#b87a7a; }
+  .rq-item-body{ flex:1;min-width:0; }
+  .rq-item-title{
+    font-size:.76rem;color:var(--ink);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .rq-item-chapter{
+    font-size:.65rem;color:var(--muted);margin-top:1px;
+  }
+  .rq-current-badge{
+    font-size:.58rem;font-weight:600;padding:2px 7px;border-radius:999px;
+    background:var(--green-bg);color:var(--green);white-space:nowrap;flex-shrink:0;
+  }
+  .rq-jump-arrow{
+    font-size:.9rem;color:var(--accent);flex-shrink:0;
+    transition:transform .15s;
+  }
+  .rq-item:hover .rq-jump-arrow{ transform:translateX(3px);color:var(--ink); }
+  /* 返回提示 */
+  .rq-return-hint{
+    display:flex;align-items:center;gap:.4rem;
+    padding:.5rem .8rem;font-size:.65rem;color:var(--muted);
+  }
+  .rq-return-hint .rq-ret-badge{
+    font-size:.58rem;font-weight:600;padding:2px 7px;border-radius:999px;
+    background:var(--accent-bg);color:var(--accent);
+  }
+  .jump-return-btn{
+    background:var(--accent)!important;color:#fff!important;
+    animation:pulse-glow 2s ease-in-out infinite;
+  }
+  @keyframes pulse-glow{
+    0%,100%{ box-shadow:0 0 0 0 rgba(122,149,176,.3); }
+    50%{ box-shadow:0 0 0 4px rgba(122,149,176,0); }
+  }
+  .jump-mode-banner{
+    display:flex;align-items:center;gap:.4rem;
+    padding:.4rem .7rem;margin-bottom:.6rem;
+    background:var(--accent-soft,rgba(122,149,176,.12));
+    border:1px solid var(--accent);border-radius:8px;
+    font-size:.75rem;color:var(--accent-text,var(--ink));
+  }
+  .jm-icon{ font-size:.9rem; }
+  .jm-text{ font-weight:600; }
+
+  /* === 响应式适配：关联题目模块 === */
+  @media(max-width:768px){
+    .rq-item-title{ font-size:.74rem;white-space:normal; }
+    .rq-item-chapter{ font-size:.62rem; }
+    .rq-card-header{ padding:.5rem .6rem; }
+    .rq-sub-name{ font-size:.78rem; }
+    .rq-sub-count{ font-size:.64rem; }
+    .rq-item{ padding:.4rem .6rem; }
+    .rq-sub-tag{ font-size:.56rem; }
+  }
+  @media(max-width:480px){
+    .rq-section-header{ font-size:.78rem;padding:.4rem .2rem; }
+    .rq-section-count{ font-size:.62rem; }
+    .rq-section-hint{ display:none; }
+    .rq-card-header{ padding:.45rem .5rem;gap:.3rem; }
+    .rq-sub-name{ font-size:.76rem; }
+    .rq-item{ padding:.35rem .5rem;gap:.35rem; }
+    .rq-item-title{ font-size:.72rem; }
+    .rq-item-chapter{ font-size:.6rem; }
+    .rq-current-badge{ font-size:.54rem;padding:1px 5px; }
+    .rq-jump-arrow{ font-size:.8rem; }
+    .rq-return-hint{ font-size:.6rem;padding:.4rem .5rem; }
   }
   </style>
 </head>

@@ -1024,41 +1024,76 @@ function getSubjectDisplayName(subjKey){
   return subj ? subj.name : subjKey;
 }
 
-/* 生成关联题目模块 HTML */
+/* 生成关联题目模块 HTML（home-card 分组设计） */
 function getRelatedQuestionsHtml(qId){
   const related = getRelatedQuestions(qId);
   if(related.length===0) return '';
-  let html = '<div class="related-questions-module">';
-  html += '<div class="rq-header" onclick="toggleRelatedQuestions()">';
-  html += '<span class="rq-icon">🔗</span>';
-  html += '<span class="rq-title">跨科目关联题目</span>';
-  html += `<span class="rq-count">${related.length}</span>`;
-  html += '<span class="rq-toggle">展开 ▾</span>';
-  html += '</div>';
-  html += '<div class="rq-list" id="relatedQuestionsList" style="display:none">';
+
+  // 按科目分组
+  const bySubject = {};
   related.forEach(rq=>{
-    const subjName = getSubjectDisplayName(rq.subject);
-    html += `<div class="rq-item" onclick="jumpToRelatedQuestion('${rq.id}')">`;
-    html += `<div class="rq-item-left">`;
-    html += `<span class="rq-subject-badge subj-${rq.subject}">${escapeHtml(subjName)}</span>`;
-    html += `<span class="rq-item-title">${escapeHtml(rq.title)}</span>`;
-    html += `</div>`;
-    html += `<span class="rq-item-chapter">${escapeHtml(rq.chapter||'')}</span>`;
-    html += `</div>`;
+    if(!bySubject[rq.subject]) bySubject[rq.subject] = [];
+    bySubject[rq.subject].push(rq);
   });
+
+  const currentQ = currentQuestions[currentQuestionIndex];
+  const currentQId = currentQ ? currentQ.id : qId;
+
+  let html = '<div class="related-questions-module">';
+  html += '<div class="rq-section-header">';
+  html += '<span>🔗 跨科目关联题目</span>';
+  html += `<span class="rq-section-count">${related.length}</span>`;
+  html += '<span class="rq-section-hint">点击科目展开 · 点击题目跳转</span>';
   html += '</div>';
+
+  // 按科目生成 home-card
+  Object.keys(bySubject).forEach(subjKey=>{
+    const subInfo = SUBJECTS[subjKey] || {name:subjKey, icon:'📝'};
+    const questions = bySubject[subjKey];
+
+    html += '<div class="rq-card collapsed">';
+    html += `<div class="rq-card-header" onclick="toggleRqCard(this)">`;
+    html += `<span class="rq-sub-icon">${subInfo.icon || '📝'}</span>`;
+    html += `<span class="rq-sub-name">${escapeHtml(subInfo.name)}</span>`;
+    html += `<span class="rq-sub-tag subj-${subjKey}">${escapeHtml(subInfo.name)}</span>`;
+    html += `<span class="rq-sub-count">${questions.length}题</span>`;
+    html += '<span class="rq-toggle">▼</span>';
+    html += '</div>';
+    html += '<div class="rq-card-body">';
+
+    questions.forEach(rq=>{
+      const isCurrent = rq.id === currentQId;
+      html += `<div class="rq-item" onclick="jumpToRelatedQuestion('${rq.id}')">`;
+      html += `<span class="rq-item-dot subj-${rq.subject}"></span>`;
+      html += '<div class="rq-item-body">';
+      html += `<div class="rq-item-title">${escapeHtml(rq.title||'')}</div>`;
+      if(rq.chapter) html += `<div class="rq-item-chapter">${escapeHtml(rq.chapter)}</div>`;
+      html += '</div>';
+      if(isCurrent) html += '<span class="rq-current-badge">当前</span>';
+      html += '<span class="rq-jump-arrow">→</span>';
+      html += '</div>';
+    });
+
+    html += '</div>';
+    html += '</div>';
+  });
+
+  // 跳转模式下显示返回提示
+  if(jumpStack.length > 0){
+    html += '<div class="rq-return-hint">';
+    html += '<span class="rq-ret-badge">⤴ 返回</span>';
+    html += '<span>跳转中 · 点击顶部返回按钮回到原题</span>';
+    html += '</div>';
+  }
+
   html += '</div>';
   return html;
 }
 
-/* 展开/折叠关联题目模块 */
-let _relatedExpanded = false;
-function toggleRelatedQuestions(){
-  _relatedExpanded = !_relatedExpanded;
-  const list = document.getElementById('relatedQuestionsList');
-  const toggle = document.querySelector('.rq-toggle');
-  if(list) list.style.display = _relatedExpanded ? 'block' : 'none';
-  if(toggle) toggle.textContent = _relatedExpanded ? '收起 ▴' : '展开 ▾';
+/* 展开/折叠单个科目卡片 */
+function toggleRqCard(headerEl){
+  const card = headerEl.closest('.rq-card');
+  if(card) card.classList.toggle('collapsed');
 }
 
 /* 跳转到关联题目（静默跳转，保存当前会话状态） */
@@ -1209,7 +1244,6 @@ async function renderQuestion(){
   if(q.type === 'sub-matching'){
     return renderSubMatching(q, el, {correctCount, wrongCount, totalCount, wasAnswered, progress});
   }
-  _relatedExpanded = false;
 
   el.innerHTML = `
     <div class="quiz-player show">
@@ -1462,40 +1496,70 @@ async function renderAnswerReveal(q){
   const catNameMap = {};
   q.categories.forEach(c=>{ catNameMap[c.id] = c.label; });
 
-  let ansCards = q.categories.map((cat,ci)=>{
-    const optsInCat = q.options.filter(o=>getCorrectCats(q.answer, o.id).includes(cat.id));
-    let allCorrect = true;
-    const optRows = optsInCat.map(opt=>{
-      const correctCats = getCorrectCats(q.answer, opt.id);
-      const userCats = quizState.placements[opt.id] || [];
-      const isCorrect = correctCats.length===userCats.length && correctCats.every(c=>userCats.includes(c));
-      const isMissed = userCats.length===0;
-      if(!isCorrect) allCorrect = false;
-      let tagHtml = '';
-      if(isCorrect){
-      } else if(isMissed){
-        tagHtml = '<span class="ar-opt-tag missed">未作答</span>';
-      } else {
-        const userCatNames = userCats.map(uc=>catNameMap[uc]||uc).join('、');
-        const correctCatNames = correctCats.map(cc=>catNameMap[cc]||cc).join('、');
-        tagHtml = `<span class="ar-opt-tag your">你的选择：${escapeHtml(userCatNames)}（应为${escapeHtml(correctCatNames)}）</span>`;
-      }
-      const letterClass = isCorrect ? 'right' : (isMissed ? 'miss' : 'wrong');
-      return `<div class="ar-opt-row">
-        <span class="ar-opt-letter ${letterClass}">${escapeHtml(opt.id)}</span>
-        <span class="ar-opt-text">${escapeHtml(opt.text)}</span>
-        ${tagHtml}
-      </div>`;
-    }).join('');
-    return `<div class="ar-card">
-      <div class="ar-card-header ${allCorrect?'ok':'no'}">
-        <span class="ar-card-num">${ci+1}</span>
-        <span>${escapeHtml(cat.label)}</span>
-        <span class="ar-card-status">${allCorrect?'✓ 全对':'✗ 有错误'}</span>
+  let optRowsHtml = q.options.map(opt=>{
+    const correctCats = getCorrectCats(q.answer, opt.id);
+    const userCats = quizState.placements[opt.id] || [];
+    // 跳过不属于任何分类且未放置的选项
+    if(correctCats.length===0 && userCats.length===0) return null;
+
+    const correctCatNames = correctCats.map(c=>catNameMap[c]||c).join('、');
+    const wrongCats = userCats.filter(c=>!correctCats.includes(c));
+    const missingCats = correctCats.filter(c=>!userCats.includes(c));
+
+    let rowClass, letterClass, statusClass, statusText, noteHtml;
+
+    if(correctCats.length===0 && userCats.length>0){
+      // 误放：选项不应归入任何分类，但用户放置了
+      rowClass='wrong'; letterClass='wrong'; statusClass='wrong'; statusText='错误';
+      const userCatNames = userCats.map(uc=>catNameMap[uc]||uc).join('、');
+      noteHtml = `<div class="ar-opt-status ${statusClass}">${statusText}</div>
+        <div class="ar-opt-correct">
+          <span class="strike">误放：${escapeHtml(userCatNames)}</span><br>
+          <span class="arrow r">→</span> <span class="target r">不应放置</span>
+        </div>`;
+    } else if(wrongCats.length>0){
+      // 错误：放置了错误分类
+      rowClass='wrong'; letterClass='wrong'; statusClass='wrong'; statusText='错误';
+      const userCatNames = userCats.map(uc=>catNameMap[uc]||uc).join('、');
+      noteHtml = `<div class="ar-opt-status ${statusClass}">${statusText}</div>
+        <div class="ar-opt-correct">
+          <span class="strike">你的：${escapeHtml(userCatNames)}</span><br>
+          <span class="arrow r">→</span> <span class="target r">${escapeHtml(correctCatNames)}</span>
+        </div>`;
+    } else if(missingCats.length>0 && userCats.length>0){
+      // 部分遗漏：放对了部分，但遗漏了其他分类
+      rowClass='missed'; letterClass='miss'; statusClass='missed'; statusText='部分遗漏';
+      const userCatNames = userCats.map(uc=>catNameMap[uc]||uc).join('、');
+      const missingCatNames = missingCats.map(c=>catNameMap[c]||c).join('、');
+      noteHtml = `<div class="ar-opt-status ${statusClass}">${statusText}</div>
+        <div class="ar-opt-correct">
+          <span>已放：${escapeHtml(userCatNames)}</span><br>
+          <span class="arrow y">→</span> <span class="target y">缺：${escapeHtml(missingCatNames)}</span>
+        </div>`;
+    } else if(missingCats.length>0 && userCats.length===0){
+      // 完全遗漏：未作答
+      rowClass='missed'; letterClass='miss'; statusClass='missed'; statusText='遗漏';
+      noteHtml = `<div class="ar-opt-status ${statusClass}">${statusText}</div>
+        <div class="ar-opt-correct">
+          <span class="arrow y">→</span> <span class="target y">${escapeHtml(correctCatNames)}</span>
+        </div>`;
+    } else {
+      // 正确
+      rowClass='correct'; letterClass='right'; statusClass='correct'; statusText='正确';
+      noteHtml = `<div class="ar-opt-status ${statusClass}">${statusText}</div>
+        <div class="ar-opt-correct">
+          <span class="arrow g">→</span> <span class="target g">${escapeHtml(correctCatNames)}</span>
+        </div>`;
+    }
+
+    return `<div class="ar-opt-row ${rowClass}">
+      <span class="ar-opt-letter ${letterClass}">${escapeHtml(opt.id)}</span>
+      <div class="ar-opt-body">
+        <div class="ar-opt-text">${escapeHtml(opt.text)}</div>
       </div>
-      <div class="ar-card-body">${optRows}</div>
+      <div class="ar-opt-note">${noteHtml}</div>
     </div>`;
-  }).join('');
+  }).filter(Boolean).join('');
 
   // 查询所有用户的解析（共享模式）
   let userNoteHtml = '';
@@ -1558,7 +1622,7 @@ async function renderAnswerReveal(q){
       <div class="ar-legend-item"><span class="ar-legend-dot red"></span>答错</div>
       <div class="ar-legend-item"><span class="ar-legend-dot yellow"></span>遗漏</div>
     </div>
-    <div class="ar-grid">${ansCards}</div>
+    <div class="ar-grid">${optRowsHtml}</div>
     <div class="ar-note"><strong>💡 解析：</strong>${escapeHtml(q.explanation)}</div>
     ${userNoteHtml}`;
   reveal.classList.add('show');
@@ -1665,8 +1729,7 @@ async function renderSubMatching(q, el, info){
     quizState.subCorrect = checkAllSubCorrect(q);
     saveQuizDraft();
   }
-  _relatedExpanded = false;
-  
+
   el.innerHTML = `
     <div class="quiz-player show">
       <div class="quiz-area">
