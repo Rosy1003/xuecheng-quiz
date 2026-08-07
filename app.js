@@ -3355,6 +3355,73 @@ function setUserGistId(userId, gistId){
   localStorage.setItem(`xuecheng_gist_id_user_${userId}`, gistId);
 }
 
+/* ==========================================================
+ * Gist 文件安全读取工具（解决 >1MB 文件被 API 截断问题）
+ * ========================================================== */
+
+/**
+ * 安全获取 Gist 文件的完整内容
+ * GitHub Gist API 对超过 1MB 的文件会截断 content 字段（返回空字符串）
+ * 并设置 truncated: true，此时需通过 raw_url 获取完整内容
+ *
+ * @param {Object} file - gist.files[fileName] 对象
+ * @param {string} token - GitHub Token（raw_url 需认证）
+ * @returns {Promise<string|null>} 文件完整内容；获取失败返回 null
+ */
+async function fetchGistFileContent(file, token){
+  if(!file) return null;
+
+  // 如果 API 标记为截断，或 content 为空，通过 raw_url 获取完整内容
+  if(file.truncated || !file.content){
+    if(file.raw_url){
+      try{
+        const rawRes = await fetch(file.raw_url, {
+          headers: token ? { 'Authorization':`token ${token}`, 'Accept':'application/vnd.github.v3.raw' } : {}
+        });
+        if(rawRes.ok){
+          return await rawRes.text();
+        }
+        console.warn('raw_url 获取失败:', rawRes.status);
+      }catch(e){
+        console.warn('raw_url 请求异常:', e.message);
+      }
+      // raw_url 也失败，且文件被截断
+      if(file.truncated){
+        throw new Error('文件过大（超过1MB）被截断，且 raw_url 获取失败');
+      }
+      return null;
+    }
+    // 无 raw_url 且 content 为空
+    return null;
+  }
+
+  // 正常情况：content 未被截断，直接使用
+  return file.content;
+}
+
+/**
+ * 安全 JSON 解析：捕获截断导致的解析错误，提供更有用的错误信息
+ * @param {string} text - JSON 文本
+ * @param {string} context - 上下文描述（如"用户数据"、"题库数据"）
+ * @returns {Object} 解析后的对象
+ */
+function safeJsonParse(text, context){
+  if(!text || typeof text !== 'string'){
+    throw new Error(`${context||'数据'}为空，无法解析`);
+  }
+  try{
+    return JSON.parse(text);
+  }catch(e){
+    const msg = e.message || '';
+    const sizeKB = Math.round(text.length / 1024);
+    // 截断类错误：内容不完整
+    if(msg.includes('Unterminated') || msg.includes('Unexpected end') || msg.includes('Unexpected token')){
+      throw new Error(`${context||'数据'}解析失败：内容可能被截断（${sizeKB}KB）。建议通过 raw_url 重新获取或检查网络连接。`);
+    }
+    throw new Error(`${context||'数据'}解析失败：${msg}（${sizeKB}KB）`);
+  }
+}
+
 /* 上传：只上传当前用户+当前设备的数据（不含题目库） */
 async function syncToCloud(){
   const token = localStorage.getItem('xuecheng_gist_token');
@@ -3375,7 +3442,7 @@ async function syncToCloud(){
   };
   
   const fileName = getUserGistFileName(currentUserId);
-  const content = JSON.stringify(data, null, 2);
+  const content = JSON.stringify(data);
   const gistId = getUserGistId(currentUserId);
   
   // 如果已有该用户的 Gist，尝试更新对应文件；否则创建新 Gist
@@ -3461,9 +3528,12 @@ async function syncFromCloud(){
   
   for(const fileName of deviceFiles){
     const file = gist.files[fileName];
-    if(!file || !file.content) continue;
+    if(!file) continue;
     
-    const data = JSON.parse(file.content);
+    const content = await fetchGistFileContent(file, token);
+    if(!content) continue;
+    
+    const data = safeJsonParse(content, '用户数据');
     if(data.deviceLabel) deviceList.push(data.deviceLabel + (data.deviceId === currentDevId ? '（本机）' : ''));
     
     // 恢复用户列表
@@ -3529,7 +3599,7 @@ async function uploadQuestionBankUpdate(){
     totalCount: allQs.length,
     questions: allQs
   };
-  const content = JSON.stringify(data, null, 2);
+  const content = JSON.stringify(data);
 
   // 上传到已有 Gist 的 question_bank.json 文件
   const res = await fetch(`https://api.github.com/gists/${gistId}`, {
@@ -3569,9 +3639,12 @@ async function checkQuestionBankUpdate(){
 
     const gist = await res.json();
     const file = gist.files && gist.files[QB_GIST_FILENAME];
-    if(!file || !file.content) return;
+    if(!file) return;
 
-    const cloudData = JSON.parse(file.content);
+    const content = await fetchGistFileContent(file, token);
+    if(!content) return;
+
+    const cloudData = safeJsonParse(content, '题库数据');
     const cloudVersion = cloudData.version || '';
     const localVersion = getLocalQuestionBankVersion();
 
@@ -3628,10 +3701,13 @@ async function syncSharedNotes(){
   const cloudFile = gist.files && gist.files[SHARED_NOTES_FILENAME];
   let cloudNotes = [];
   let cloudVersion = '';
-  if(cloudFile && cloudFile.content){
-    const cloudData = JSON.parse(cloudFile.content);
-    cloudNotes = cloudData.notes || [];
-    cloudVersion = cloudData.version || '';
+  if(cloudFile){
+    const cloudContent = await fetchGistFileContent(cloudFile, token);
+    if(cloudContent){
+      const cloudData = safeJsonParse(cloudContent, '共享解析');
+      cloudNotes = cloudData.notes || [];
+      cloudVersion = cloudData.version || '';
+    }
   }
 
   // 合并：本地 + 云端，按 ID 去重，按 lastModified 时间戳判断新旧
@@ -3669,7 +3745,7 @@ async function syncSharedNotes(){
     totalCount: mergedNotes.length,
     notes: mergedNotes
   };
-  const content = JSON.stringify(uploadData, null, 2);
+  const content = JSON.stringify(uploadData);
 
   const uploadRes = await fetch(`https://api.github.com/gists/${gistId}`, {
     method:'PATCH',
@@ -3723,9 +3799,12 @@ async function checkSharedNotesUpdate(){
 
     const gist = await res.json();
     const file = gist.files && gist.files[SHARED_NOTES_FILENAME];
-    if(!file || !file.content) return;
+    if(!file) return;
 
-    const cloudData = JSON.parse(file.content);
+    const content = await fetchGistFileContent(file, token);
+    if(!content) return;
+
+    const cloudData = safeJsonParse(content, '共享解析');
     const cloudVersion = cloudData.version || '';
     const localVersion = localStorage.getItem(SHARED_NOTES_VERSION_KEY) || '';
 
@@ -4274,13 +4353,18 @@ async function init(){
             );
             for(const fileName of deviceFiles){
               const file = gist.files[fileName];
-              if(file && file.content){
-                const cloudData = JSON.parse(file.content);
+              if(!file) continue;
+              try{
+                const content = await fetchGistFileContent(file, token);
+                if(!content) continue;
+                const cloudData = safeJsonParse(content, '用户恢复数据');
                 if(cloudData.users && Array.isArray(cloudData.users)){
                   for(const u of cloudData.users){
                     if(u && u.id) await dbAdd('users', u);
                   }
                 }
+              }catch(e2){
+                console.warn('恢复设备文件失败:', fileName, e2.message);
               }
             }
             users = await dbGetAll('users');
