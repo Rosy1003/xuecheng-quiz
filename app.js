@@ -3384,6 +3384,8 @@ async function renderSettings(){
   </div>`;
 
   // 共享解析同步
+  const sharedGistId = getSharedGistId()||'';
+  const sharedGistDisplay = sharedGistId ? sharedGistId.substring(0,8)+'...' : '未创建';
   html += `<div class="home-card" style="margin-bottom:1.2rem">
     <div class="card-title">📝 共享解析同步</div>
     <div class="setting-row">
@@ -3398,11 +3400,19 @@ async function renderSettings(){
         <div class="toggle ${sharedNotesAutoSyncEnabled?'on':''}" data-toggle="sharedNotesAutoSync" onclick="toggleSharedNotesAutoSync()"></div>
       </div>
     </div>
+    <div class="setting-row">
+      <div class="setting-label">共享解析池 Gist ID<div class="sl-desc">所有用户共用同一个 Gist。首次同步自动创建，其他设备/用户粘贴此 ID 即可加入。当前：${escapeHtml(sharedGistDisplay)}</div></div>
+      <div class="setting-control" style="display:flex;gap:.4rem;align-items:center">
+        <input type="text" id="sharedGistIdInput" placeholder="粘贴共享 Gist ID..." value="${escapeHtml(sharedGistId)}" style="padding:.4rem .6rem;border-radius:6px;border:1px solid var(--rule);font-size:.78rem;width:180px;font-family:var(--font)">
+        <button class="btn btn-outline" style="font-size:.72rem;padding:.4rem .6rem" onclick="saveSharedGistIdManual()">关联</button>
+      </div>
+    </div>
     <div style="font-size:.72rem;color:var(--muted);margin-top:.6rem;line-height:1.6">
       📝 你的解析会上传到云端共享池，其他同学同步后可以看到<br>
       👁️ 其他同学的解析为只读，不能编辑或删除<br>
       🔄 每次同步自动合并本地+云端数据，按ID去重，不会丢失<br>
-      📱 应用启动时自动检查并下载新的共享解析
+      📱 应用启动时自动检查并下载新的共享解析<br>
+      💡 首次点击「一键同步」会自动创建共享池，把生成的 Gist ID 分享给其他设备/用户即可
     </div>
   </div>`;
 
@@ -3489,6 +3499,19 @@ function saveManualGistId(){
   renderSettings();
 }
 
+/* 保存共享解析池 Gist ID（所有用户共用） */
+function saveSharedGistIdManual(){
+  const id = document.getElementById('sharedGistIdInput').value.trim();
+  if(id){
+    setSharedGistId(id);
+    alert('✅ 共享解析池 Gist ID 已关联\n现在可以点击「一键同步」上传/下载共享解析');
+  } else {
+    localStorage.removeItem('xuecheng_shared_gist_id');
+    alert('共享解析池 Gist ID 已清除');
+  }
+  renderSettings();
+}
+
 /* 获取当前设备的唯一ID（每个设备独立，存储在localStorage） */
 function getDeviceId(){
   let id = localStorage.getItem('xuecheng_device_id');
@@ -3525,6 +3548,14 @@ function getUserGistId(userId){
 /* 保存当前用户的 Gist ID */
 function setUserGistId(userId, gistId){
   localStorage.setItem(`xuecheng_gist_id_user_${userId}`, gistId);
+}
+
+/* ====== 共享解析专用 Gist ID（所有用户共用同一个 Gist） ====== */
+function getSharedGistId(){
+  return localStorage.getItem('xuecheng_shared_gist_id');
+}
+function setSharedGistId(gistId){
+  localStorage.setItem('xuecheng_shared_gist_id', gistId);
 }
 
 /* ==========================================================
@@ -3916,15 +3947,48 @@ async function downloadSharedNotesFromGist(gist, token){
   return { notes: allNotes, version: mainData.version || '' };
 }
 
-/* 一键同步共享解析：上传本地解析 + 下载云端全量解析并合并 */
+/* 一键同步共享解析：上传本地解析 + 下载云端全量解析并合并
+ * 使用独立的共享 Gist（所有用户共用），与个人数据 Gist 分离
+ * 首次同步时自动创建共享 Gist，后续用户只需输入同一个 Gist ID
+ */
 async function syncSharedNotes(){
   const token = localStorage.getItem('xuecheng_gist_token');
   if(!token) throw new Error('请先在云同步设置中配置 GitHub Token');
-  const gistId = getUserGistId(currentUserId);
-  if(!gistId) throw new Error('请先在云同步中上传一次用户数据以创建 Gist');
+
+  let gistId = getSharedGistId();
+  let newlyCreatedGistId = null;
 
   // 收集本地所有解析
   const localNotes = await dbGetAll('notes');
+
+  // 首次同步：如果没有共享 Gist ID，创建一个新的共享 Gist
+  if(!gistId){
+    const newVersion = new Date().toISOString();
+    const initialContent = JSON.stringify({ version: newVersion, totalCount: 0, notes: [] });
+    const createRes = await fetch('https://api.github.com/gists', {
+      method:'POST',
+      headers:{
+        'Authorization':`token ${token}`,
+        'Content-Type':'application/json',
+        'Accept':'application/vnd.github.v3+json'
+      },
+      body: JSON.stringify({
+        description:'学成选择题 · 共享解析池（多用户多设备）',
+        public:false,
+        files:{ [SHARED_NOTES_FILENAME]:{ content: initialContent } }
+      })
+    });
+    if(!createRes.ok){
+      const err = await createRes.json().catch(()=>({}));
+      throw new Error(err.message||`创建共享Gist失败: HTTP ${createRes.status}`);
+    }
+    const newGist = await createRes.json();
+    gistId = newGist.id;
+    setSharedGistId(gistId);
+    newlyCreatedGistId = gistId;
+    // 提示用户把此 ID 分享给其他设备/用户
+    showSyncToast(`✅ 已创建共享解析池，请将 Gist ID 分享给其他设备/用户`, 'success');
+  }
 
   // 下载云端现有数据
   const res = await fetch(`https://api.github.com/gists/${gistId}`, {
@@ -4043,15 +4107,16 @@ async function syncSharedNotes(){
     uploaded: localNotes.length,
     newFromLocal,
     newFromCloud,
-    totalMerged: mergedNotes.length
+    totalMerged: mergedNotes.length,
+    sharedGistId: newlyCreatedGistId
   };
 }
 
-/* 启动时静默检查共享解析更新 */
+/* 启动时静默检查共享解析更新（使用共享 Gist ID） */
 async function checkSharedNotesUpdate(){
   const token = localStorage.getItem('xuecheng_gist_token');
   if(!token) return;
-  const gistId = getUserGistId(currentUserId);
+  const gistId = getSharedGistId();
   if(!gistId) return;
 
   try{
@@ -4097,8 +4162,8 @@ async function checkSharedNotesUpdate(){
 async function syncSharedNotesSilent(){
   const token = localStorage.getItem('xuecheng_gist_token');
   if(!token) return;
-  const gistId = getUserGistId(currentUserId);
-  if(!gistId) return;
+  // 共享解析使用独立的 Gist，不再依赖个人 Gist ID
+  // syncSharedNotes() 内部会在无共享 Gist ID 时自动创建
   try{
     const stats = await syncSharedNotes();
     showSyncToast(`📝 共享解析已同步（↑${stats.uploaded} ↓${stats.newFromCloud}新）`, 'success');
@@ -4119,7 +4184,11 @@ async function quickSync(){
     // 同时同步共享解析
     try{
       const stats = await syncSharedNotes();
-      alert(`☁️ 同步成功！\n\n个人数据已上传\n共享解析：上传 ${stats.uploaded} 条，下载 ${stats.newFromCloud} 条新解析`);
+      let syncMsg = `☁️ 同步成功！\n\n个人数据已上传\n共享解析：上传 ${stats.uploaded} 条，下载 ${stats.newFromCloud} 条新解析`;
+      if(stats.sharedGistId){
+        syncMsg += `\n\n🔑 共享解析池已创建！Gist ID: ${stats.sharedGistId}\n请将此 ID 复制到其他设备/用户。`;
+      }
+      alert(syncMsg);
     }catch(e2){
       alert('☁️ 个人数据同步成功！\n共享解析同步失败：'+e2.message);
     }
@@ -4157,7 +4226,11 @@ async function handleSyncSharedNotes(){
   if(btn){ btn.disabled = true; btn.textContent = '⏳ 同步中...'; }
   try{
     const stats = await syncSharedNotes();
-    alert(`✅ 共享解析同步完成\n\n上传：${stats.uploaded} 条（新增 ${stats.newFromLocal} 条到云端）\n下载：${stats.newFromCloud} 条其他同学的解析\n合并后云端共 ${stats.totalMerged} 条`);
+    let msg = `✅ 共享解析同步完成\n\n上传：${stats.uploaded} 条（新增 ${stats.newFromLocal} 条到云端）\n下载：${stats.newFromCloud} 条其他同学的解析\n合并后云端共 ${stats.totalMerged} 条`;
+    if(stats.sharedGistId){
+      msg += `\n\n🔑 共享解析池已创建！\nGist ID: ${stats.sharedGistId}\n\n请将此 ID 复制到其他设备/用户的「共享解析池 Gist ID」输入框中，即可共享解析。`;
+    }
+    alert(msg);
     // 如果当前在解析页则刷新
     if(document.getElementById('panel-notes') && document.getElementById('panel-notes').classList.contains('active')){
       renderNotes();
