@@ -8,7 +8,7 @@
  *   3. 其他设备打开网页时会自动检测到新版本，弹出更新提示
  * ========================================================== */
 
-const CACHE_VERSION = 'v3';  // ← 每次勘误后修改此版本号
+const CACHE_VERSION = 'v4';  // ← 每次勘误后修改此版本号
 const CACHE_NAME = `xuecheng-cache-${CACHE_VERSION}`;
 const ASSETS_TO_CACHE = [
   './',

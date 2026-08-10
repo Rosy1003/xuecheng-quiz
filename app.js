@@ -535,8 +535,9 @@ let noteFilterSubject = 'all';
 let noteFilterSystem = 'all';
 let noteFilterAuthor = 'all';
 let autoSyncEnabled = false;
-let sharedNotesAutoSyncEnabled = false;
+let sharedNotesAutoSyncEnabled = true;
 let isSyncing = false;          // 同步锁，防止并发竞态
+let isSharedNotesSyncing = false; // 共享解析同步锁
 let pendingSyncTimer = null;    // 防抖定时器
 let pendingSharedSyncTimer = null; // 共享解析防抖定时器
 let shuffleOptionsEnabled = false;
@@ -3411,8 +3412,10 @@ async function renderSettings(){
       📝 你的解析会上传到云端共享池，其他同学同步后可以看到<br>
       👁️ 其他同学的解析为只读，不能编辑或删除<br>
       🔄 每次同步自动合并本地+云端数据，按ID去重，不会丢失<br>
-      📱 应用启动时自动检查并下载新的共享解析<br>
-      💡 首次点击「一键同步」会自动创建共享池，把生成的 Gist ID 分享给其他设备/用户即可
+      🚀 <strong>应用启动时自动双向同步</strong>：下载最新解析 + 上传本地新增<br>
+      ⚡ 保存/编辑解析后自动上传（防抖5秒，开启上方开关即可）<br>
+      👀 切回页面时自动增量检查新解析<br>
+      💡 首次同步会自动创建共享池，把生成的 Gist ID 分享给其他设备/用户即可
     </div>
   </div>`;
 
@@ -4162,6 +4165,8 @@ async function checkSharedNotesUpdate(){
 async function syncSharedNotesSilent(){
   const token = localStorage.getItem('xuecheng_gist_token');
   if(!token) return;
+  if(isSharedNotesSyncing) return; // 同步锁：已有同步在进行中，跳过
+  isSharedNotesSyncing = true;
   // 共享解析使用独立的 Gist，不再依赖个人 Gist ID
   // syncSharedNotes() 内部会在无共享 Gist ID 时自动创建
   try{
@@ -4169,6 +4174,8 @@ async function syncSharedNotesSilent(){
     showSyncToast(`📝 共享解析已同步（↑${stats.uploaded} ↓${stats.newFromCloud}新）`, 'success');
   }catch(e){
     console.warn('共享解析同步失败', e);
+  }finally{
+    isSharedNotesSyncing = false;
   }
 }
 
@@ -4756,8 +4763,9 @@ async function init(){
     }
   }
 
-  // 启动时静默检查共享解析更新（不依赖autoSync开关，独立运行）
-  checkSharedNotesUpdate();
+  // 启动时自动双向同步共享解析（不依赖任何开关，静默执行）
+  // 下载云端最新解析 + 上传本地新增解析
+  syncSharedNotesSilent();
 
   // 事件监听：点击遮罩关闭弹窗
   const modal = document.getElementById('noteModal');
@@ -4781,6 +4789,10 @@ document.addEventListener('DOMContentLoaded', init);
 window.addEventListener('pagehide', () => { saveQuizDraft(); });
 document.addEventListener('visibilitychange', () => {
   if(document.visibilityState === 'hidden') saveQuizDraft();
+  // 页面重新可见时：增量检查共享解析更新（轻量，仅下载本地没有的）
+  if(document.visibilityState === 'visible'){
+    setTimeout(() => { checkSharedNotesUpdate(); }, 1000);
+  }
 });
 
 /* ====== PWA Service Worker 注册 + 更新检测 ====== */
