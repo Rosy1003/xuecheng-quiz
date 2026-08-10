@@ -1441,6 +1441,14 @@ async function renderAnswerReveal(q){
     if(el){
       el.classList.remove('placed','selected');
       if(correctCats.length===0){
+        // 干扰项：不应放置，未放置=正确，放置了=错误
+        if(userCats.length===0){
+          correctCount++;
+          el.classList.add('correct');
+        } else {
+          wrongCount++;
+          el.classList.add('wrong');
+        }
       } else if(isCorrect){
         correctCount++;
         el.classList.add('correct');
@@ -1452,8 +1460,10 @@ async function renderAnswerReveal(q){
         el.classList.add('wrong');
       }
     } else {
-      if(correctCats.length===0) return;
-      if(isCorrect) correctCount++;
+      if(correctCats.length===0){
+        if(userCats.length===0) correctCount++;
+        else wrongCount++;
+      } else if(isCorrect) correctCount++;
       else if(userCats.length===0) missedCount++;
       else wrongCount++;
     }
@@ -1496,70 +1506,110 @@ async function renderAnswerReveal(q){
   const catNameMap = {};
   q.categories.forEach(c=>{ catNameMap[c.id] = c.label; });
 
-  let optRowsHtml = q.options.map(opt=>{
-    const correctCats = getCorrectCats(q.answer, opt.id);
-    const userCats = quizState.placements[opt.id] || [];
-    // 跳过不属于任何分类且未放置的选项
-    if(correctCats.length===0 && userCats.length===0) return null;
+  // 按分类生成答案卡片
+  let catCardsHtml = q.categories.map((cat,ci)=>{
+    const shouldBeHere = q.options.filter(o=>getCorrectCats(q.answer, o.id).includes(cat.id));
+    const wronglyPlaced = q.options.filter(o=>{
+      const userCats = quizState.placements[o.id] || [];
+      const correctCats = getCorrectCats(q.answer, o.id);
+      return userCats.includes(cat.id) && !correctCats.includes(cat.id);
+    });
 
-    const correctCatNames = correctCats.map(c=>catNameMap[c]||c).join('、');
-    const wrongCats = userCats.filter(c=>!correctCats.includes(c));
-    const missingCats = correctCats.filter(c=>!userCats.includes(c));
+    let allCorrect = true;
+    let hasMissed = false;
+    let hasWrong = false;
+    const rows = [];
 
-    let rowClass, letterClass, statusClass, statusText, noteHtml;
+    // 应在此分类的选项
+    shouldBeHere.forEach(opt=>{
+      const userCats = quizState.placements[opt.id] || [];
+      const placedHere = userCats.includes(cat.id);
 
-    if(correctCats.length===0 && userCats.length>0){
-      // 误放：选项不应归入任何分类，但用户放置了
-      rowClass='wrong'; letterClass='wrong'; statusClass='wrong'; statusText='错误';
-      const userCatNames = userCats.map(uc=>catNameMap[uc]||uc).join('、');
-      noteHtml = `<div class="ar-opt-status ${statusClass}">${statusText}</div>
-        <div class="ar-opt-correct">
-          <span class="strike">误放：${escapeHtml(userCatNames)}</span><br>
-          <span class="arrow r">→</span> <span class="target r">不应放置</span>
-        </div>`;
-    } else if(wrongCats.length>0){
-      // 错误：放置了错误分类
-      rowClass='wrong'; letterClass='wrong'; statusClass='wrong'; statusText='错误';
-      const userCatNames = userCats.map(uc=>catNameMap[uc]||uc).join('、');
-      noteHtml = `<div class="ar-opt-status ${statusClass}">${statusText}</div>
-        <div class="ar-opt-correct">
-          <span class="strike">你的：${escapeHtml(userCatNames)}</span><br>
-          <span class="arrow r">→</span> <span class="target r">${escapeHtml(correctCatNames)}</span>
-        </div>`;
-    } else if(missingCats.length>0 && userCats.length>0){
-      // 部分遗漏：放对了部分，但遗漏了其他分类
-      rowClass='missed'; letterClass='miss'; statusClass='missed'; statusText='部分遗漏';
-      const userCatNames = userCats.map(uc=>catNameMap[uc]||uc).join('、');
-      const missingCatNames = missingCats.map(c=>catNameMap[c]||c).join('、');
-      noteHtml = `<div class="ar-opt-status ${statusClass}">${statusText}</div>
-        <div class="ar-opt-correct">
-          <span>已放：${escapeHtml(userCatNames)}</span><br>
-          <span class="arrow y">→</span> <span class="target y">缺：${escapeHtml(missingCatNames)}</span>
-        </div>`;
-    } else if(missingCats.length>0 && userCats.length===0){
-      // 完全遗漏：未作答
-      rowClass='missed'; letterClass='miss'; statusClass='missed'; statusText='遗漏';
-      noteHtml = `<div class="ar-opt-status ${statusClass}">${statusText}</div>
-        <div class="ar-opt-correct">
-          <span class="arrow y">→</span> <span class="target y">${escapeHtml(correctCatNames)}</span>
-        </div>`;
-    } else {
-      // 正确
-      rowClass='correct'; letterClass='right'; statusClass='correct'; statusText='正确';
-      noteHtml = `<div class="ar-opt-status ${statusClass}">${statusText}</div>
-        <div class="ar-opt-correct">
-          <span class="arrow g">→</span> <span class="target g">${escapeHtml(correctCatNames)}</span>
-        </div>`;
-    }
+      if(placedHere){
+        rows.push(`<div class="ar-opt-row correct">
+          <span class="ar-opt-letter right">${escapeHtml(opt.id)}</span>
+          <div class="ar-opt-body"><div class="ar-opt-text">${escapeHtml(opt.text)}</div></div>
+          <div class="ar-opt-note"><div class="ar-opt-status correct">✓ 正确</div></div>
+        </div>`);
+      } else {
+        allCorrect = false;
+        hasMissed = true;
+        let userPlacementNote = '';
+        if(userCats.length === 0){
+          userPlacementNote = '<span style="color:var(--muted)">未作答</span><br>';
+        } else {
+          const userCatNames = userCats.map(uc=>catNameMap[uc]||uc).join('、');
+          userPlacementNote = `<span class="strike">你放在了：${escapeHtml(userCatNames)}</span><br>`;
+        }
+        rows.push(`<div class="ar-opt-row missed">
+          <span class="ar-opt-letter miss">${escapeHtml(opt.id)}</span>
+          <div class="ar-opt-body"><div class="ar-opt-text">${escapeHtml(opt.text)}</div></div>
+          <div class="ar-opt-note">
+            <div class="ar-opt-status missed">⚠ 遗漏</div>
+            <div class="ar-opt-correct">${userPlacementNote}<span class="arrow y">→</span> <span class="target y">应在此处</span></div>
+          </div>
+        </div>`);
+      }
+    });
 
-    return `<div class="ar-opt-row ${rowClass}">
-      <span class="ar-opt-letter ${letterClass}">${escapeHtml(opt.id)}</span>
-      <div class="ar-opt-body">
-        <div class="ar-opt-text">${escapeHtml(opt.text)}</div>
+    // 错误放在此分类的选项
+    wronglyPlaced.forEach(opt=>{
+      const correctCats = getCorrectCats(q.answer, opt.id);
+      allCorrect = false;
+      hasWrong = true;
+      const correctCatNames = correctCats.map(c=>catNameMap[c]||c).join('、');
+      rows.push(`<div class="ar-opt-row wrong">
+        <span class="ar-opt-letter wrong">${escapeHtml(opt.id)}</span>
+        <div class="ar-opt-body"><div class="ar-opt-text">${escapeHtml(opt.text)}</div></div>
+        <div class="ar-opt-note">
+          <div class="ar-opt-status wrong">✗ 错误</div>
+          <div class="ar-opt-correct"><span class="arrow r">→</span> <span class="target r">应归入：${escapeHtml(correctCatNames)}</span></div>
+        </div>
+      </div>`);
+    });
+
+    const headerClass = allCorrect ? 'ok' : 'no';
+    const statusText = allCorrect ? '✓ 全对' : (hasWrong ? '✗ 有错误' : '⚠ 有遗漏');
+
+    return `<div class="ar-card">
+      <div class="ar-card-header ${headerClass}">
+        <span class="ar-card-num">${ci+1}</span>
+        <span>${escapeHtml(cat.label)}</span>
+        <span class="ar-card-status">${statusText}</span>
       </div>
-      <div class="ar-opt-note">${noteHtml}</div>
+      <div class="ar-card-body">${rows.join('')}</div>
     </div>`;
-  }).filter(Boolean).join('');
+  }).join('');
+
+  // 干扰项卡片
+  const distractors = q.options.filter(o=>getCorrectCats(q.answer, o.id).length===0);
+  if(distractors.length > 0){
+    const distRows = distractors.map(opt=>{
+      const userCats = quizState.placements[opt.id] || [];
+      if(userCats.length === 0){
+        return `<div class="ar-opt-row correct">
+          <span class="ar-opt-letter right">${escapeHtml(opt.id)}</span>
+          <div class="ar-opt-body"><div class="ar-opt-text">${escapeHtml(opt.text)}</div></div>
+          <div class="ar-opt-note">
+            <div class="ar-opt-status correct">✓ 正确</div>
+            <div class="ar-opt-correct"><span class="arrow g">→</span> <span class="target g">不应放置</span></div>
+          </div>
+        </div>`;
+      }
+      return null;
+    }).filter(Boolean).join('');
+
+    if(distRows){
+      catCardsHtml += `<div class="ar-card">
+        <div class="ar-card-header ok">
+          <span class="ar-card-num">×</span>
+          <span>干扰项（不应放置）</span>
+          <span class="ar-card-status">✓ 正确未放置</span>
+        </div>
+        <div class="ar-card-body">${distRows}</div>
+      </div>`;
+    }
+  }
 
   // 查询所有用户的解析（共享模式）
   let userNoteHtml = '';
@@ -1619,10 +1669,10 @@ async function renderAnswerReveal(q){
     </div>
     <div class="ar-legend">
       <div class="ar-legend-item"><span class="ar-legend-dot green"></span>答对</div>
-      <div class="ar-legend-item"><span class="ar-legend-dot red"></span>答错</div>
-      <div class="ar-legend-item"><span class="ar-legend-dot yellow"></span>遗漏</div>
+      <div class="ar-legend-item"><span class="ar-legend-dot red"></span>答错（不应放在此分类）</div>
+      <div class="ar-legend-item"><span class="ar-legend-dot yellow"></span>遗漏（应放在此分类但没放）</div>
     </div>
-    <div class="ar-grid">${optRowsHtml}</div>
+    <div class="ar-grid">${catCardsHtml}</div>
     <div class="ar-note"><strong>💡 解析：</strong>${escapeHtml(q.explanation)}</div>
     ${userNoteHtml}`;
   reveal.classList.add('show');
