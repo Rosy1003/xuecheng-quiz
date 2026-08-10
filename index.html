@@ -568,6 +568,132 @@ body{font-family:var(--font);color:var(--ink);background:var(--bg);line-height:1
 }
 .btn-sm:hover{border-color:var(--accent)}
 
+/* ====== 解析折叠分组 ====== */
+.note-group{
+  margin-bottom:.8rem;
+  border:1px solid var(--rule);
+  border-radius:var(--radius-sm);
+  overflow:hidden;
+  background:var(--surface);
+}
+.note-group-header{
+  display:flex;align-items:center;
+  padding:.6rem 1rem;cursor:pointer;
+  background:var(--surface-solid);
+  transition:background .2s;user-select:none;
+  -webkit-user-select:none;
+}
+.note-group-header:hover{background:var(--accent-bg)}
+.note-group-toggle{
+  font-size:.7rem;margin-right:.5rem;
+  transition:transform .25s ease;
+  color:var(--muted);display:inline-block;
+}
+.note-group.open .note-group-toggle{transform:rotate(90deg)}
+.note-group-icon{font-size:1rem;margin-right:.5rem}
+.note-group-name{font-weight:600;flex:1;font-size:.9rem}
+.note-group-count{
+  font-size:.68rem;color:var(--muted);
+  background:var(--accent-bg);
+  padding:2px 8px;border-radius:999px;font-weight:600;
+  flex-shrink:0;
+}
+
+/* 科目折叠时隐藏系统子分组 */
+.note-group:not(.open) > .note-sub-group{display:none}
+
+/* 系统子分组 */
+.note-sub-group{
+  margin-left:1rem;
+  border-left:2px solid var(--rule);
+}
+.note-sub-header{
+  display:flex;align-items:center;
+  padding:.45rem .8rem;cursor:pointer;
+  transition:background .2s;user-select:none;
+  -webkit-user-select:none;
+}
+.note-sub-header:hover{background:var(--accent-bg)}
+.note-sub-toggle{
+  font-size:.65rem;margin-right:.4rem;
+  transition:transform .25s ease;
+  color:var(--muted);display:inline-block;
+}
+.note-sub-group.open .note-sub-toggle{transform:rotate(90deg)}
+.note-sub-name{font-size:.85rem;flex:1;font-weight:500}
+.note-sub-count{
+  font-size:.62rem;color:var(--muted);
+  background:var(--accent-bg);
+  padding:1px 6px;border-radius:999px;
+  flex-shrink:0;
+}
+
+/* 解析卡片容器折叠动画 */
+.note-sub-notes{
+  max-height:0;overflow:hidden;
+  transition:max-height .3s ease,padding .2s;
+  padding:0 .5rem;
+}
+.note-sub-group.open > .note-sub-notes{
+  max-height:2000px;
+  padding:.4rem .5rem .6rem;
+}
+
+/* 分组内卡片样式调整 */
+.note-sub-notes .note-card{
+  margin-bottom:.5rem;
+  background:var(--surface-solid);
+  border-radius:var(--radius-sm);
+}
+
+/* ====== 解析页响应式适配 ====== */
+
+/* 平板端 768-1023px */
+@media (max-width:1023px){
+  .note-group-header{padding:.5rem .8rem}
+  .note-group-name{font-size:.85rem}
+  .note-group-icon{font-size:.9rem}
+  .note-sub-group{margin-left:.8rem}
+  .note-sub-header{padding:.4rem .6rem}
+  .note-sub-name{font-size:.8rem}
+  .note-sub-group.open > .note-sub-notes{padding:.3rem .4rem .5rem}
+  .note-sub-notes .note-card{padding:1rem}
+  .note-card .nc-thumb{width:72px;height:72px}
+}
+
+/* 手机端 <768px */
+@media (max-width:768px){
+  .note-group{margin-bottom:.5rem}
+  .note-group-header{padding:.45rem .7rem}
+  .note-group-name{font-size:.8rem}
+  .note-group-icon{font-size:.85rem}
+  .note-group-count{font-size:.6rem;padding:1px 6px}
+  .note-group-toggle{font-size:.65rem}
+
+  .note-sub-group{margin-left:.5rem}
+  .note-sub-header{padding:.35rem .5rem}
+  .note-sub-name{font-size:.75rem}
+  .note-sub-count{font-size:.55rem;padding:0 5px}
+  .note-sub-toggle{font-size:.6rem}
+  .note-sub-group.open > .note-sub-notes{padding:.3rem .3rem .4rem}
+
+  .note-sub-notes .note-card{
+    padding:.7rem .8rem;margin-bottom:.4rem;
+    border-radius:8px;
+  }
+  .note-card .nc-title{font-size:.82rem}
+  .note-card .nc-thumb{width:60px;height:60px}
+  .btn-sm{padding:.2rem .5rem;font-size:.65rem}
+
+  /* 筛选栏横向滚动 */
+  #notesContent .filter-bar{
+    flex-wrap:nowrap;overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    padding-bottom:.3rem;
+  }
+  #notesContent .filter-pill{flex-shrink:0}
+}
+
 /* ====== 复习模式选择器 ====== */
 .mode-selector{
   display:flex;gap:.6rem;margin-bottom:1.2rem;flex-wrap:wrap;
