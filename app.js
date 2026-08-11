@@ -1272,6 +1272,7 @@ async function renderQuestion(){
         <div style="font-size:.85rem;color:var(--muted);margin-bottom:1rem">${escapeHtml(q.description)}</div>
         <div class="matching-layout">
           <div class="option-pool expanded" id="optionPoolContainer">
+            <div class="pool-handle" onclick="event.stopPropagation();toggleOptionPool()"><div class="pool-handle-bar"></div></div>
             <div class="pool-title" onclick="toggleOptionPool()">
               📋 选项池（可多选 → 点击分类批量放入）
               <span class="pool-sel-badge" id="poolSelBadge" style="display:none">已选 0</span>
@@ -1855,6 +1856,7 @@ async function renderSubMatching(q, el, info){
         <div style="font-size:.85rem;color:var(--muted);margin-bottom:1rem">${escapeHtml(q.description)}</div>
         <div class="sm-layout">
           <div class="sm-option-pool expanded" id="optionPoolContainer">
+            <div class="pool-handle" onclick="event.stopPropagation();toggleOptionPool()"><div class="pool-handle-bar"></div></div>
             <div class="pool-title" onclick="toggleOptionPool()">
               📋 选项池（可多选 → 点击题目批量放入）
               <span class="pool-sel-badge" id="poolSelBadge" style="display:none">已选 0</span>
