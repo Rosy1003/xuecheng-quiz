@@ -521,7 +521,7 @@ let currentSubject = null;
 let currentSystem = null;
 let currentQuestions = [];
 let currentQuestionIndex = 0;
-let quizState = { selectedOption:null, placements:{}, answered:false };
+let quizState = { selectedOptions:[], placements:{}, answered:false };
 let allQuestions = [];
 let currentChapterName = null;
 let draftProgress = {}; // 按题目存储进度: { questionId: { placements:{...}, answered:false } }
@@ -1216,11 +1216,12 @@ async function renderQuestion(){
     el.innerHTML = '<div class="empty-state"><div class="es-icon">📭</div><p>该章节暂无题目</p></div>';
     return;
   }
-  // 从 draftProgress 恢复当前题目的作答状态
+  // 从 draftProgress 恢复当前题目的作答状态（包含 correct 字段，防止状态丢失）
   const saved = draftProgress[q.id];
   const savedPlacements = saved ? saved.placements : null;
   const wasAnswered = saved ? saved.answered : false;
-  quizState = { selectedOption:null, placements: savedPlacements ? {...savedPlacements} : {}, answered: wasAnswered };
+  const savedCorrect = saved ? saved.correct : undefined;
+  quizState = { selectedOptions:[], placements: savedPlacements ? {...savedPlacements} : {}, answered: wasAnswered, correct: savedCorrect };
   const progress = currentQuestions.length>0 ? ((currentQuestionIndex+1)/currentQuestions.length*100).toFixed(0) : 0;
   
   // 打乱选项顺序（仅影响显示，不影响答案判定，因答案按 ID 映射）
@@ -1270,8 +1271,13 @@ async function renderQuestion(){
         </div>
         <div style="font-size:.85rem;color:var(--muted);margin-bottom:1rem">${escapeHtml(q.description)}</div>
         <div class="matching-layout">
-          <div class="option-pool">
-            <div class="pool-title">📋 选项池（点击选项 → 依次点击多个分类卡片放入，同一选项可放入多个分类）</div>
+          <div class="option-pool expanded" id="optionPoolContainer">
+            <div class="pool-title" onclick="toggleOptionPool()">
+              📋 选项池（可多选 → 点击分类批量放入）
+              <span class="pool-sel-badge" id="poolSelBadge" style="display:none">已选 0</span>
+              <button class="pool-clear-btn" id="poolClearBtn" style="display:none" onclick="clearOptionSelection(event)">清除选择</button>
+              <span class="pool-toggle-icon">▲</span>
+            </div>
             <div class="pool-items" id="optionPool"></div>
           </div>
           <div class="category-area" id="categoryArea">
@@ -1281,6 +1287,7 @@ async function renderQuestion(){
                   <span class="q-icon">${i+1}</span>
                   ${escapeHtml(cat.label)}
                   <span class="cat-status" id="cat-status-${cat.id}"></span>
+                  ${wasAnswered?'':`<button class="cat-clear-btn" onclick="clearCategory(event,'${cat.id}')">清空</button>`}
                 </div>
                 <div class="placed-list" id="placed-${cat.id}"></div>
               </div>
@@ -1336,7 +1343,7 @@ function updateMatchingUI(){
       let cls = 'option-item';
       const placedCats = quizState.placements[opt.id] || [];
       if(placedCats.length>0) cls += ' placed';
-      if(quizState.selectedOption===opt.id) cls += ' selected';
+      if(quizState.selectedOptions && quizState.selectedOptions.includes(opt.id)) cls += ' selected';
       const badge = placedCats.length>0 ? `<span class="placement-badge">已放${placedCats.length}个</span>` : '';
       return `<div class="${cls}" data-opt="${opt.id}" onclick="selectOption('${opt.id}')">
         <span class="opt-letter">${opt.id}</span><span>${escapeHtml(opt.text)}</span>${badge}
@@ -1344,13 +1351,26 @@ function updateMatchingUI(){
     }).join('');
   }
 
+  // 更新选择徽章和清除按钮
+  const selCount = quizState.selectedOptions ? quizState.selectedOptions.length : 0;
+  const badge = document.getElementById('poolSelBadge');
+  const clearBtn = document.getElementById('poolClearBtn');
+  if(badge){
+    badge.textContent = `已选 ${selCount}`;
+    badge.style.display = selCount > 0 ? '' : 'none';
+  }
+  if(clearBtn){
+    clearBtn.style.display = selCount > 0 ? '' : 'none';
+  }
+
   // 分类卡片
   q.categories.forEach(cat=>{
     const card = document.getElementById('cat-'+cat.id);
     if(!card) return;
+    const hasSelection = quizState.selectedOptions && quizState.selectedOptions.length > 0;
     if(quizState.answered){
       card.classList.remove('active-target');
-    } else if(quizState.selectedOption){
+    } else if(hasSelection){
       card.classList.add('active-target');
     } else {
       card.classList.remove('active-target');
@@ -1392,11 +1412,12 @@ function updateMatchingUI(){
 
 function selectOption(optId){
   if(quizState.answered) return;
-  // 再次点击同一个取消选中
-  if(quizState.selectedOption===optId){
-    quizState.selectedOption = null;
+  if(!quizState.selectedOptions) quizState.selectedOptions = [];
+  const idx = quizState.selectedOptions.indexOf(optId);
+  if(idx >= 0){
+    quizState.selectedOptions.splice(idx, 1);
   } else {
-    quizState.selectedOption = optId;
+    quizState.selectedOptions.push(optId);
   }
   updateMatchingUI();
 }
@@ -1409,13 +1430,14 @@ function getCorrectCats(answer, optId){
 
 function selectCategory(catId){
   if(quizState.answered) return;
-  if(!quizState.selectedOption) return;
-  const optId = quizState.selectedOption;
-  if(!quizState.placements[optId]) quizState.placements[optId] = [];
-  if(!quizState.placements[optId].includes(catId)){
-    quizState.placements[optId].push(catId);
-  }
-  quizState.selectedOption = null;
+  if(!quizState.selectedOptions || quizState.selectedOptions.length===0) return;
+  quizState.selectedOptions.forEach(optId=>{
+    if(!quizState.placements[optId]) quizState.placements[optId] = [];
+    if(!quizState.placements[optId].includes(catId)){
+      quizState.placements[optId].push(catId);
+    }
+  });
+  quizState.selectedOptions = [];
   updateMatchingUI();
   saveQuizDraft();
 }
@@ -1427,6 +1449,33 @@ function removePlacement(catId, optId){
   if(quizState.placements[optId].length === 0) delete quizState.placements[optId];
   updateMatchingUI();
   saveQuizDraft();
+}
+
+function clearOptionSelection(e){
+  if(e) e.stopPropagation();
+  quizState.selectedOptions = [];
+  const q = currentQuestions[currentQuestionIndex];
+  if(q && q.type === 'sub-matching'){
+    updateSubMatchingUI(q);
+  } else {
+    updateMatchingUI();
+  }
+}
+
+function clearCategory(e, catId){
+  if(e) e.stopPropagation();
+  if(quizState.answered) return;
+  Object.keys(quizState.placements).forEach(optId=>{
+    quizState.placements[optId] = quizState.placements[optId].filter(c => c !== catId);
+    if(quizState.placements[optId].length === 0) delete quizState.placements[optId];
+  });
+  updateMatchingUI();
+  saveQuizDraft();
+}
+
+function toggleOptionPool(){
+  const container = document.getElementById('optionPoolContainer');
+  if(container) container.classList.toggle('expanded');
 }
 
 /* === 答案揭示渲染（从 submitAnswer 提取，可复用于已提交题目恢复） === */
@@ -1761,7 +1810,7 @@ async function renderSubMatching(q, el, info){
     quizState.activeTab = 0;
     quizState.subCorrect = false;
   }
-  quizState.selectedOption = null;
+  quizState.selectedOptions = [];
   
   // 打乱选项顺序
   if(shuffleOptionsEnabled && q.options && q.options.length>1){
@@ -1805,8 +1854,13 @@ async function renderSubMatching(q, el, info){
         </div>
         <div style="font-size:.85rem;color:var(--muted);margin-bottom:1rem">${escapeHtml(q.description)}</div>
         <div class="sm-layout">
-          <div class="sm-option-pool">
-            <div class="pool-title">📋 选项池（固定不变，所有Tab共享）</div>
+          <div class="sm-option-pool expanded" id="optionPoolContainer">
+            <div class="pool-title" onclick="toggleOptionPool()">
+              📋 选项池（可多选 → 点击题目批量放入）
+              <span class="pool-sel-badge" id="poolSelBadge" style="display:none">已选 0</span>
+              <button class="pool-clear-btn" id="poolClearBtn" style="display:none" onclick="clearOptionSelection(event)">清除选择</button>
+              <span class="pool-toggle-icon">▲</span>
+            </div>
             <div class="pool-items" id="optionPool"></div>
           </div>
           <div class="sm-tab-bar" id="smTabBar"></div>
@@ -1860,11 +1914,30 @@ function updateSubMatchingUI(q){
     const displayOpts = q._displayOptions || q.options;
     pool.innerHTML = displayOpts.map(opt=>{
       let cls = 'option-item';
-      if(quizState.selectedOption===opt.id) cls += ' selected';
+      if(quizState.selectedOptions && quizState.selectedOptions.includes(opt.id)) cls += ' selected';
+      // 统计该选项已被放入多少个子题
+      let placedCount = 0;
+      Object.values(quizState.subPlacements).forEach(arr=>{
+        if(arr && arr.includes(opt.id)) placedCount++;
+      });
+      if(placedCount > 0) cls += ' placed';
+      const badge = placedCount > 0 ? `<span class="placement-badge">已放${placedCount}题</span>` : '';
       return `<div class="${cls}" data-opt="${opt.id}" onclick="selectSubOption('${opt.id}')">
-        <span class="opt-letter">${opt.id}</span><span>${escapeHtml(opt.text)}</span>
+        <span class="opt-letter">${opt.id}</span><span>${escapeHtml(opt.text)}</span>${badge}
       </div>`;
     }).join('');
+  }
+
+  // 更新选择徽章和清除按钮
+  const selCount = quizState.selectedOptions ? quizState.selectedOptions.length : 0;
+  const badge = document.getElementById('poolSelBadge');
+  const clearBtn = document.getElementById('poolClearBtn');
+  if(badge){
+    badge.textContent = `已选 ${selCount}`;
+    badge.style.display = selCount > 0 ? '' : 'none';
+  }
+  if(clearBtn){
+    clearBtn.style.display = selCount > 0 ? '' : 'none';
   }
   
   // Tab栏
@@ -1895,7 +1968,7 @@ function updateSubMatchingUI(q){
       const placements = quizState.subPlacements[key] || [];
       const isCorrect = isAnswered && isSubCorrect(q, g.id, si);
       
-      html += `<div class="sm-sub-item${isAnswered?' locked':''}${quizState.selectedOption?' has-selected':''}">`;
+      html += `<div class="sm-sub-item${isAnswered?' locked':''}${(quizState.selectedOptions && quizState.selectedOptions.length > 0)?' has-selected':''}">`;
       html += `<span class="sm-sub-num">${si+1}</span>`;
       html += `<span class="sm-sub-prompt">${escapeHtml(sq.prompt)}</span>`;
       html += `<div class="sm-sub-slots">`;
@@ -1922,8 +1995,8 @@ function updateSubMatchingUI(q){
           const opt = q.options.find(o=>o.id===p);
           html += `<span class="sm-slot" onclick="removeFromSubSlot('${g.id}',${si},'${p}')"><span class="slot-letter">${p}</span><span class="slot-remove">✕</span></span>`;
         });
-        if(quizState.selectedOption){
-          html += `<span class="sm-empty-slot" onclick="placeInSubSlot('${g.id}',${si})">点击放入</span>`;
+        if(quizState.selectedOptions && quizState.selectedOptions.length > 0){
+          html += `<span class="sm-empty-slot" onclick="placeInSubSlot('${g.id}',${si})">点击放入 (${quizState.selectedOptions.length}个)</span>`;
         } else {
           html += `<span class="sm-empty-slot">选选项后放入</span>`;
         }
@@ -1986,10 +2059,12 @@ function updateSubMatchingUI(q){
 
 function selectSubOption(optId){
   if(quizState.answered) return;
-  if(quizState.selectedOption === optId){
-    quizState.selectedOption = null;
+  if(!quizState.selectedOptions) quizState.selectedOptions = [];
+  const idx = quizState.selectedOptions.indexOf(optId);
+  if(idx >= 0){
+    quizState.selectedOptions.splice(idx, 1);
   } else {
-    quizState.selectedOption = optId;
+    quizState.selectedOptions.push(optId);
   }
   const q = currentQuestions[currentQuestionIndex];
   updateSubMatchingUI(q);
@@ -1997,14 +2072,16 @@ function selectSubOption(optId){
 
 function placeInSubSlot(groupId, subIdx){
   if(quizState.answered) return;
-  if(!quizState.selectedOption) return;
+  if(!quizState.selectedOptions || quizState.selectedOptions.length===0) return;
   const q = currentQuestions[currentQuestionIndex];
   const key = `${groupId}_${subIdx}`;
   if(!quizState.subPlacements[key]) quizState.subPlacements[key] = [];
-  if(!quizState.subPlacements[key].includes(quizState.selectedOption)){
-    quizState.subPlacements[key].push(quizState.selectedOption);
-  }
-  quizState.selectedOption = null;
+  quizState.selectedOptions.forEach(optId=>{
+    if(!quizState.subPlacements[key].includes(optId)){
+      quizState.subPlacements[key].push(optId);
+    }
+  });
+  quizState.selectedOptions = [];
   updateSubMatchingUI(q);
   saveQuizDraft();
 }
@@ -2203,11 +2280,10 @@ function toggleQuizCard(){
 
 function getQuestionCardStatus(qId){
   const saved = draftProgress[qId];
+  // 未保存或未提交 → 灰色（未做）
   if(!saved || !saved.answered) return 'unanswered';
-  if(saved.correct) return 'correct';
-  // 对于 sub-matching，检查 subCorrect
-  if(saved.correct !== undefined) return saved.correct ? 'correct' : 'wrong';
-  return 'wrong';
+  // 已提交 → 根据 correct 字段判断绿/红
+  return saved.correct ? 'correct' : 'wrong';
 }
 
 function renderQuizCardGrid(){
