@@ -3669,7 +3669,8 @@ async function fetchGistFileContent(file, token){
     if(file.raw_url){
       try{
         const rawRes = await fetch(file.raw_url, {
-          headers: token ? { 'Authorization':`token ${token}`, 'Accept':'application/vnd.github.v3.raw' } : {}
+          headers: token ? { 'Authorization':`token ${token}`, 'Accept':'application/vnd.github.v3.raw' } : {},
+          cache: 'no-store'
         });
         if(rawRes.ok){
           return await rawRes.text();
@@ -3793,7 +3794,8 @@ async function syncFromCloud(){
   if(!gistId) throw new Error('请先上传一次以创建云端备份');
   
   const res = await fetch(`https://api.github.com/gists/${gistId}`, {
-    headers:{ 'Authorization':`token ${token}`, 'Accept':'application/vnd.github.v3+json' }
+    headers:{ 'Authorization':`token ${token}`, 'Accept':'application/vnd.github.v3+json' },
+    cache: 'no-store'
   });
   if(!res.ok){
     const err = await res.json().catch(()=>({}));
@@ -3934,7 +3936,8 @@ async function checkQuestionBankUpdate(){
     showUpdateBanner('checking');
 
     const res = await fetch(`https://api.github.com/gists/${gistId}`, {
-      headers:{ 'Authorization':`token ${token}`, 'Accept':'application/vnd.github.v3+json' }
+      headers:{ 'Authorization':`token ${token}`, 'Accept':'application/vnd.github.v3+json' },
+      cache: 'no-store'
     });
     if(!res.ok){
       showUpdateBanner('hidden');
@@ -4133,7 +4136,8 @@ async function syncSharedNotes(){
 
   // 下载云端现有数据
   const res = await fetch(`https://api.github.com/gists/${gistId}`, {
-    headers:{ 'Authorization':`token ${token}`, 'Accept':'application/vnd.github.v3+json' }
+    headers:{ 'Authorization':`token ${token}`, 'Accept':'application/vnd.github.v3+json' },
+    cache: 'no-store'  // 防止浏览器缓存旧响应
   });
   if(!res.ok) throw new Error(`下载失败: HTTP ${res.status}`);
 
@@ -4181,59 +4185,105 @@ async function syncSharedNotes(){
   const newFromLocal = localNotes.filter(n => !cloudNotes.some(c => c.id === n.id)).length;
   const newFromCloud = cloudNotes.filter(n => !localNotes.some(l => l.id === n.id)).length;
 
-  // 上传合并后的全量数据（自动分块：超过 800KB 则拆分为多个文件）
-  const filesPayload = {};
+  // 上传合并后的全量数据
+  // 【关键修复】分块模式下逐块上传，避免单次请求 payload 过大被 GitHub 拒绝
   const mergedContent = JSON.stringify({ version: newVersion, totalCount: mergedNotes.length, notes: mergedNotes });
   const mergedBytes = getUtf8ByteLength(mergedContent);
 
   if(mergedBytes <= SHARED_NOTES_CHUNK_MAX_BYTES){
-    // 非分块模式：单个文件
+    // 非分块模式：单个文件一次上传
+    const filesPayload = {};
     filesPayload[SHARED_NOTES_FILENAME] = { content: mergedContent };
-    // 清理可能存在的旧分块文件
     for(let i = 1; i <= 20; i++){
-      const chunkName = `${SHARED_NOTES_CHUNK_PREFIX}${i}.json`;
-      if(gist.files && gist.files[chunkName]){
-        filesPayload[chunkName] = null; // null = 删除该文件
-      }
-    }
-  } else {
-    // 分块模式：拆分为多个文件
-    const chunks = splitNotesIntoChunks(mergedNotes, SHARED_NOTES_CHUNK_MAX_BYTES);
-    // 主文件存元数据
-    filesPayload[SHARED_NOTES_FILENAME] = {
-      content: JSON.stringify({ version: newVersion, chunked: true, chunkCount: chunks.length, totalNotes: mergedNotes.length })
-    };
-    // 各分块文件
-    chunks.forEach((chunkNotes, i) => {
-      const chunkName = `${SHARED_NOTES_CHUNK_PREFIX}${i + 1}.json`;
-      filesPayload[chunkName] = {
-        content: JSON.stringify({ chunkIndex: i + 1, notes: chunkNotes })
-      };
-    });
-    // 清理多余的旧分块文件
-    for(let i = chunks.length + 1; i <= 20; i++){
       const chunkName = `${SHARED_NOTES_CHUNK_PREFIX}${i}.json`;
       if(gist.files && gist.files[chunkName]){
         filesPayload[chunkName] = null;
       }
     }
-  }
+    const uploadRes = await fetch(`https://api.github.com/gists/${gistId}`, {
+      method:'PATCH',
+      headers:{
+        'Authorization':`token ${token}`,
+        'Content-Type':'application/json',
+        'Accept':'application/vnd.github.v3+json'
+      },
+      body: JSON.stringify({
+        description:'学成选择题 · 共享解析',
+        files: filesPayload
+      })
+    });
+    if(!uploadRes.ok){
+      const err = await uploadRes.json().catch(()=>({}));
+      throw new Error(err.message||`上传失败: HTTP ${uploadRes.status}`);
+    }
+  } else {
+    // 分块模式：逐块上传，每次只上传一个分块文件
+    const chunks = splitNotesIntoChunks(mergedNotes, SHARED_NOTES_CHUNK_MAX_BYTES);
 
-  const uploadRes = await fetch(`https://api.github.com/gists/${gistId}`, {
-    method:'PATCH',
-    headers:{
-      'Authorization':`token ${token}`,
-      'Content-Type':'application/json',
-      'Accept':'application/vnd.github.v3+json'
-    },
-    body: JSON.stringify({
-      description:'学成选择题 · 共享解析',
-      files: filesPayload
-    })
-  });
-  if(!uploadRes.ok){
-    const err = await uploadRes.json().catch(()=>({}));
-    throw new Error(err.message||`上传失败: HTTP ${uploadRes.status}`);
+    // Step 1: 上传主文件（元数据）+ 第一个分块
+    const step1Payload = {};
+    step1Payload[SHARED_NOTES_FILENAME] = {
+      content: JSON.stringify({ version: newVersion, chunked: true, chunkCount: chunks.length, totalNotes: mergedNotes.length })
+    };
+    const chunk1Name = `${SHARED_NOTES_CHUNK_PREFIX}1.json`;
+    step1Payload[chunk1Name] = {
+      content: JSON.stringify({ chunkIndex: 1, notes: chunks[0] })
+    };
+    const step1Res = await fetch(`https://api.github.com/gists/${gistId}`, {
+      method:'PATCH',
+      headers:{
+        'Authorization':`token ${token}`,
+        'Content-Type':'application/json',
+        'Accept':'application/vnd.github.v3+json'
+      },
+      body: JSON.stringify({ description:'学成选择题 · 共享解析', files: step1Payload })
+    });
+    if(!step1Res.ok){
+      const err = await step1Res.json().catch(()=>({}));
+      throw new Error(err.message||`上传分块1失败: HTTP ${step1Res.status}`);
+    }
+
+    // Step 2: 逐个上传剩余分块
+    for(let i = 1; i < chunks.length; i++){
+      const chunkName = `${SHARED_NOTES_CHUNK_PREFIX}${i + 1}.json`;
+      const chunkPayload = {};
+      chunkPayload[chunkName] = {
+        content: JSON.stringify({ chunkIndex: i + 1, notes: chunks[i] })
+      };
+      const chunkRes = await fetch(`https://api.github.com/gists/${gistId}`, {
+        method:'PATCH',
+        headers:{
+          'Authorization':`token ${token}`,
+          'Content-Type':'application/json',
+          'Accept':'application/vnd.github.v3+json'
+        },
+        body: JSON.stringify({ files: chunkPayload })
+      });
+      if(!chunkRes.ok){
+        const err = await chunkRes.json().catch(()=>({}));
+        throw new Error(err.message||`上传分块${i+1}失败: HTTP ${chunkRes.status}`);
+      }
+    }
+
+    // Step 3: 清理多余的旧分块文件
+    const cleanupPayload = {};
+    for(let i = chunks.length + 1; i <= 20; i++){
+      const chunkName = `${SHARED_NOTES_CHUNK_PREFIX}${i}.json`;
+      if(gist.files && gist.files[chunkName]){
+        cleanupPayload[chunkName] = null;
+      }
+    }
+    if(Object.keys(cleanupPayload).length > 0){
+      await fetch(`https://api.github.com/gists/${gistId}`, {
+        method:'PATCH',
+        headers:{
+          'Authorization':`token ${token}`,
+          'Content-Type':'application/json',
+          'Accept':'application/vnd.github.v3+json'
+        },
+        body: JSON.stringify({ files: cleanupPayload })
+      });
+    }
   }
 
   // 将云端其他用户的解析写入本地 IndexedDB
@@ -4281,7 +4331,8 @@ async function checkSharedNotesUpdate(){
 
   try{
     const res = await fetch(`https://api.github.com/gists/${gistId}`, {
-      headers:{ 'Authorization':`token ${token}`, 'Accept':'application/vnd.github.v3+json' }
+      headers:{ 'Authorization':`token ${token}`, 'Accept':'application/vnd.github.v3+json' },
+      cache: 'no-store'
     });
     if(!res.ok) return;
 
@@ -4344,7 +4395,8 @@ async function forceDownloadSharedNotes(){
   if(!gistId) throw new Error('未配置共享解析池 Gist ID');
 
   const res = await fetch(`https://api.github.com/gists/${gistId}`, {
-    headers:{ 'Authorization':`token ${token}`, 'Accept':'application/vnd.github.v3+json' }
+    headers:{ 'Authorization':`token ${token}`, 'Accept':'application/vnd.github.v3+json' },
+    cache: 'no-store'
   });
   if(!res.ok) throw new Error(`下载失败: HTTP ${res.status}`);
 
@@ -4410,7 +4462,8 @@ async function diagnoseSharedSync(){
 
   try{
     const res = await fetch(`https://api.github.com/gists/${gistId}`, {
-      headers:{ 'Authorization':`token ${token}`, 'Accept':'application/vnd.github.v3+json' }
+      headers:{ 'Authorization':`token ${token}`, 'Accept':'application/vnd.github.v3+json' },
+      cache: 'no-store'
     });
     if(!res.ok){
       report += `❌ 云端Gist访问失败: HTTP ${res.status}\n`;
@@ -5010,7 +5063,8 @@ async function init(){
       if(gistId){
         try{
           const res = await fetch(`https://api.github.com/gists/${gistId}`, {
-            headers:{ 'Authorization':`token ${token}`, 'Accept':'application/vnd.github.v3+json' }
+            headers:{ 'Authorization':`token ${token}`, 'Accept':'application/vnd.github.v3+json' },
+            cache: 'no-store'
           });
           if(res.ok){
             const gist = await res.json();
