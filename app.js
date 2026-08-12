@@ -536,6 +536,7 @@ let noteFilterSystem = 'all';
 let noteFilterAuthor = 'all';
 let autoSyncEnabled = false;
 let sharedNotesAutoSyncEnabled = true;
+let qbAutoSyncEnabled = true;  // 题库自动同步（默认开启）
 let isSyncing = false;          // 同步锁，防止并发竞态
 let isSharedNotesSyncing = false; // 共享解析同步锁
 let pendingSyncTimer = null;    // 防抖定时器
@@ -3542,6 +3543,10 @@ async function renderSettings(){
       <div class="setting-label">☁️ 推送题库勘误到所有设备<div class="sl-desc">将本地修正的题目上传到云端，其他设备打开应用时自动获取更新</div></div>
       <div class="setting-control"><button class="btn btn-primary" style="font-size:.78rem;padding:.4rem .8rem" onclick="uploadQuestionBankUpdate().then(()=>renderSettings()).catch(e=>alert('上传失败: '+e.message))">⬆️ 推送更新</button></div>
     </div>
+    <div class="setting-row">
+      <div class="setting-label">题库自动同步<div class="sl-desc">打开应用时自动检查并下载题库更新（顶部横幅通知，无需手动操作）</div></div>
+      <div class="setting-control"><div class="toggle ${qbAutoSyncEnabled?'on':''}" data-toggle="qbAutoSync" onclick="toggleQbAutoSync()"></div></div>
+    </div>
     <div style="font-size:.72rem;color:var(--muted);margin-top:.6rem;line-height:1.6">
       ✓ 导入题库只会更新题目内容，不会覆盖你的做题进度、错题本、收藏和笔记。<br>
       ✓ 导出的文件可以分享给其他用户，他们导入后即可获得最新题目。<br>
@@ -3909,40 +3914,84 @@ async function uploadQuestionBankUpdate(){
   alert(`✅ 题库更新已上传\n题目总数：${allQs.length} 道\n版本：${version.slice(0,19).replace('T',' ')}\n\n其他设备下次打开应用时自动获取`);
 }
 
-/* 启动时检查题库是否有更新（静默） */
+/* 启动时检查题库是否有更新（横幅通知 + 自动同步） */
 async function checkQuestionBankUpdate(){
+  if(!qbAutoSyncEnabled) return; // 用户关闭了自动同步
   const token = localStorage.getItem('xuecheng_gist_token');
   if(!token) return;
   const gistId = getUserGistId(currentUserId);
   if(!gistId) return;
 
+  // 防止重复检查
+  if(window._qbChecking) return;
+  window._qbChecking = true;
+
   try{
+    showUpdateBanner('checking');
+
     const res = await fetch(`https://api.github.com/gists/${gistId}`, {
       headers:{ 'Authorization':`token ${token}`, 'Accept':'application/vnd.github.v3+json' }
     });
-    if(!res.ok) return;
+    if(!res.ok){
+      showUpdateBanner('hidden');
+      return;
+    }
 
     const gist = await res.json();
     const file = gist.files && gist.files[QB_GIST_FILENAME];
-    if(!file) return;
+    if(!file){
+      showUpdateBanner('hidden');
+      return;
+    }
 
     const content = await fetchGistFileContent(file, token);
-    if(!content) return;
+    if(!content){
+      showUpdateBanner('hidden');
+      return;
+    }
 
     const cloudData = safeJsonParse(content, '题库数据');
     const cloudVersion = cloudData.version || '';
     const localVersion = getLocalQuestionBankVersion();
 
-    // 版本相同则跳过
-    if(cloudVersion === localVersion) return;
+    // 版本相同则静默隐藏
+    if(cloudVersion === localVersion){
+      showUpdateBanner('hidden');
+      return;
+    }
 
-    // 有新版本，下载并合并
+    // 发现新版本
     const questions = cloudData.questions || [];
+    const totalCount = questions.length;
+    const versionShort = (cloudVersion || '').slice(0,19).replace('T',' ');
+    showUpdateBanner('available', {
+      sub: `v${localVersion?'→'+versionShort:versionShort} · ${totalCount} 道题目 · 正在自动同步`
+    });
+
+    // 短暂延迟后开始同步
+    await new Promise(r=>setTimeout(r, 600));
+
+    // 开始下载合并
+    showUpdateBanner('syncing', {
+      sub: `下载并合并 ${totalCount} 道更新题目`,
+      progress: 10
+    });
+
     let updatedCount = 0;
-    for(const q of questions){
+    const batchSize = Math.max(1, Math.ceil(totalCount / 10));
+    for(let i=0; i<questions.length; i++){
+      const q = questions[i];
       if(q && q.id){
         await dbAdd('questions', q);
         updatedCount++;
+      }
+      // 每 batchSize 道更新一次进度
+      if(i % batchSize === 0 || i === questions.length - 1){
+        const pct = Math.round(((i+1)/totalCount) * 100);
+        showUpdateBanner('syncing', {
+          sub: `正在合并 ${i+1}/${totalCount} 道题目`,
+          progress: pct
+        });
       }
     }
 
@@ -3952,11 +4001,18 @@ async function checkQuestionBankUpdate(){
     // 重新加载题目
     await reloadQuestions();
 
-    if(updatedCount > 0){
-      showSyncToast(`📚 题库已更新 ${updatedCount} 道题目`, 'success');
-    }
+    // 显示成功
+    showUpdateBanner('success', {
+      title: '题库已更新',
+      sub: `已同步 ${updatedCount} 道题目 · 版本 ${versionShort}`
+    });
   }catch(e){
     console.warn('题库更新检查失败', e);
+    showUpdateBanner('error', {
+      sub: e.message || '请检查网络后稍后重试'
+    });
+  }finally{
+    window._qbChecking = false;
   }
 }
 
@@ -4306,6 +4362,20 @@ function toggleSharedNotesAutoSync(){
   }
 }
 
+function toggleQbAutoSync(){
+  qbAutoSyncEnabled = !qbAutoSyncEnabled;
+  saveUserSetting('qbAutoSync', qbAutoSyncEnabled);
+  const t = document.querySelector('[data-toggle="qbAutoSync"]');
+  if(t) t.classList.toggle('on', qbAutoSyncEnabled);
+  if(qbAutoSyncEnabled){
+    showSyncToast('📚 题库自动同步已开启', 'success');
+    // 立即触发一次检查
+    checkQuestionBankUpdate();
+  } else {
+    showSyncToast('📚 题库自动同步已关闭');
+  }
+}
+
 async function handleSyncSharedNotes(){
   const btn = document.getElementById('syncSharedNotesBtn');
   if(btn){ btn.disabled = true; btn.textContent = '⏳ 同步中...'; }
@@ -4597,6 +4667,7 @@ async function loadUserSettings(){
     if(settings.mode) currentMode = settings.mode;
     if(typeof settings.autoSync === 'boolean') autoSyncEnabled = settings.autoSync;
     if(typeof settings.sharedNotesAutoSync === 'boolean') sharedNotesAutoSyncEnabled = settings.sharedNotesAutoSync;
+    if(typeof settings.qbAutoSync === 'boolean') qbAutoSyncEnabled = settings.qbAutoSync;
     if(typeof settings.shuffleOptions === 'boolean') shuffleOptionsEnabled = settings.shuffleOptions;
     if(typeof settings.darkMode === 'boolean') darkModeEnabled = settings.darkMode;
     if(typeof settings.fontScale === 'number') fontScalePos = settings.fontScale;
@@ -4816,7 +4887,8 @@ async function init(){
   // 加载用户设置
   await loadUserSettings();
 
-  // 检查题库是否有云端更新（勘误补丁，静默，不依赖autoSync开关）
+  // 检查题库是否有云端更新（横幅通知 + 自动同步，不依赖autoSync开关）
+  window._qbLastCheckTime = Date.now();
   checkQuestionBankUpdate();
 
   // 更新界面
@@ -4870,6 +4942,14 @@ document.addEventListener('visibilitychange', () => {
   // 页面重新可见时：增量检查共享解析更新（轻量，仅下载本地没有的）
   if(document.visibilityState === 'visible'){
     setTimeout(() => { checkSharedNotesUpdate(); }, 1000);
+    // 同时检查题库是否有云端更新（防抖：距离上次检查>5分钟才触发）
+    setTimeout(() => {
+      const lastCheck = window._qbLastCheckTime || 0;
+      if(Date.now() - lastCheck > 5 * 60 * 1000){
+        window._qbLastCheckTime = Date.now();
+        checkQuestionBankUpdate();
+      }
+    }, 2000);
   }
 });
 
@@ -4906,36 +4986,101 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-/* ====== 更新提示弹窗 ====== */
+/* ====== 顶部更新横幅通知（替代旧底部Toast） ====== */
+let qbBannerTimer = null;
+
+function showUpdateBanner(stage, data){
+  data = data || {};
+  let banner = document.getElementById('qb-update-banner');
+
+  if(stage === 'hidden'){
+    if(banner){
+      banner.style.opacity = '0';
+      banner.style.transition = 'opacity .3s';
+      setTimeout(()=>{ if(banner) banner.remove(); }, 300);
+    }
+    if(qbBannerTimer){ clearTimeout(qbBannerTimer); qbBannerTimer = null; }
+    return;
+  }
+
+  if(!banner){
+    banner = document.createElement('div');
+    banner.id = 'qb-update-banner';
+    banner.className = 'qb-update-banner';
+    document.body.insertBefore(banner, document.body.firstChild);
+  }
+
+  // 清除之前的自动隐藏定时器
+  if(qbBannerTimer){ clearTimeout(qbBannerTimer); qbBannerTimer = null; }
+
+  const stages = {
+    checking: {
+      cls: 'qb-banner-checking',
+      icon: '⟳',
+      iconSpin: true,
+      title: '正在检查题库更新…',
+      sub: '启动时自动检查云端版本',
+      showProgress: false
+    },
+    available: {
+      cls: 'qb-banner-available',
+      icon: '↑',
+      iconSpin: false,
+      title: '发现题库新版本',
+      sub: data.sub || '正在准备自动同步…',
+      showProgress: false
+    },
+    syncing: {
+      cls: 'qb-banner-syncing',
+      icon: '⟳',
+      iconSpin: true,
+      title: '正在同步题库…',
+      sub: data.sub || '下载并合并更新题目',
+      showProgress: true,
+      progress: data.progress || 0
+    },
+    success: {
+      cls: 'qb-banner-success',
+      icon: '✓',
+      iconSpin: false,
+      title: data.title || '题库已更新',
+      sub: data.sub || '同步完成',
+      showProgress: false
+    },
+    error: {
+      cls: 'qb-banner-error',
+      icon: '!',
+      iconSpin: false,
+      title: '题库同步失败',
+      sub: data.sub || '请检查网络后稍后重试',
+      showProgress: false
+    }
+  };
+
+  const s = stages[stage];
+  if(!s) return;
+
+  banner.className = 'qb-update-banner ' + s.cls;
+  banner.innerHTML = `
+    <div class="qb-banner-icon${s.iconSpin?' qb-spin':''}">${s.icon}</div>
+    <div class="qb-banner-body">
+      <div class="qb-banner-title">${s.title}</div>
+      <div class="qb-banner-sub">${s.sub}</div>
+      ${s.showProgress ? `<div class="qb-progress-bar"><div class="qb-progress-fill" style="width:${s.progress}%"></div></div>` : ''}
+    </div>
+  `;
+
+  // 成功和错误状态3秒后自动隐藏
+  if(stage === 'success' || stage === 'error'){
+    qbBannerTimer = setTimeout(()=> showUpdateBanner('hidden'), 3000);
+  }
+}
+
+/* 保留旧函数名兼容，但改为使用新横幅 */
 function showUpdatePrompt(registration) {
-  // 避免重复弹窗
-  if (document.getElementById('sw-update-toast')) return;
-
-  const toast = document.createElement('div');
-  toast.id = 'sw-update-toast';
-  toast.style.cssText = `
-    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
-    background:#3a3737;color:#faf8f5;padding:12px 20px;border-radius:12px;
-    box-shadow:0 4px 16px rgba(0,0,0,0.2);z-index:10000;
-    display:flex;align-items:center;gap:12px;font-size:14px;
-    animation:slideUp 0.3s ease;
-  `;
-  toast.innerHTML = `
-    <span>题库有更新</span>
-    <button id="sw-update-btn" style="
-      background:#9a8e82;color:#fff;border:none;padding:6px 16px;
-      border-radius:8px;cursor:pointer;font-size:13px;">刷新</button>
-    <button id="sw-dismiss-btn" style="
-      background:transparent;color:#8c8780;border:none;padding:6px 8px;
-      cursor:pointer;font-size:13px;">稍后</button>
-  `;
-  document.body.appendChild(toast);
-
-  document.getElementById('sw-update-btn').onclick = () => {
+  // Service Worker 更新：直接刷新页面（不再弹底部Toast）
+  if(registration && registration.waiting){
     registration.waiting.postMessage('SKIP_WAITING');
     setTimeout(() => window.location.reload(), 500);
-  };
-  document.getElementById('sw-dismiss-btn').onclick = () => {
-    toast.remove();
-  };
+  }
 }
