@@ -4473,10 +4473,21 @@ async function diagnoseSharedSync(){
     }
 
     const gist = await res.json();
+
+    // 【详细诊断】显示 Gist 中的所有文件信息
+    const fileNames = Object.keys(gist.files || {});
+    report += `云端Gist文件列表（${fileNames.length}个文件）：\n`;
+    for(const fname of fileNames){
+      const f = gist.files[fname];
+      const sizeKB = f.size ? Math.round(f.size/1024) : 0;
+      report += `  ${fname} (${sizeKB}KB${f.truncated ? ', 已截断!' : ''})\n`;
+    }
+    report += '\n';
+
     const cloudResult = await downloadSharedNotesFromGist(gist, token);
     if(!cloudResult){
       report += `❌ 云端解析文件不存在或读取失败\n`;
-      report += `Gist中的文件: ${Object.keys(gist.files || {}).join(', ')}`;
+      report += `Gist中的文件: ${fileNames.join(', ')}`;
       alert(report);
       return;
     }
