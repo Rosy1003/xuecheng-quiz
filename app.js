@@ -3667,26 +3667,36 @@ async function fetchGistFileContent(file, token){
   // 如果 API 标记为截断，或 content 为空，通过 raw_url 获取完整内容
   if(file.truncated || !file.content){
     if(file.raw_url){
+      // 尝试方式1：带 Authorization 头（可能触发 CORS 预检）
       try{
         const rawRes = await fetch(file.raw_url, {
-          headers: token ? { 'Authorization':`token ${token}`, 'Accept':'application/vnd.github.v3.raw' } : {},
+          headers: { 'Authorization':`token ${token}` },
           cache: 'no-store'
         });
         if(rawRes.ok){
           return await rawRes.text();
         }
-        console.warn('raw_url 获取失败:', rawRes.status);
       }catch(e){
-        console.warn('raw_url 请求异常:', e.message);
+        console.warn('raw_url 方式1失败:', e.message);
       }
-      // raw_url 也失败，且文件被截断
+      // 尝试方式2：不带自定义头（避免CORS预检），依赖URL中的SHA访问
+      try{
+        const rawRes2 = await fetch(file.raw_url, {
+          cache: 'no-store'
+        });
+        if(rawRes2.ok){
+          return await rawRes2.text();
+        }
+      }catch(e){
+        console.warn('raw_url 方式2失败:', e.message);
+      }
+      // 两种方式都失败
       if(file.truncated){
-        console.warn('文件过大被截断，且 raw_url 获取失败，跳过此文件');
+        console.warn('文件被截断且raw_url获取失败，跳过');
         return null;
       }
       return null;
     }
-    // 无 raw_url 且 content 为空
     return null;
   }
 
@@ -4029,7 +4039,7 @@ async function checkQuestionBankUpdate(){
 const SHARED_NOTES_FILENAME = 'shared_notes.json';
 const SHARED_NOTES_VERSION_KEY = 'shared_notes_version';
 const SHARED_NOTES_CHUNK_PREFIX = 'shared_notes_';
-const SHARED_NOTES_CHUNK_MAX_BYTES = 800000; // 800KB 安全阈值（Gist API 截断限制为 1MB）
+const SHARED_NOTES_CHUNK_MAX_BYTES = 500000; // 500KB 安全阈值（含JSON包装后仍 <1MB，避免GitHub API截断）
 
 /* 计算 UTF-8 编码后的字节长度 */
 function getUtf8ByteLength(str){
@@ -4077,16 +4087,27 @@ async function downloadSharedNotesFromGist(gist, token){
   // 分块格式：读取所有分块并合并
   const chunkCount = mainData.chunkCount || 0;
   const allNotes = [];
+  const failedChunks = [];
   for(let i = 1; i <= chunkCount; i++){
     const chunkFileName = `${SHARED_NOTES_CHUNK_PREFIX}${i}.json`;
     const chunkFile = gist.files && gist.files[chunkFileName];
-    if(!chunkFile) continue;
+    if(!chunkFile){
+      failedChunks.push(i);
+      continue;
+    }
     const chunkContent = await fetchGistFileContent(chunkFile, token);
-    if(!chunkContent) continue;
+    if(!chunkContent){
+      failedChunks.push(i);
+      continue;
+    }
     const chunkData = safeJsonParse(chunkContent, `共享解析分块${i}`);
     if(chunkData.notes && Array.isArray(chunkData.notes)){
       allNotes.push(...chunkData.notes);
     }
+  }
+  if(failedChunks.length > 0){
+    console.warn(`⚠️ 共享解析有 ${failedChunks.length} 个分块读取失败: 分块${failedChunks.join(', ')}`);
+    console.warn(`  成功读取 ${allNotes.length} 条解析，但可能缺少部分数据`);
   }
   return { notes: allNotes, version: mainData.version || '' };
 }
