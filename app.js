@@ -3470,8 +3470,10 @@ async function renderSettings(){
     <div class="card-title">📝 共享解析同步</div>
     <div class="setting-row">
       <div class="setting-label">一键同步解析<div class="sl-desc">上传你的解析到云端共享池，同时下载其他同学的解析</div></div>
-      <div class="setting-control">
+      <div class="setting-control" style="display:flex;gap:.4rem;flex-wrap:wrap">
         <button class="btn btn-primary" style="font-size:.78rem;padding:.4rem .8rem" id="syncSharedNotesBtn" onclick="handleSyncSharedNotes()">🔄 一键同步</button>
+        <button class="btn btn-outline" style="font-size:.72rem;padding:.4rem .6rem" onclick="handleForceDownload()">⬇️ 强制拉取</button>
+        <button class="btn btn-outline" style="font-size:.72rem;padding:.4rem .6rem" onclick="diagnoseSharedSync()">🔍 诊断</button>
       </div>
     </div>
     <div class="setting-row">
@@ -3494,7 +3496,9 @@ async function renderSettings(){
       🚀 <strong>应用启动时自动双向同步</strong>：下载最新解析 + 上传本地新增<br>
       ⚡ 保存/编辑解析后自动上传（防抖5秒，开启上方开关即可）<br>
       👀 切回页面时自动增量检查新解析<br>
-      💡 首次同步会自动创建共享池，把生成的 Gist ID 分享给其他设备/用户即可
+      💡 首次同步会自动创建共享池，把生成的 Gist ID 分享给其他设备/用户即可<br>
+      🔍 <strong>诊断</strong>：检查本地/云端解析数量、Gist ID是否一致<br>
+      ⬇️ <strong>强制拉取</strong>：忽略版本号，从云端下载全部解析（修复同步不一致）
     </div>
   </div>`;
 
@@ -4136,12 +4140,16 @@ async function syncSharedNotes(){
   const gist = await res.json();
   
   // 下载云端解析（自动处理分块格式）
+  // 【Bug修复】下载失败时必须中止，绝不能用空数据覆盖云端
   let cloudNotes = [];
   let cloudVersion = '';
   const cloudResult = await downloadSharedNotesFromGist(gist, token);
   if(cloudResult){
     cloudNotes = cloudResult.notes;
     cloudVersion = cloudResult.version;
+  } else {
+    // shared_notes.json 不存在或内容获取失败 → 中止同步，防止数据覆盖
+    throw new Error('云端解析文件不存在或读取失败（可能Gist ID指向了错误的Gist），已中止同步以防数据覆盖');
   }
 
   // 合并：本地 + 云端，按 ID 去重，按 lastModified 时间戳判断新旧
@@ -4229,11 +4237,25 @@ async function syncSharedNotes(){
   }
 
   // 将云端其他用户的解析写入本地 IndexedDB
+  // 【改进】不仅下载本地不存在的解析，还更新云端较新版本的解析
   let downloadedCount = 0;
+  let updatedCount = 0;
   for(const n of cloudNotes){
-    if(n && n.id && !localNotes.some(l => l.id === n.id)){
-      await dbAdd('notes', n);
-      downloadedCount++;
+    if(n && n.id){
+      const localNote = localNotes.find(l => l.id === n.id);
+      if(!localNote){
+        // 本地不存在的解析，直接写入
+        await dbAdd('notes', n);
+        downloadedCount++;
+      } else {
+        // 本地已存在，比较时间戳，云端更新则覆盖本地
+        const cloudTime = n.lastModified || n.createdDate || '';
+        const localTime = localNote.lastModified || localNote.createdDate || '';
+        if(cloudTime > localTime){
+          await dbAdd('notes', n);
+          updatedCount++;
+        }
+      }
     }
   }
 
@@ -4244,6 +4266,7 @@ async function syncSharedNotes(){
     uploaded: localNotes.length,
     newFromLocal,
     newFromCloud,
+    updatedFromCloud: updatedCount,
     totalMerged: mergedNotes.length,
     sharedGistId: newlyCreatedGistId
   };
@@ -4273,25 +4296,176 @@ async function checkSharedNotesUpdate(){
 
     if(cloudVersion === localVersion) return;
 
-    // 有更新，下载并合并（仅下载本地不存在的解析，避免覆盖本地编辑）
+    // 有更新，下载并合并（下载本地不存在的解析 + 更新云端较新版本的解析）
     const cloudNotes = cloudResult.notes || [];
     const localNotes = await dbGetAll('notes');
-    const localIds = new Set(localNotes.map(n=>n.id));
     let newCount = 0;
+    let updateCount = 0;
     for(const n of cloudNotes){
-      if(n && n.id && !localIds.has(n.id)){
-        await dbAdd('notes', n);
-        newCount++;
+      if(n && n.id){
+        const localNote = localNotes.find(l => l.id === n.id);
+        if(!localNote){
+          await dbAdd('notes', n);
+          newCount++;
+        } else {
+          // 比较时间戳，云端更新则覆盖本地
+          const cloudTime = n.lastModified || n.createdDate || '';
+          const localTime = localNote.lastModified || localNote.createdDate || '';
+          if(cloudTime > localTime){
+            await dbAdd('notes', n);
+            updateCount++;
+          }
+        }
       }
     }
 
     localStorage.setItem(SHARED_NOTES_VERSION_KEY, cloudVersion);
 
-    if(newCount > 0){
-      showSyncToast(`📝 获取了 ${newCount} 条其他同学的解析`, 'success');
+    if(newCount > 0 || updateCount > 0){
+      showSyncToast(`📝 获取 ${newCount} 条新解析，更新 ${updateCount} 条`, 'success');
+      // 有新解析时刷新列表
+      if(document.getElementById('panel-notes') && document.getElementById('panel-notes').classList.contains('active')){
+        renderNotes();
+      }
     }
   }catch(e){
     console.warn('共享解析更新检查失败', e);
+    showSyncToast(`⚠️ 解析更新检查失败: ${e.message}`, 'error');
+  }
+}
+
+/* 【新增】强制全量拉取云端解析（忽略版本号，下载全部云端解析并合并到本地）
+ * 用于手动修复同步不一致问题
+ */
+async function forceDownloadSharedNotes(){
+  const token = localStorage.getItem('xuecheng_gist_token');
+  if(!token) throw new Error('请先配置 GitHub Token');
+  const gistId = getSharedGistId();
+  if(!gistId) throw new Error('未配置共享解析池 Gist ID');
+
+  const res = await fetch(`https://api.github.com/gists/${gistId}`, {
+    headers:{ 'Authorization':`token ${token}`, 'Accept':'application/vnd.github.v3+json' }
+  });
+  if(!res.ok) throw new Error(`下载失败: HTTP ${res.status}`);
+
+  const gist = await res.json();
+  const cloudResult = await downloadSharedNotesFromGist(gist, token);
+  if(!cloudResult){
+    throw new Error('云端解析文件不存在或读取失败');
+  }
+
+  const cloudNotes = cloudResult.notes || [];
+  const localNotes = await dbGetAll('notes');
+  const localIds = new Set(localNotes.map(n=>n.id));
+
+  let newCount = 0;
+  let updateCount = 0;
+  for(const n of cloudNotes){
+    if(n && n.id){
+      if(!localIds.has(n.id)){
+        await dbAdd('notes', n);
+        newCount++;
+      } else {
+        // 比较时间戳，云端更新则覆盖本地
+        const local = localNotes.find(l=>l.id===n.id);
+        const cloudTime = n.lastModified || n.createdDate || '';
+        const localTime = (local && (local.lastModified || local.createdDate)) || '';
+        if(cloudTime > localTime){
+          await dbAdd('notes', n);
+          updateCount++;
+        }
+      }
+    }
+  }
+
+  localStorage.setItem(SHARED_NOTES_VERSION_KEY, cloudResult.version || '');
+  return { newCount, updateCount, cloudTotal: cloudNotes.length };
+}
+
+/* 【新增】诊断共享解析同步状态（用户可见的详细信息）
+ * 检查云端和本地的解析数量、Gist ID、版本号
+ */
+async function diagnoseSharedSync(){
+  const token = localStorage.getItem('xuecheng_gist_token');
+  const gistId = getSharedGistId();
+  const localNotes = await dbGetAll('notes');
+  const localVersion = localStorage.getItem(SHARED_NOTES_VERSION_KEY) || '无';
+
+  let report = `📊 共享解析同步诊断\n\n`;
+  report += `本地解析：${localNotes.length} 条\n`;
+  report += `本地版本：${localVersion}\n`;
+  report += `共享Gist ID：${gistId || '未配置'}\n`;
+  report += `GitHub Token：${token ? '已配置' : '未配置'}\n\n`;
+
+  if(!token){
+    report += `⚠️ 未配置 GitHub Token，无法检查云端`;
+    alert(report);
+    return;
+  }
+  if(!gistId){
+    report += `⚠️ 未配置共享 Gist ID\n\n请先在一台设备上点击「一键同步」创建共享池，然后将 Gist ID 复制到其他设备`;
+    alert(report);
+    return;
+  }
+
+  try{
+    const res = await fetch(`https://api.github.com/gists/${gistId}`, {
+      headers:{ 'Authorization':`token ${token}`, 'Accept':'application/vnd.github.v3+json' }
+    });
+    if(!res.ok){
+      report += `❌ 云端Gist访问失败: HTTP ${res.status}\n`;
+      if(res.status === 404) report += `Gist ID 不存在或已被删除`;
+      alert(report);
+      return;
+    }
+
+    const gist = await res.json();
+    const cloudResult = await downloadSharedNotesFromGist(gist, token);
+    if(!cloudResult){
+      report += `❌ 云端解析文件不存在或读取失败\n`;
+      report += `Gist中的文件: ${Object.keys(gist.files || {}).join(', ')}`;
+      alert(report);
+      return;
+    }
+
+    const cloudNotes = cloudResult.notes || [];
+    const cloudVersion = cloudResult.version || '无';
+    const localIds = new Set(localNotes.map(n=>n.id));
+    const cloudOnlyCount = cloudNotes.filter(n => !localIds.has(n.id)).length;
+
+    report += `云端解析：${cloudNotes.length} 条\n`;
+    report += `云端版本：${cloudVersion}\n`;
+    report += `本地缺少：${cloudOnlyCount} 条\n\n`;
+
+    if(cloudOnlyCount > 0){
+      report += `⚠️ 本地缺少 ${cloudOnlyCount} 条云端解析\n`;
+      report += `建议：点击「一键同步」或「强制拉取」来获取缺失解析`;
+    } else if(cloudNotes.length === localNotes.length){
+      report += `✅ 本地与云端解析数量一致，同步正常`;
+    } else {
+      report += `ℹ️ 本地比云端多 ${localNotes.length - cloudNotes.length} 条\n`;
+      report += `建议：点击「一键同步」上传本地解析到云端`;
+    }
+
+    alert(report);
+  }catch(e){
+    report += `❌ 诊断失败: ${e.message}`;
+    alert(report);
+  }
+}
+
+/* 【新增】手动强制拉取云端解析（带UI反馈） */
+async function handleForceDownload(){
+  const btn = event.target;
+  if(btn){ btn.disabled = true; btn.textContent = '⏳ 拉取中...'; }
+  try{
+    const result = await forceDownloadSharedNotes();
+    alert(`✅ 强制拉取完成\n\n新增：${result.newCount} 条\n更新：${result.updateCount} 条\n云端总计：${result.cloudTotal} 条`);
+    renderNotes();
+  }catch(e){
+    alert('拉取失败: '+e.message);
+  }finally{
+    if(btn){ btn.disabled = false; btn.textContent = '⬇️ 强制拉取'; }
   }
 }
 
@@ -4306,8 +4480,13 @@ async function syncSharedNotesSilent(){
   try{
     const stats = await syncSharedNotes();
     showSyncToast(`📝 共享解析已同步（↑${stats.uploaded} ↓${stats.newFromCloud}新）`, 'success');
+    // 同步成功后刷新解析列表
+    if(document.getElementById('panel-notes') && document.getElementById('panel-notes').classList.contains('active')){
+      renderNotes();
+    }
   }catch(e){
     console.warn('共享解析同步失败', e);
+    showSyncToast(`⚠️ 解析同步失败: ${e.message}`, 'error');
   }finally{
     isSharedNotesSyncing = false;
   }
@@ -4325,7 +4504,7 @@ async function quickSync(){
     // 同时同步共享解析
     try{
       const stats = await syncSharedNotes();
-      let syncMsg = `☁️ 同步成功！\n\n个人数据已上传\n共享解析：上传 ${stats.uploaded} 条，下载 ${stats.newFromCloud} 条新解析`;
+      let syncMsg = `☁️ 同步成功！\n\n个人数据已上传\n共享解析：上传 ${stats.uploaded} 条，下载 ${stats.newFromCloud} 条新解析，更新 ${stats.updatedFromCloud||0} 条`;
       if(stats.sharedGistId){
         syncMsg += `\n\n🔑 共享解析池已创建！Gist ID: ${stats.sharedGistId}\n请将此 ID 复制到其他设备/用户。`;
       }
@@ -4381,7 +4560,7 @@ async function handleSyncSharedNotes(){
   if(btn){ btn.disabled = true; btn.textContent = '⏳ 同步中...'; }
   try{
     const stats = await syncSharedNotes();
-    let msg = `✅ 共享解析同步完成\n\n上传：${stats.uploaded} 条（新增 ${stats.newFromLocal} 条到云端）\n下载：${stats.newFromCloud} 条其他同学的解析\n合并后云端共 ${stats.totalMerged} 条`;
+    let msg = `✅ 共享解析同步完成\n\n上传：${stats.uploaded} 条（新增 ${stats.newFromLocal} 条到云端）\n下载：${stats.newFromCloud} 条新解析，更新 ${stats.updatedFromCloud||0} 条\n合并后云端共 ${stats.totalMerged} 条`;
     if(stats.sharedGistId){
       msg += `\n\n🔑 共享解析池已创建！\nGist ID: ${stats.sharedGistId}\n\n请将此 ID 复制到其他设备/用户的「共享解析池 Gist ID」输入框中，即可共享解析。`;
     }
