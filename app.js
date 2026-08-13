@@ -1914,15 +1914,27 @@ function updateSubMatchingUI(q){
   // 选项池
   const pool = document.getElementById('optionPool');
   if(pool){
-    const displayOpts = q._displayOptions || q.options;
+    // 只显示当前Tab相关选项
+    const activeGroup = q.subGroups[quizState.activeTab];
+    const relevantOptIds = new Set();
+    if(activeGroup){
+      activeGroup.subQuestions.forEach(sq=>{
+        if(sq.answer) sq.answer.forEach(id=>relevantOptIds.add(id));
+      });
+    }
+    const allOpts = q._displayOptions || q.options;
+    const displayOpts = allOpts.filter(opt=>relevantOptIds.has(opt.id));
     pool.innerHTML = displayOpts.map(opt=>{
       let cls = 'option-item';
       if(quizState.selectedOptions && quizState.selectedOptions.includes(opt.id)) cls += ' selected';
-      // 统计该选项已被放入多少个子题
+      // 统计该选项在当前Tab已被放入多少个子题
       let placedCount = 0;
-      Object.values(quizState.subPlacements).forEach(arr=>{
-        if(arr && arr.includes(opt.id)) placedCount++;
-      });
+      if(activeGroup){
+        activeGroup.subQuestions.forEach((sq, si)=>{
+          const placements = quizState.subPlacements[`${activeGroup.id}_${si}`] || [];
+          if(placements.includes(opt.id)) placedCount++;
+        });
+      }
       if(placedCount > 0) cls += ' placed';
       const badge = placedCount > 0 ? `<span class="placement-badge">已放${placedCount}题</span>` : '';
       return `<div class="${cls}" data-opt="${opt.id}" onclick="selectSubOption('${opt.id}')">
@@ -2103,6 +2115,7 @@ function removeFromSubSlot(groupId, subIdx, optId){
 function switchSubTab(idx){
   const q = currentQuestions[currentQuestionIndex];
   quizState.activeTab = idx;
+  quizState.selectedOptions = [];
   updateSubMatchingUI(q);
   saveQuizDraft();
 }
@@ -2111,6 +2124,7 @@ function prevSubTab(){
   const q = currentQuestions[currentQuestionIndex];
   if(quizState.activeTab > 0){
     quizState.activeTab--;
+    quizState.selectedOptions = [];
     updateSubMatchingUI(q);
     saveQuizDraft();
   }
@@ -2120,6 +2134,7 @@ function nextSubTab(){
   const q = currentQuestions[currentQuestionIndex];
   if(quizState.activeTab < q.subGroups.length - 1){
     quizState.activeTab++;
+    quizState.selectedOptions = [];
     updateSubMatchingUI(q);
     saveQuizDraft();
   }
