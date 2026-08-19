@@ -351,6 +351,8 @@ const SAMPLE_QUESTIONS = [
   {id:'surg_017',subject:'surgery',system:'breast',chapter:'乳房疾病',type:'sub-matching',title:'乳腺癌手术方式选择',description:'选项池固定，以下分6个Tab，每个Tab区分手术方式的适应证',options:[{id:'A',text:'原位癌'},{id:'B',text:'I、II期'},{id:'C',text:'乳房有适当体积(多中心者禁用)'},{id:'D',text:'保留胸大肌，或保留胸大肌+胸小肌(不易清扫腋上组淋巴结)'},{id:'E',text:'微小癌'},{id:'F',text:'内象限+胸骨旁淋巴结肿大者'},{id:'G',text:'清扫'},{id:'H',text:'前哨淋巴结活检→阳性清扫、阴性不清扫'},{id:'I',text:'年老不宜作根治术者'},{id:'J',text:'切肿块+周围1-2cm组织'}],subGroups:[{id:'G1',label:'改良根治术',subQuestions:[{prompt:'改良根治术的适应证',answer:['B','D']}]},{id:'G2',label:'扩大根治术',subQuestions:[{prompt:'扩大根治术的适应证',answer:['F']}]},{id:'G3',label:'全乳房切除术(不清扫淋巴结)',subQuestions:[{prompt:'全乳房切除术的适应证',answer:['A','E','I']}]},{id:'G4',label:'保乳乳腺癌切除术',subQuestions:[{prompt:'保乳乳腺癌切除术的适应证',answer:['B','C','J']}]},{id:'G5',label:'腋淋巴结阳性',subQuestions:[{prompt:'腋淋巴结阳性的处理',answer:['G']}]},{id:'G6',label:'腋淋巴结阴性',subQuestions:[{prompt:'腋淋巴结阴性的处理',answer:['H']}]}],explanation:'改良根治术：I/II期(B)+保留胸大肌(D)；扩大根治术：内象限+胸骨旁淋巴结肿大(F)；全乳房切除术：原位癌(A)/微小癌(E)/年老不宜根治者(I)；保乳切除术：I/II期(B)+乳房适当体积(C)+切肿块+周围组织(J)。腋淋巴结阳性清扫(G)，阴性行前哨淋巴结活检(H)。B(I、II期)为交叉选项，属于改良根治术和保乳切除术。'},
   {id:'surg_018',subject:'surgery',system:'breast',chapter:'乳房疾病',type:'sub-matching',title:'乳腺疾病临床表现鉴别',description:'选项池固定，以下分7个Tab，每个Tab区分乳腺疾病的临床表现',options:[{id:'A',text:'肿块增长缓慢'},{id:'B',text:'乳汁淤积、细菌入侵(金葡菌经淋巴管多见)'},{id:'C',text:'可有边界不清的肿块、乳头凹陷、皮肤粘连'},{id:'D',text:'中年多见'},{id:'E',text:'>40岁多见'},{id:'F',text:'20-25岁多见'},{id:'G',text:'初产妇多见'},{id:'H',text:'可有橘皮样变'},{id:'I',text:'最易血性溢液(若乳管阻塞呈棕褐色)，常不能触及肿块'},{id:'J',text:'肿块多单发、无痛、质硬'},{id:'K',text:'红肿热痛、寒战高热,血WBC高'},{id:'L',text:'周期性乳房胀痛和颗粒样肿块(结节大小不等、质韧)，月经后减轻'},{id:'M',text:'边界清楚、易推动'},{id:'N',text:'边界不清、不易推动(炎性乳癌可无明显肿块，皮肤呈红肿等炎症样)'},{id:'O',text:'多有患侧淋巴结痛性肿大'},{id:'P',text:'淋巴结无肿大'},{id:'Q',text:'淋巴结无痛性肿大，橘皮样变等'}],subGroups:[{id:'G1',label:'乳腺癌',subQuestions:[{prompt:'乳腺癌的临床表现',answer:['E','H','J','N','Q']}]},{id:'G2',label:'乳腺纤维腺瘤',subQuestions:[{prompt:'乳腺纤维腺瘤的临床表现',answer:['A','F','J','M','P']}]},{id:'G3',label:'乳腺囊性增生病',subQuestions:[{prompt:'乳腺囊性增生病的临床表现',answer:['D','L']}]},{id:'G4',label:'急性乳腺炎',subQuestions:[{prompt:'急性乳腺炎的临床表现',answer:['B','G','K','O']}]},{id:'G5',label:'乳管内乳头状瘤',subQuestions:[{prompt:'乳管内乳头状瘤的临床表现',answer:['I']}]},{id:'G6',label:'浆细胞乳腺炎(无菌性炎症)-急性',subQuestions:[{prompt:'浆细胞乳腺炎急性的临床表现',answer:['H']}]},{id:'G7',label:'浆细胞乳腺炎(无菌性炎症)-慢性',subQuestions:[{prompt:'浆细胞乳腺炎慢性的临床表现',answer:['C']}]}],explanation:'乳腺癌:>40岁(E)、橘皮样变(H)、肿块质硬边界不清(J,N)、淋巴结无痛性肿大(Q)；纤维腺瘤:20-25岁(F)、增长缓慢(A)、边界清楚易推动(M)、淋巴结无肿大(P)；囊性增生病:中年(D)、周期性胀痛(L)；急性乳腺炎:初产妇(G)、红肿热痛(K)、痛性淋巴结肿大(O)；乳头状瘤:血性溢液(I)；浆细胞乳腺炎急性可有橘皮样变(H)，慢性有乳头凹陷皮肤粘连(C)。H和J为交叉选项。'},
   {id:'surg_019',subject:'surgery',system:'breast',chapter:'乳房疾病',type:'matching',title:'乳头溢液性质鉴别',description:'将下列溢液性质与对应的疾病匹配',options:[{id:'A',text:'棕褐色'},{id:'B',text:'多种颜色'},{id:'C',text:'血性'},{id:'D',text:'黄绿色脓性'},{id:'E',text:'浆液无色'}],categories:[{id:'C1',label:'乳腺癌'},{id:'C2',label:'感染'},{id:'C3',label:'乳腺囊性增生病'},{id:'C4',label:'乳管内乳头状瘤'},{id:'C5',label:'乳管内乳头状瘤-若乳管阻塞呈'}],answer:{'C':['C1','C4'],'D':'C2','B':'C3','A':'C5'},explanation:'血性溢液见于乳腺癌和乳管内乳头状瘤；棕褐色为乳管内乳头状瘤阻塞所致；多种颜色见于囊性增生病；黄绿色脓性见于感染。注：正常月经和早期妊娠可有浆液性溢液，属生理性。'},
+  {id:'surg_104',subject:'surgery',system:'breast',chapter:'乳房疾病',type:'table',title:'乳腺癌TNM分期',description:'记忆练习：正向看项目猜定义，反向看定义猜项目。点击覆盖单元格查看内容',columns:['项目','定义'],rows:[['Tx','原发肿瘤无法评估'],['T0','无原发肿瘤证据'],['Tis','原位癌(导管内癌/小叶原位癌/Paget病)'],['T1','肿瘤最大径≤2cm'],['T1mic','微小浸润≤0.1cm'],['T1a','>0.1~0.5cm'],['T1b','>0.5~1cm'],['T1c','>1~2cm'],['T2','>2~5cm'],['T3','>5cm'],['T4a','侵犯胸壁'],['T4b','皮肤水肿/橘皮样变/溃疡/卫星结节'],['T4c','T4a+T4b'],['T4d','炎性乳癌'],['Nx','区域淋巴结无法评估'],['N0','无区域淋巴结转移'],['N1','同侧腋窝淋巴结可活动'],['N2','腋窝淋巴结固定/融合或内乳淋巴结'],['N3','锁骨下/锁骨上淋巴结转移'],['M0','无远处转移'],['M1','有远处转移']],forwardCover:[1],reverseCover:[0],explanation:'T分期按肿瘤大小和侵犯范围：Tis原位癌、T1≤2cm、T2 2-5cm、T3>5cm、T4侵犯皮肤/胸壁。N分期按淋巴结转移范围：N0无、N1腋窝可活动、N2固定/融合或内乳、N3锁骨下/上。M0无远处转移、M1有远处转移。T4d=炎性乳癌。'},
+  {id:'surg_105',subject:'surgery',system:'breast',chapter:'乳房疾病',type:'table',title:'乳腺癌分子分型',description:'记忆练习：正向看分型猜标志物，反向看标志物猜分型。点击覆盖单元格查看内容',columns:['分子分型','ER','PR','HER2','Ki-67','预后'],rows:[['Luminal A','+','+','-','低(<14%)','好'],['Luminal B(HER2-)','+','+','-','高(≥14%)','中'],['Luminal B(HER2+)','+','+','+','任意','中'],['HER2阳性','-','-','+','任意','差'],['三阴(基底样)','-','-','-','高','最差']],forwardCover:[1,2,3,4,5],reverseCover:[0],explanation:'Luminal A: ER+/PR+/HER2-/Ki-67低，预后好；Luminal B(HER2-): ER+/PR+/HER2-/Ki-67高；Luminal B(HER2+): ER+/PR+/HER2+；HER2阳性: ER-/PR-/HER2+，预后差；三阴(基底样): ER-/PR-/HER2-，预后最差。Ki-67 cutoff 14%。'},
   {id:'surg_020',subject:'surgery',system:'thoracic',chapter:'胸部损伤',type:'matching',title:'肋骨骨折处理原则',description:'将下列处理措施与对应的肋骨骨折类型匹配',options:[{id:'A',text:'有明显反常呼吸运动'},{id:'B',text:'无明显反常呼吸运动'},{id:'C',text:'气管内插管呼吸机正压通气'},{id:'D',text:'胸带固定'},{id:'E',text:'纵隔扑动'},{id:'F',text:'切开复位内固定'}],categories:[{id:'C1',label:'非多根多处'},{id:'C2',label:'多根多处-胸壁软化范围小'},{id:'C3',label:'多根多处-胸壁软化范围大'}],answer:{'D':'C1','B':'C2','A':'C3','E':'C3','C':'C3','F':'C3'},explanation:'非多根多处：胸带固定；多根多处胸壁软化范围小：无明显反常呼吸+胸带固定；范围大：有明显反常呼吸+纵隔扑动→气管插管正压通气/切开复位内固定。'},
   {id:'surg_021',subject:'surgery',system:'thoracic',chapter:'纵隔肿瘤',type:'matching',title:'纵隔肿瘤好发部位',description:'将下列肿瘤与对应的好发纵隔部位匹配',options:[{id:'A',text:'心包囊肿'},{id:'B',text:'畸胎瘤和皮样囊肿'},{id:'C',text:'支气管囊肿'},{id:'D',text:'胸腺瘤'},{id:'E',text:'神经源性肿瘤如神经鞘瘤'},{id:'F',text:'胸骨后甲状腺肿'},{id:'G',text:'淋巴瘤'}],categories:[{id:'C1',label:'前纵隔'},{id:'C2',label:'中纵隔'},{id:'C3',label:'后纵隔'}],answer:{'B':'C1','D':'C1','F':'C1','A':'C2','C':'C2','G':'C2','E':'C3'},explanation:'前纵隔：畸胎瘤/皮样囊肿、胸腺瘤、胸骨后甲状腺肿；中纵隔：心包囊肿、支气管囊肿、淋巴瘤；后纵隔：神经源性肿瘤。'},
   {id:'surg_022',subject:'surgery',system:'gastric',chapter:'胃肿瘤',type:'matching',title:'胃癌Borrmann分型',description:'将下列胃癌大体分型与对应的Borrmann分型及特征匹配',options:[{id:'A',text:'溃疡局限型'},{id:'B',text:'弥漫浸润型(可致革囊胃/皮革胃)'},{id:'C',text:'溃疡浸润型'},{id:'D',text:'息肉/肿块型'}],categories:[{id:'C1',label:'BorrmannⅠ型'},{id:'C2',label:'BorrmannⅡ型'},{id:'C3',label:'BorrmannⅢ型'},{id:'C4',label:'BorrmannⅣ型'},{id:'C5',label:'边界清楚'},{id:'C6',label:'最常见'},{id:'C7',label:'预后最差'}],answer:{'D':['C1','C5'],'A':['C2','C5'],'C':['C3','C6'],'B':['C4','C7']},explanation:'BorrmannⅠ型=息肉/肿块型(D)、Ⅱ型=溃疡局限型(A)、Ⅲ型=溃疡浸润型(C)、Ⅳ型=弥漫浸润型(B)；Ⅰ、Ⅱ型边界清楚；Ⅲ型最常见；Ⅳ型预后最差。'},
@@ -893,7 +895,16 @@ function saveQuizDraft(){
   // 先把当前题目的作答状态存入 draftProgress
   const qId = currentQuestions[currentQuestionIndex]?.id;
   if(qId){
-    if(currentQuestions[currentQuestionIndex] && currentQuestions[currentQuestionIndex].type === 'sub-matching'){
+    if(currentQuestions[currentQuestionIndex] && currentQuestions[currentQuestionIndex].type === 'table'){
+      draftProgress[qId] = {
+        tableState: {
+          mode: quizState.tableMode || 'forward',
+          revealed: { ...(quizState.revealedCells||{}) }
+        },
+        answered: quizState.answered || false,
+        correct: true
+      };
+    } else if(currentQuestions[currentQuestionIndex] && currentQuestions[currentQuestionIndex].type === 'sub-matching'){
       draftProgress[qId] = {
         subPlacements: { ...(quizState.subPlacements||{}) },
         subAnswered: { ...(quizState.subAnswered||{}) },
@@ -1246,6 +1257,11 @@ async function renderQuestion(){
   // sub-matching 题型单独渲染
   if(q.type === 'sub-matching'){
     return renderSubMatching(q, el, {correctCount, wrongCount, totalCount, wasAnswered, progress});
+  }
+
+  // table 题型单独渲染（纯记忆练习，不评分）
+  if(q.type === 'table'){
+    return renderTableQuestion(q, el, {correctCount, wrongCount, totalCount, wasAnswered, progress});
   }
 
   el.innerHTML = `
@@ -1790,6 +1806,212 @@ function zoomNoteImage(thumb){
   }
   overlay.querySelector('img').src = src;
   overlay.classList.add('show');
+}
+
+/* ==========================================================
+ * table 题型：纯记忆练习表格（不评分，纳入艾宾浩斯复习周期）
+ * 正向/反向模式切换 + 单元格点击揭示 + 全部显示/隐藏
+ * ========================================================== */
+
+async function renderTableQuestion(q, el, info){
+  const {correctCount, wrongCount, totalCount, wasAnswered, progress} = info;
+
+  const saved = draftProgress[q.id];
+  let tableMode = 'forward';
+  let revealedCells = {};
+  if(saved && saved.tableState){
+    tableMode = saved.tableState.mode || 'forward';
+    revealedCells = {...(saved.tableState.revealed||{})};
+  }
+
+  const fwdCover = q.forwardCover || (q.columns.length > 1 ? [q.columns.length - 1] : []);
+  const revCover = q.reverseCover || fwdCover.map(i => q.columns.length - 1 - i);
+  const coveredCols = tableMode === 'forward' ? fwdCover : revCover;
+
+  quizState.tableMode = tableMode;
+  quizState.revealedCells = revealedCells;
+  quizState.coveredCols = coveredCols;
+  quizState.answered = wasAnswered;
+
+  const coveredHeaders = coveredCols.map(i => q.columns[i]).join('、');
+
+  el.innerHTML = `
+    <div class="quiz-player show">
+      <div class="quiz-area">
+        <div class="quiz-header">
+          <div class="quiz-title">${escapeHtml(q.title)}</div>
+          <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
+            <div class="quiz-progress">第 <strong>${currentQuestionIndex+1}</strong> / ${currentQuestions.length} 题 · 已答 <strong style="color:var(--green)">${getAnsweredCount()}</strong> 题</div>
+            <button class="quiz-card-toggle" onclick="toggleQuizCard()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+              题卡
+            </button>
+          </div>
+        </div>
+        <div class="progress-bar-wrap"><div class="progress-fill" style="width:${progress}%"></div></div>
+        ${isJumpMode?'<div class="jump-mode-banner"><span class="jm-icon">🔗</span><span class="jm-text">跨科目跳转做题中</span></div>':''}
+        ${isJumpMode?'':getChapterNavHtml()}
+        ${wasAnswered?'<div class="quiz-resume-hint"><span class="qrh-icon">✓</span><span class="qrh-text">本题已标记为已复习（只读查看）</span></div>':''}
+        <div style="display:flex;gap:.5rem;margin-bottom:.6rem;flex-wrap:wrap">
+          <span style="background:var(--blue-bg);color:var(--blue);padding:.15rem .6rem;border-radius:6px;font-size:.72rem;font-weight:600">📋 已复习 ${totalCount}次</span>
+          <span style="background:var(--bg2);color:var(--muted);padding:.15rem .6rem;border-radius:6px;font-size:.72rem;font-weight:600">💡 记忆练习（不评分）</span>
+        </div>
+        <div style="font-size:.85rem;color:var(--muted);margin-bottom:1rem">${escapeHtml(q.description||'点击覆盖的单元格查看内容，可切换正向/反向模式')}</div>
+
+        <div class="table-toolbar">
+          <div class="table-mode-toggle">
+            <button class="table-mode-btn ${tableMode==='forward'?'active':''}" onclick="switchTableMode('forward')" ${wasAnswered?'disabled':''}>正向</button>
+            <button class="table-mode-btn ${tableMode==='reverse'?'active':''}" onclick="switchTableMode('reverse')" ${wasAnswered?'disabled':''}>反向</button>
+          </div>
+          <div class="table-action-btns">
+            <button class="btn btn-outline table-mini-btn" onclick="showAllTableCells()" ${wasAnswered?'disabled':''}>全部显示</button>
+            <button class="btn btn-outline table-mini-btn" onclick="hideAllTableCells()" ${wasAnswered?'disabled':''}>全部隐藏</button>
+          </div>
+        </div>
+        <div class="table-cover-hint">当前覆盖：<strong>${escapeHtml(coveredHeaders)}</strong></div>
+
+        <div class="table-scroll-wrap">
+          <table class="memory-table" id="memoryTable">
+            <thead>
+              <tr>${q.columns.map((c,i)=>{
+                const isCoveredCol = coveredCols.includes(i);
+                return `<th class="${i===0?'col-sticky':''} ${isCoveredCol?'col-covered':''}">${escapeHtml(c)}</th>`;
+              }).join('')}</tr>
+            </thead>
+            <tbody>
+              ${q.rows.map((row,rIdx)=>`
+                <tr>
+                  ${row.map((cell,cIdx)=>{
+                    const isCovered = coveredCols.includes(cIdx);
+                    const isRevealed = wasAnswered || revealedCells[rIdx+'-'+cIdx];
+                    const sticky = cIdx === 0 ? 'col-sticky' : '';
+                    if(isCovered){
+                      return `<td class="cell-coverable ${sticky} ${isRevealed?'cell-revealed':''}" data-row="${rIdx}" data-col="${cIdx}" onclick="${wasAnswered?'':'toggleTableCell('+rIdx+','+cIdx+')'}">${isRevealed?escapeHtml(String(cell)):'<span class="cell-cover">点击查看</span>'}</td>`;
+                    }
+                    return `<td class="${sticky}">${escapeHtml(String(cell))}</td>`;
+                  }).join('')}
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+
+        ${q.explanation ? `<div class="answer-reveal show" style="margin-top:1rem"><div class="ans-note">${escapeHtml(q.explanation)}</div></div>` : ''}
+
+        <div class="action-bar">
+          ${isJumpMode?'<button class="btn btn-primary jump-return-btn" onclick="returnToOriginalQuestion()">↩ 返回原题</button>':''}
+          <button class="btn btn-outline" id="prevBtn" onclick="prevQuestion()" ${currentQuestionIndex===0?'disabled style="opacity:.4"':''}>← 上一题</button>
+          <button class="btn btn-primary" id="markReviewedBtn" onclick="markTableReviewed()" ${wasAnswered?'disabled style="opacity:.4"':''}>${wasAnswered?'✓ 已复习':'✓ 标记已复习'}</button>
+          <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()" ${(currentQuestionIndex>=currentQuestions.length-1 && !allQuestionsAnswered())?'disabled style="opacity:.4"':''}>${currentQuestionIndex>=currentQuestions.length-1?'完成 ✓':'下一题 →'}</button>
+          <button class="btn btn-outline" onclick="openNoteModal('${q.id}')">📝 添加解析</button>
+          <button class="btn btn-outline" id="favBtn" onclick="toggleFavorite()">${favoritedIds.has(q.id)?'⭐ 取消收藏':'☆ 收藏'}</button>
+          ${isJumpMode?'':'<button class="btn btn-outline" onclick="backToSubjects()">退出</button>'}
+        </div>
+        <div id="completionHint" style="text-align:center;font-size:.74rem;color:var(--yellow);margin-top:.4rem;${(currentQuestionIndex>=currentQuestions.length-1 && !allQuestionsAnswered())?'':'display:none;'}">还有 ${currentQuestions.length-getAnsweredCount()} 题未作答，全部完成后可点击"完成"</div>
+        ${getRelatedQuestionsHtml(q.id)}
+        <div class="quiz-card-overlay" id="quizCardOverlay">
+          <div class="qc-overlay-header">
+            <div class="qc-overlay-title">题卡 · ${escapeHtml(currentChapterName||'')}（共${currentQuestions.length}题）</div>
+            <button class="qc-overlay-close" onclick="toggleQuizCard()">✕</button>
+          </div>
+          <div class="qc-grid" id="qcGrid"></div>
+          <div class="qc-legend">
+            <div class="qc-legend-item"><span class="qc-legend-box correct"></span> 做对</div>
+            <div class="qc-legend-item"><span class="qc-legend-box wrong"></span> 做错</div>
+            <div class="qc-legend-item"><span class="qc-legend-box unanswered"></span> 未做</div>
+            <div class="qc-legend-item" style="margin-left:auto;color:var(--accent)">当前题</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  initQuizCard();
+}
+
+function switchTableMode(mode){
+  if(quizState.tableMode === mode) return;
+  quizState.tableMode = mode;
+  quizState.revealedCells = {};
+  saveQuizDraft();
+  renderQuestion();
+}
+
+function toggleTableCell(rowIdx, colIdx){
+  if(quizState.answered) return;
+  const key = rowIdx + '-' + colIdx;
+  if(quizState.revealedCells[key]){
+    delete quizState.revealedCells[key];
+  } else {
+    quizState.revealedCells[key] = true;
+  }
+  const cell = document.querySelector('.memory-table td[data-row="'+rowIdx+'"][data-col="'+colIdx+'"]');
+  if(cell){
+    const q = currentQuestions[currentQuestionIndex];
+    const isRevealed = quizState.revealedCells[key];
+    cell.classList.toggle('cell-revealed', isRevealed);
+    if(isRevealed){
+      cell.innerHTML = escapeHtml(String(q.rows[rowIdx][colIdx]));
+    } else {
+      cell.innerHTML = '<span class="cell-cover">点击查看</span>';
+    }
+  }
+}
+
+function showAllTableCells(){
+  if(quizState.answered) return;
+  const q = currentQuestions[currentQuestionIndex];
+  if(!q || q.type !== 'table' || !quizState.coveredCols) return;
+  q.rows.forEach((row, rIdx) => {
+    row.forEach((cell, cIdx) => {
+      if(quizState.coveredCols.includes(cIdx)){
+        quizState.revealedCells[rIdx + '-' + cIdx] = true;
+      }
+    });
+  });
+  document.querySelectorAll('.memory-table .cell-coverable').forEach(td => {
+    td.classList.add('cell-revealed');
+    const r = td.dataset.row;
+    const c = td.dataset.col;
+    td.innerHTML = escapeHtml(String(q.rows[r][c]));
+  });
+}
+
+function hideAllTableCells(){
+  if(quizState.answered) return;
+  quizState.revealedCells = {};
+  document.querySelectorAll('.memory-table .cell-coverable').forEach(td => {
+    td.classList.remove('cell-revealed');
+    td.innerHTML = '<span class="cell-cover">点击查看</span>';
+  });
+}
+
+async function markTableReviewed(){
+  const q = currentQuestions[currentQuestionIndex];
+  if(!q || q.type !== 'table') return;
+  quizState.answered = true;
+  saveQuizDraft();
+  await recordAnswer(q, true, 100);
+  await updateUserStreak();
+  await updateWrongBadge();
+  updateQuizProgress();
+  const btn = document.getElementById('markReviewedBtn');
+  if(btn){
+    btn.disabled = true;
+    btn.style.opacity = '.4';
+    btn.textContent = '✓ 已复习';
+  }
+  document.querySelectorAll('.table-mode-btn, .table-mini-btn').forEach(b => {
+    b.disabled = true;
+    b.style.opacity = '.4';
+  });
+  const nextBtn = document.getElementById('nextBtn');
+  if(nextBtn && currentQuestionIndex >= currentQuestions.length - 1 && allQuestionsAnswered()){
+    nextBtn.disabled = false;
+    nextBtn.style.opacity = '1';
+  }
+  if(autoSyncEnabled){
+    syncToCloudDebounced();
+  }
 }
 
 /* ==========================================================
@@ -2412,6 +2634,10 @@ function showCompletion(){
   const qStats = currentQuestions.map((q,idx)=>{
     const saved = draftProgress[q.id];
     if(!saved || !saved.answered) return { idx:idx+1, answered:false, score:0, correct:false, title:q.title };
+    if(q.type === 'table'){
+      totalScore += 100; correctQs++;
+      return { idx:idx+1, answered:true, score:100, correct:true, title:q.title };
+    }
     let cc=0, wc=0, mc=0;
     const pl = saved.placements || {};
     q.options.forEach(opt=>{
