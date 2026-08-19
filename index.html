@@ -1214,6 +1214,99 @@ body{font-family:var(--font);color:var(--ink);background:var(--bg);line-height:1
   .pool-toggle-icon{ display: none; }
 }
 
+/* ====== table 题型：纯记忆练习表格 ====== */
+.table-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.5rem;
+}
+.table-mode-toggle {
+  display: inline-flex; gap: 0; border: 1px solid var(--rule);
+  border-radius: 8px; overflow: hidden;
+}
+.table-mode-btn {
+  padding: 0.4rem 1rem; border: none; background: var(--surface);
+  font-size: 0.82rem; cursor: pointer; font-family: var(--font);
+  transition: all 0.15s; color: var(--muted);
+}
+.table-mode-btn:not(:disabled):hover { background: var(--bg2); }
+.table-mode-btn.active {
+  background: var(--accent); color: #fff; font-weight: 600;
+}
+.table-mode-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.table-action-btns { display: flex; gap: 0.4rem; }
+.table-mini-btn {
+  padding: 0.35rem 0.8rem; font-size: 0.78rem; min-height: 36px;
+}
+.table-cover-hint {
+  font-size: 0.78rem; color: var(--muted); margin-bottom: 0.6rem;
+}
+.table-cover-hint strong { color: var(--accent); }
+
+.table-scroll-wrap {
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--rule); border-radius: var(--radius);
+  margin-bottom: 1rem; max-width: 100%;
+}
+.memory-table {
+  width: 100%; border-collapse: collapse; font-size: 0.85rem;
+  min-width: 320px;
+}
+.memory-table th {
+  background: var(--bg2); padding: 0.6rem 0.8rem;
+  text-align: left; font-weight: 600; white-space: nowrap;
+  border-bottom: 2px solid var(--rule);
+  position: sticky; top: 0; z-index: 3;
+}
+.memory-table th.col-sticky {
+  position: sticky; left: 0; z-index: 4;
+}
+.memory-table th.col-covered {
+  color: var(--accent); background: var(--accent-bg, var(--bg2));
+}
+.memory-table td {
+  padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--rule);
+  vertical-align: top; word-break: break-word;
+}
+.memory-table td.col-sticky {
+  position: sticky; left: 0; z-index: 2;
+  background: var(--surface); font-weight: 500;
+}
+.memory-table tbody tr:nth-child(even) td:not(.col-sticky) {
+  background: var(--bg2);
+}
+.memory-table td.cell-coverable {
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+  position: relative; min-width: 80px;
+}
+.memory-table td.cell-coverable:not(.cell-revealed) {
+  background: var(--accent-bg, #e8f0fa);
+}
+.memory-table td.cell-coverable:not(.cell-revealed).col-sticky {
+  background: #d4e4f0;
+}
+.memory-table td.cell-coverable:hover:not(.cell-revealed) {
+  background: #c8dcee;
+}
+.cell-cover {
+  color: var(--muted); font-size: 0.78rem; font-style: italic;
+  display: inline-block; opacity: 0.7;
+}
+.memory-table td.cell-revealed {
+  background: var(--green-bg) !important;
+  animation: cellReveal 0.2s ease;
+}
+@keyframes cellReveal {
+  from { opacity: 0.5; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+@media(max-width: 768px){
+  .memory-table { font-size: 0.8rem; min-width: 280px; }
+  .memory-table th, .memory-table td { padding: 0.4rem 0.5rem; }
+  .table-toolbar { flex-direction: column; align-items: stretch; }
+  .table-mode-toggle { width: 100%; }
+  .table-mode-btn { flex: 1; }
+}
+
 /* 操作按钮 */
 .action-bar {
   display: flex; gap: 0.6rem; margin-top: 1rem; flex-wrap: wrap;
