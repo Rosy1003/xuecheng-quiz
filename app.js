@@ -1228,6 +1228,15 @@ async function renderQuestion(){
     el.innerHTML = '<div class="empty-state"><div class="es-icon">📭</div><p>该章节暂无题目</p></div>';
     return;
   }
+  try{
+    await _renderQuestionInner(q, el);
+  }catch(e){
+    console.error('渲染题目失败:', e, '题目ID:', q.id, '题型:', q.type);
+    el.innerHTML = '<div class="empty-state"><div class="es-icon">⚠️</div><p>题目渲染失败: '+escapeHtml(e.message||String(e))+'</p><p style="font-size:.8rem;color:var(--muted)">题目ID: '+escapeHtml(q.id)+' · 题型: '+escapeHtml(q.type||'unknown')+'</p><p style="font-size:.8rem;color:var(--muted)">请尝试刷新页面，或清除浏览器缓存后重试</p></div>';
+  }
+}
+
+async function _renderQuestionInner(q, el){
   // 从 draftProgress 恢复当前题目的作答状态（包含 correct 字段，防止状态丢失）
   const saved = draftProgress[q.id];
   const savedPlacements = saved ? saved.placements : null;
