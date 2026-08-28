@@ -819,15 +819,13 @@ body{font-family:var(--font);color:var(--ink);background:var(--bg);line-height:1
 /* 选项池 - 电脑端/平板：顶部固定吸附 */
 .option-pool {
   background: var(--bg); border-radius: var(--radius);
-  border: 1px solid var(--rule); padding: 1rem;
-  position: sticky; top: 0; z-index: 10;
+  border: 1px solid var(--rule); padding: 0.6rem 1rem;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-  max-height: 60vh;
-  overflow-y: auto;
 }
-/* 把手条 - 仅手机端显示 */
 .pool-handle {
-  display: none;
+  display: flex; align-items: center; justify-content: center;
+  padding: 4px 0; cursor: pointer;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
 }
 .pool-handle-bar {
   width: 36px; height: 4px; border-radius: 2px;
@@ -835,8 +833,11 @@ body{font-family:var(--font);color:var(--ink);background:var(--bg);line-height:1
 }
 .option-pool .pool-title {
   font-size: 0.78rem; font-weight: 600; color: var(--muted);
-  margin-bottom: 0.6rem; letter-spacing: 0.5px;
+  margin-bottom: 0; letter-spacing: 0.5px;
   display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+  cursor: pointer; min-height: 36px;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  padding-bottom: 4px;
 }
 .pool-sel-badge {
   font-size: 0.7rem; background: var(--accent-bg); color: var(--accent);
@@ -850,6 +851,11 @@ body{font-family:var(--font);color:var(--ink);background:var(--bg);line-height:1
 .pool-clear-btn:hover { background: var(--red-bg); }
 .pool-items {
   display: flex; flex-wrap: wrap; gap: 6px;
+  max-height: 0; overflow: hidden; transition: max-height 0.3s, margin-top 0.2s;
+  margin-top: 0;
+}
+.option-pool.expanded .pool-items, .sm-option-pool.expanded .pool-items {
+  max-height: 50vh; overflow-y: auto; margin-top: 0.5rem;
 }
 .option-item {
   display: inline-flex; align-items: center; gap: 5px;
@@ -980,16 +986,16 @@ body{font-family:var(--font);color:var(--ink);background:var(--bg);line-height:1
 .sm-layout { display: grid; grid-template-columns: 1fr; gap: 1rem; }
 .sm-option-pool {
   background: var(--bg); border-radius: var(--radius);
-  border: 1px solid var(--rule); padding: 1rem;
-  position: sticky; top: 0; z-index: 10;
+  border: 1px solid var(--rule); padding: 0.6rem 1rem;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-  max-height: 60vh;
-  overflow-y: auto;
 }
 .sm-option-pool .pool-title {
   font-size: 0.78rem; font-weight: 600; color: var(--muted);
-  margin-bottom: 0.6rem; letter-spacing: 0.5px;
+  margin-bottom: 0; letter-spacing: 0.5px;
   display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+  cursor: pointer; min-height: 36px;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  padding-bottom: 4px;
 }
 .sm-tab-bar {
   display: flex; gap: 0; border-bottom: 2px solid var(--rule);
@@ -1178,44 +1184,18 @@ body{font-family:var(--font);color:var(--ink);background:var(--bg);line-height:1
 .qc-legend-box.wrong { background: var(--red-bg); border-color: var(--red); }
 .qc-legend-box.unanswered { background: var(--bg2); border-color: var(--rule); }
 
-/* 手机端：选项池改为底部浮动可折叠 */
-@media(max-width: 768px){
-  .option-pool, .sm-option-pool{
-    position: fixed; bottom: 0; left: 0; right: 0; top: auto; z-index: 100;
-    border-radius: var(--radius) var(--radius) 0 0;
-    box-shadow: 0 -4px 12px rgba(0,0,0,0.08);
-    padding: 0 0.8rem 0.6rem;
-  }
-  /* 把手条 - 手机端显示 */
-  .pool-handle{
-    display: flex; align-items: center; justify-content: center;
-    padding: 10px 0 6px; cursor: pointer;
-    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
-  }
-  .pool-handle:active .pool-handle-bar{ background: var(--accent); }
-  /* 标题栏 - 增大触控区域 */
-  .option-pool .pool-title, .sm-option-pool .pool-title{
-    cursor: pointer; margin-bottom: 0;
-    min-height: 44px; display: flex; align-items: center;
-    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
-    padding-bottom: 4px;
-  }
-  .option-pool .pool-items, .sm-option-pool .pool-items{
-    max-height: 0; overflow: hidden; transition: max-height 0.3s, margin-top 0.2s;
-    margin-top: 0;
-  }
-  .option-pool.expanded .pool-items, .sm-option-pool.expanded .pool-items{
-    max-height: 200px; overflow-y: auto; margin-top: 0.5rem;
-  }
-  .pool-toggle-icon{
-    display: inline-block; transition: transform 0.2s; margin-left: auto;
-  }
-  .option-pool.expanded .pool-toggle-icon,
-  .sm-option-pool.expanded .pool-toggle-icon{ transform: rotate(180deg); }
-  .matching-layout, .sm-layout{ padding-bottom: 280px; }
+/* 选项池折叠/展开 - 三端统一 */
+.pool-toggle-icon{
+  display: inline-block; transition: transform 0.2s; margin-left: auto;
 }
-@media(min-width: 769px){
-  .pool-toggle-icon{ display: none; }
+.option-pool.expanded .pool-toggle-icon,
+.sm-option-pool.expanded .pool-toggle-icon{ transform: rotate(180deg); }
+.pool-handle:active .pool-handle-bar{ background: var(--accent); }
+@media(max-width: 768px){
+  .pool-handle{ padding: 10px 0 6px; }
+  .option-pool .pool-title, .sm-option-pool .pool-title{
+    min-height: 44px;
+  }
 }
 
 /* ====== table 题型：纯记忆练习表格 ====== */
